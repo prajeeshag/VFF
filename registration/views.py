@@ -238,8 +238,6 @@ class UpdateOfficials(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             weight = form.cleaned_data['weight']
             prefered_foot = form.cleaned_data['prefered_foot']
             favorite_position = form.cleaned_data['favorite_position']
-            address_proof = form.cleaned_data['address_proof']
-            age_proof = form.cleaned_data['age_proof']
             PlayerInfo.objects.update(official=user, height=height, weight=weight,
                                       prefered_foot=prefered_foot,
                                       favorite_position=favorite_position)
