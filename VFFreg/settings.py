@@ -26,7 +26,7 @@ SECRET_KEY = '#(jv6__=f7*1hb_058qrh!e@ci7)g3qr)2w_v!xs7c2s2830br'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['157.245.96.237']
 
 
 # Application definition
@@ -78,12 +78,12 @@ WSGI_APPLICATION = 'VFFreg.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
 
 
 # Password validation
@@ -138,3 +138,19 @@ LOGOUT_REDIRECT_URL = '/login'
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'vff_prod',
+        'USER': 'vff',
+        'PASSWORD': 'vff2020',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+
+#SESSION_COOKIE_SECURE=True
+
+#CSRF_COOKIE_SECURE=True
+
