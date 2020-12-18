@@ -1,6 +1,7 @@
 {% extends 'registration/base.html' %}
 
 {% load thumbnail %}
+{% load static %}
 
 {% block content %}
 
@@ -10,7 +11,7 @@
 		{% with image=object.profilepicture.image %}
 		<div class="mb-4">
 			<div class="profile-img">
-				<img {% if image %} src="{{ image.url }}" {% else %} src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" {% endif %} alt="" width="200"/>
+				<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-profile-picture.png' %}" {% endif %} alt="" width="200"/>
 				{% if object.profilepicture %}
 				<a href="{% url 'UpdateOfficialsImage' object.profilepicture.pk %}" class="file btn btn-lg btn-primary"> Change Photo </a>
 				{% endif %}
@@ -71,9 +72,48 @@
 			{% endwith %}
 			{% endif %}
 		</div>
+
 		<div class="text-center mb-4"> 
-			<a href="{% url 'UpdateOfficials' object.pk %}" class="btn btn-primary"> Edit </a> 
-			<a href="{% url 'DeleteOfficials' object.pk %}" class="btn btn-warning"> Delete </a> 
+			<a href="{% url 'UpdateOfficials' object.pk %}" class="btn btn-primary"> Edit details</a> 
+		</div>
+
+
+		<div class="row mx-3">
+			{% if object.addressproof %}
+			<div class="col-md-6 p-2">
+				<div class="h5 text-center mb-3">Address proof</div>
+				<div class="profile-img">
+					{% with image=object.addressproof.image %}
+					<div class="mb-4">
+						<div class="profile-img">
+							<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-document.png' %}" {% endif %} alt="" width="300"/>
+							<a href="{% url 'UpdateAddressProof' object.addressproof.pk %}" class="file btn btn-lg btn-primary"> Change </a>
+						</div>
+					</div>
+					{% endwith %}
+				</div>
+			</div>
+			{% endif %}
+
+			{% if object.ageproof %}
+			<div class="col-md-6 p-2">
+				<div class="h5 text-center mb-3">Age proof</div>
+				<div class="profile-img">
+					{% with image=object.ageproof.image %}
+					<div class="mb-4">
+						<div class="profile-img">
+							<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-document.png' %}" {% endif %} alt="" width="300"/>
+							<a href="{% url 'UpdateAgeProof' object.ageproof.pk %}" class="file btn btn-lg btn-primary"> Change </a>
+						</div>
+					</div>
+					{% endwith %}
+				</div>
+			</div>
+			{% endif %}
+		</div>
+
+		<div class="text-center mb-4"> 
+			<a href="{% url 'DeleteOfficials' object.pk %}" class="btn btn-warning"> Delete Profile </a> 
 		</div>
   </div>
 

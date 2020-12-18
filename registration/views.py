@@ -13,6 +13,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from .forms import (
     SignUpForm, OfficialsCreationForm, PlayerCreationForm,
     OfficialsUpdateForm, PlayerUpdateForm, ProfilePictureForm,
+    AddressProofForm, AgeProofForm,
 )
 from .models import (
     Officials, PlayerInfo, Club, ClubDetails, JerseyPicture,
@@ -155,10 +156,31 @@ class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('home')
 
 
+class UpdateAddressProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = AddressProof
+    form_class = AddressProofForm
+    login_url = reverse_lazy('login')
+    template_name = 'registration/officials_form.html'
+    success_message = 'Address proof picture has been updated'
+
+    def get_success_url(self):
+        return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
+
+
+class UpdateAgeProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = AgeProof
+    form_class = AgeProofForm
+    login_url = reverse_lazy('login')
+    template_name = 'registration/officials_form.html'
+    success_message = 'Age proof picture has been updated'
+
+    def get_success_url(self):
+        return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
+
+
 class UpdateOfficialsImage(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ProfilePicture
     form_class = ProfilePictureForm
-    # fields = ['image']
     login_url = reverse_lazy('login')
     template_name = 'registration/officials_form.html'
     success_message = 'Profile picture has been updated'

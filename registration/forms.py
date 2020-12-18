@@ -2,7 +2,10 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from .models import Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture
+from .models import (
+    Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
+    AgeProof, AddressProof,
+)
 
 
 class ImageWidget(forms.ClearableFileInput):
@@ -30,6 +33,34 @@ class SignUpForm(UserCreationForm):
 class ProfilePictureForm(forms.ModelForm):
     class Meta:
         model = ProfilePicture
+        fields = ['image', 'x1', 'x2', 'y1', 'y2']
+
+        widgets = {
+            # 'image': ImageWidget(),
+            'x1': forms.HiddenInput(),
+            'x2': forms.HiddenInput(),
+            'y1': forms.HiddenInput(),
+            'y2': forms.HiddenInput(),
+        }
+
+
+class AgeProofForm(forms.ModelForm):
+    class Meta:
+        model = AgeProof
+        fields = ['image', 'x1', 'x2', 'y1', 'y2']
+
+        widgets = {
+            # 'image': ImageWidget(),
+            'x1': forms.HiddenInput(),
+            'x2': forms.HiddenInput(),
+            'y1': forms.HiddenInput(),
+            'y2': forms.HiddenInput(),
+        }
+
+
+class AddressProofForm(forms.ModelForm):
+    class Meta:
+        model = AddressProof
         fields = ['image', 'x1', 'x2', 'y1', 'y2']
 
         widgets = {

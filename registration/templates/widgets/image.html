@@ -1,7 +1,7 @@
 <div class="profile-img">
 	<img {% if widget.is_initial %} src="{{ widget.value.url }}" {% else %} src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" {% endif %} alt="" width="250"/>
 	<div class="file btn btn-lg btn-primary">
-		Change Photo
+		Change
 		<input type="{{ widget.type  }}" name="{{ widget.name  }}"{% include "django/forms/widgets/attrs.html" %}>
 	</div>
 </div> 
