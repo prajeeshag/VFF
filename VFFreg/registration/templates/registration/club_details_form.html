@@ -1,0 +1,11 @@
+{% extends 'registration/officials_form.html' %}
+
+{% block maincontent %}
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+		{{ form|crispy }}
+		<div class="text-center"> <button class="btn btn-primary" type="submit">Submit</button> </div>
+    <button type="submit">Submit</button>
+  </form>
+{% endblock %}
+

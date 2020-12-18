@@ -1,0 +1,108 @@
+{% extends 'registration/base.html' %}
+
+{% load thumbnail %}
+
+{% block content %}
+
+	<a href="{% url 'home' %}" class="btn btn-link"> back </a>
+  <div class="shadow rounded bg-light" style="overflow: hidden;">
+		<div class="h3 text-center mb-4">{{object}}</div>
+		{% with image=object.profilepicture.image %}
+		<div class="mb-4">
+			<div class="profile-img">
+				<img {% if image %} src="{{ image.url }}" {% else %} src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png" {% endif %} alt="" width="200"/>
+				{% if object.profilepicture %}
+				<a href="{% url 'UpdateOfficialsImage' object.profilepicture.pk %}" class="file btn btn-lg btn-primary"> Change Photo </a>
+				{% endif %}
+			</div>
+		</div>
+		{% endwith %}
+
+		<div class="row mx-3">
+			<div class="col-md-4 p-1">
+				<h6>Club</h6>
+				<p>{{object.club}}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Role</h6>
+				<p>{{object.role}}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Address</h6>
+				<p>{{object.address}}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Phone</h6>
+				<p>{{object.phone_number}}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Email</h6>
+				<p>{{object.email|default:"---"}}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Date of Birth</h6>
+				<p>{{object.date_of_birth|default:"---"}}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Occupation</h6>
+				<p>{{object.occupation|default:"---"}}</p>
+			</div>
+		
+			{% if object.is_player %}	
+			{% with player=object.Player %}
+			{% if player is not None %}
+			<div class="col-md-4 p-1">
+				<h6>Height</h6>
+				<p>{% if player.height %}{{ player.height }} cm {%else%} --- {%endif%}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Weight</h6>
+				<p>{% if player.weight %}{{ player.weight }} kg {%else%} --- {%endif%}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Prefered Foot</h6>
+				<p>{{ player.prefered_foot|default:"---" }}</p>
+			</div>
+			<div class="col-md-4 p-1">
+				<h6>Favorite Position</h6>
+				<p>{{ player.favorite_position|default:"---" }}</p>
+			</div>
+			{% endif %}
+			{% endwith %}
+			{% endif %}
+		</div>
+		<div class="text-center mb-4"> 
+			<a href="{% url 'UpdateOfficials' object.pk %}" class="btn btn-primary"> Edit </a> 
+			<a href="{% url 'DeleteOfficials' object.pk %}" class="btn btn-warning"> Delete </a> 
+		</div>
+  </div>
+
+{% endblock %}
+
+
+{% block style %}
+<style>
+.profile-img{
+		position:relative;
+		text-align: center;
+		max-width: 200px;
+		margin: auto;
+}
+.profile-img img{
+	  display: block;
+		width: 100%;
+		height: auto;
+}
+.profile-img .file {
+		position: absolute;
+		overflow: hidden;
+		bottom: 0;
+		left:0;
+		width: 100%;
+		border: none;
+		border-radius: 0;
+		font-size: 15px;
+		background: #212529b8;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'registration/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block style %}
+<style>
+.profile-img{
+		position:relative;
+		text-align: center;
+		max-width: 200px;
+		margin: auto;
+}
+.profile-img img{
+	  display: block;
+		width: 100%;
+		height: auto;
+}
+.profile-img .file {
+		position: absolute;
+		overflow: hidden;
+		bottom: 0;
+		left:0;
+		width: 100%;
+		border: none;
+		border-radius: 0;
+		font-size: 15px;
+		background: #212529b8;
+}
+.profile-img .file input {
+		position: absolute;
+		opacity: 0;
+		right: 0;
+		top: 0;
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<a href="{% url 'home' %}" class="btn btn-link">back</a>
+<div class="shadow">
+<div class="bg-info text-center p-1 h3">{{ user.club }}</div>
+
+{% block maincontent %}
+{% if role %}
+<div class="text-center p-1 h4">{{ role }}</div>
+{% endif %}
+<div class="p-2">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+		{{ form|crispy }}
+		<div class="text-center"> <button class="btn btn-primary" type="submit">Submit</button> </div>
+  </form>
+</div>
+{% endblock %}
+
+</div>
+
+{% endblock %}
+

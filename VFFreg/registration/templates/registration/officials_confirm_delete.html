@@ -1,0 +1,12 @@
+{% extends 'registration/base.html' %}
+
+{% block content %}
+	<a href="{% url 'home' %}" class="btn btn-link"> back </a>
+  <div class="shadow rounded bg-light" style="overflow: hidden;">
+		<form method="post">{% csrf_token %}
+			  <p>Are you sure you want to delete "{{ object  }}"?</p>
+				<input type="submit" value="Confirm">
+		</form>
+  </div>
+{% endblock %}
+
