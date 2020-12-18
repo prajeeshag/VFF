@@ -16,8 +16,8 @@
 
   <div class="rounded border p-3 mb-4 text-center">
 		<div class="bg-info text-center mb-2 p-2 h4 rounded">Jersey</div>
-		{% if jerseypictures|length > 0 %}
 		<div class="row">
+		{% if jerseypictures|length > 0 %}
 		  {% for jersey in jerseypictures %}
 			<div class="col-md-4 mb-4">
 				<div class="card w-auto shadow">
@@ -34,7 +34,6 @@
   			</div>
   		</div>
 			{% endfor %}
-  	</div>
 		{% endif %}
 
 		{% if jerseypictures|length < 3 %}
@@ -47,6 +46,7 @@
   			  </div>
   			</div>
 		{% endif %}
+  	</div>
   </div>
 
 		
