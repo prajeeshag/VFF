@@ -4,7 +4,7 @@
 
 {% block content %}
 
-	<div class="card w-auto mb-4 p-1">
+	<div class="card w-auto mb-4 ">
 		<div class="card-header text-dark text-center h2 bg-warning">{{user.club}}</div>
     <div class="card-body">
 			<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{clubdetails.contact_number}}</p>
@@ -20,10 +20,10 @@
 		{% if jerseypictures|length > 0 %}
 		  {% for jersey in jerseypictures %}
 			<div class="col-md-4 mb-4">
-				<div class="card w-auto shadow p-1">
+				<div class="card w-auto shadow ">
 					<div class="card-header text-dark h5">Jersery {{forloop.counter}}</div>
 					{% thumbnail jersey.image "300x300" as im %}
-					<div class="p-1 m-auto" style="max-width: 350px;">
+					<div class="p-2 m-auto" style="max-width: 300px;">
 						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
 					</div>
 					{% endthumbnail %}
@@ -38,7 +38,7 @@
 
 		{% if jerseypictures|length < 3 %}
 			<div class="col-md-4 mb-4">
-				<div class="card w-auto shadow p-1">
+				<div class="card w-auto shadow ">
 					<div class="card-header text-dark h5">Jersery {{jerseypictures|length|add:"1"}}</div>
   			  <div class="card-body">
 						<p class="card-text text-dark">Add upto three jersey. Atleast 1 jersey is mandatory.</p>
@@ -55,10 +55,10 @@
   <div class="row">
 	  {% for official in officials %}
 		<div class="col-md-4 mb-3">
-			<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow p-1" style="text-decoration:none">
+			<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow " style="text-decoration:none">
 				<div class="card-header text-dark h5">{{official.role}}</div>
-				{% thumbnail official.profilepicture.image "350x350" as im %}
-				<div class="p-1 m-auto" style="max-width: 350px;">
+				{% thumbnail official.profilepicture.image "300x300" as im %}
+				<div class="p-2 m-auto" style="max-width: 300px;">
 					<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
 				</div>
 				{% endthumbnail %}
@@ -71,7 +71,7 @@
 
 		{% if not user.club.president %}
 		<div class="col-md-4 mb-3">
-			<div class="card w-auto shadow p-1">
+			<div class="card w-auto shadow ">
 				<div class="card-header text-dark h5">President</div>
   	  	<div class="card-body">
   		    <p class="card-title text-danger">President of the club</p>
@@ -83,7 +83,7 @@
 
 		{% if not user.club.secretary %}
 		<div class="col-md-4 mb-3">
-			<div class="card w-auto shadow p-1">
+			<div class="card w-auto shadow ">
 				<div class="card-header text-dark h5">Secretary</div>
   	  	<div class="card-body">
 					<p class="card-text text-danger">Secretary of the club.</p>
@@ -95,7 +95,7 @@
 
 		{% if not user.club.manager %}
 		<div class="col-md-4 mb-3">
-			<div class="card w-auto shadow p-1">
+			<div class="card w-auto shadow ">
 				<div class="card-header text-dark h5">Manager</div>
   	  	<div class="card-body">
 					<p class="card-text text-danger">Manager of the Football Team.</p>
@@ -112,10 +112,12 @@
   <div class="row">
 	  {% for official in players %}
 		<div class="col-md-4 mb-3">
-		<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow p-1" style="text-decoration:none">
+		<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow " style="text-decoration:none">
 			<div class="card-header text-dark h4"> {{official.role }} {{ forloop.counter }}</div>
-			{% thumbnail official.profilepicture.image "200x200" as im %}
+			{% thumbnail official.profilepicture.image "300x300" as im %}
+			<div class="p-2 m-auto" style="max-width: 300px;">
 			<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+			</div>
 			{% endthumbnail %}
   	  <div class="card-body">
   		  <div class="card-title h5 text-center text-dark">{{official}}</div>
@@ -126,7 +128,7 @@
 
 		{% if players|length < 25	%}
 		<div class="col-md-4 mb-3">
-		<div class="card w-auto shadow p-1">
+		<div class="card w-auto shadow">
 			<div class="card-header h4"> Player {{ players|length|add:"1" }} </div>
   	  <div class="card-body">
   	    <p class="card-title">A minimum of 15 players is required for club registration. Maximum 25 players can be added.</p>
