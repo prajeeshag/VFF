@@ -33,7 +33,7 @@ class ProfilePictureForm(forms.ModelForm):
         fields = ['image', 'x1', 'x2', 'y1', 'y2']
 
         widgets = {
-            'image': ImageWidget(),
+            # 'image': ImageWidget(),
             'x1': forms.HiddenInput(),
             'x2': forms.HiddenInput(),
             'y1': forms.HiddenInput(),
@@ -67,7 +67,7 @@ class OfficialsUpdateForm(forms.ModelForm):
 
 
 class OfficialsCreationForm(forms.ModelForm):
-    image = forms.ImageField(max_length=255, widget=ImageWidget(), label='')
+    image = forms.ImageField(max_length=255, label='Photo')
     x1 = forms.IntegerField(min_value=0, widget=forms.HiddenInput, initial=0)
     x2 = forms.IntegerField(min_value=0, widget=forms.HiddenInput, initial=0)
     y1 = forms.IntegerField(min_value=0, widget=forms.HiddenInput, initial=0)

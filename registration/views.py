@@ -195,15 +195,16 @@ class UpdateOfficials(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return ctx
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('OfficialsProfileView', kwargs={'pk': self.object.pk})
 
     def get_initial(self):
         initial = super().get_initial()
         initial = initial.copy()
-        initial['height'] = self.object.Player.height
-        initial['weight'] = self.object.Player.weight
-        initial['prefered_foot'] = self.object.Player.prefered_foot
-        initial['favorite_position'] = self.object.Player.favorite_position
+        if self.object.is_player():
+            initial['height'] = self.object.Player.height
+            initial['weight'] = self.object.Player.weight
+            initial['prefered_foot'] = self.object.Player.prefered_foot
+            initial['favorite_position'] = self.object.Player.favorite_position
         return initial
 
     def form_valid(self, form):

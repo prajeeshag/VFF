@@ -5,7 +5,7 @@
 {% block content %}
 
 	<div class="card w-auto mb-4">
-		<div class="card-header text-dark text-center h2">{{user.club}}</div>
+		<div class="card-header text-dark text-center h2 bg-warning">{{user.club}}</div>
     <div class="card-body">
 			<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{clubdetails.contact_number}}</p>
 			<p class="card-title text-secondary h6"><strong>Address: </strong> {{clubdetails.address}}</p>
@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  <div class="shadow mb-4 text-center rounded">
+  <div class="rounded border p-3 mb-4 text-center">
 		<div class="bg-info text-center mb-2 p-2 h4 rounded">Jersey</div>
 		{% if jerseypictures|length > 0 %}
 		<div class="row">
@@ -38,30 +38,40 @@
 		{% endif %}
 
 		{% if jerseypictures|length < 3 %}
-			<a href={% url 'AddJersey' %} class='btn btn-primary mb-2'>Add Jersery</a>
+			<div class="col-md-4 mb-4">
+				<div class="card w-auto shadow">
+					<div class="card-header text-dark h5">Jersery {{jerseypictures|length|add:"1"}}</div>
+  			  <div class="card-body">
+						<p class="card-text text-dark">Add upto three jersey. Atleast 1 jersey is mandatory.</p>
+						<a href={% url 'AddJersey' %} class='btn btn-primary mb-2'>Add</a>
+  			  </div>
+  			</div>
 		{% endif %}
   </div>
 
+		
+  <div class="rounded border p-3 mb-4">
+	<div class="bg-info text-center mb-2 p-2 h4 rounded">Officials</div>
   <div class="row">
 	  {% for official in officials %}
-		<div class="col-md-4 mb-4">
+		<div class="col-md-4 mb-3">
 			<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow" style="text-decoration:none">
 				<div class="card-header text-dark h5">{{official.role}}</div>
-				{% thumbnail official.profilepicture.image "200x200" as im %}
-				<div class="p-1">
+				{% thumbnail official.profilepicture.image "350x350" as im %}
+				<div class="p-1 m-auto" style="max-width: 350px;">
 					<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
 				</div>
 				{% endthumbnail %}
-  		  <div class="card-body">
-  		    <p class="card-title">{{official}}</p>
+  		  <div class="card-body bg-light">
+  		    <div class="card-title h5 text-center text-dark">{{official}}</div>
   		  </div>
   		</a>
   	</div>
 		{% endfor %}
 
 		{% if not user.club.president %}
-		<div class="col mb-4">
-			<div class="card">
+		<div class="col-md-4 mb-3">
+			<div class="card w-auto shadow">
 				<div class="card-header text-dark h5">President</div>
   	  	<div class="card-body">
   		    <p class="card-title text-danger">President of the club</p>
@@ -72,8 +82,8 @@
 		{% endif %}
 
 		{% if not user.club.secretary %}
-		<div class="col mb-4">
-			<div class="card">
+		<div class="col-md-4 mb-3">
+			<div class="card w-auto shadow">
 				<div class="card-header text-dark h5">Secretary</div>
   	  	<div class="card-body">
 					<p class="card-text text-danger">Secretary of the club.</p>
@@ -84,8 +94,8 @@
 		{% endif %}
 
 		{% if not user.club.manager %}
-		<div class="col mb-4">
-			<div class="card">
+		<div class="col-md-4 mb-3">
+			<div class="card w-auto shadow">
 				<div class="card-header text-dark h5">Manager</div>
   	  	<div class="card-body">
 					<p class="card-text text-danger">Manager of the Football Team.</p>
@@ -95,25 +105,28 @@
   	</div>
 		{% endif %}
   </div>
+  </div>
 
-  <div class="row row-cols-xs-1 row-cols-sm-2 row-cols-md-3">
+  <div class="rounded border p-3 mb-4">
+	<div class="bg-info text-center mb-2 p-2 h4 rounded">Players</div>
+  <div class="row">
 	  {% for official in players %}
-		<div class="col mb-4">
-		<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto h-100" style="text-decoration:none">
+		<div class="col-md-4 mb-3">
+		<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow" style="text-decoration:none">
 			<div class="card-header text-dark h4"> {{official.role }} {{ forloop.counter }}</div>
 			{% thumbnail official.profilepicture.image "200x200" as im %}
 			<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
 			{% endthumbnail %}
   	  <div class="card-body">
-  	    <p class="card-title">{{official}}</p>
+  		  <div class="card-title h5 text-center text-dark">{{official}}</div>
   	  </div>
   	</a>
 		</div>
 		{% endfor %}
 
 		{% if players|length < 25	%}
-		<div class="col mb-4">
-		<div class="card w-auto h-100">
+		<div class="col-md-4 mb-3">
+		<div class="card w-auto shadow">
 			<div class="card-header h4"> Player {{ players|length|add:"1" }} </div>
   	  <div class="card-body">
   	    <p class="card-title">A minimum of 15 players is required for club registration. Maximum 25 players can be added.</p>
