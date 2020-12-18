@@ -92,6 +92,14 @@ class Officials(models.Model):
     def is_player(self):
         return self.role in {'Player'}
 
+    def get_age(self):
+        if self.date_of_birth is not None:
+            today = datetime.date.today()
+            dob = self.date_of_birth
+            return today.year - dob.year - \
+                ((today.month, today.day) < (dob.month, dob.day))
+        return None
+
 
 class PlayerInfo(models.Model):
 
@@ -164,17 +172,29 @@ class AddressProof(AbstractImage):
     user = models.OneToOneField(
         Officials, on_delete=models.CASCADE, related_name='addressproof')
 
+    def __str__(self):
+        return "Address proof of %s" % (self.user,)
+
 
 class AgeProof(AbstractImage):
     user = models.OneToOneField(
         Officials, on_delete=models.CASCADE, related_name='ageproof')
+
+    def __str__(self):
+        return "Age proof of %s" % (self.user,)
 
 
 class ProfilePicture(AbstractImage):
     user = models.OneToOneField(
         Officials, on_delete=models.CASCADE, related_name='profilepicture')
 
+    def __str__(self):
+        return "Photo of %s" % (self.user,)
+
 
 class JerseyPicture(AbstractImage):
     user = models.ForeignKey(
         Club, on_delete=models.CASCADE, related_name='jerseypictures')
+
+    def __str__(self):
+        return "Jersey of %s" % (self.user,)

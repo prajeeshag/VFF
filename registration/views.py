@@ -109,6 +109,7 @@ class AddOfficials(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         y2 = form.cleaned_data['y2']
         y1 = form.cleaned_data['y1']
         user.save()
+        self.object = user
         club = ProfilePicture.objects.create(
             user=user, image=image, x1=x1, y1=y1, x2=x2, y2=y2)
         role = form.cleaned_data['role']
@@ -142,7 +143,7 @@ class AddOfficials(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return initial
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('OfficialsProfileView', kwargs={'pk': self.object.pk})
 
 
 class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

@@ -2,7 +2,12 @@
 
 {% load crispy_forms_tags %}
 
+{% block extrascript %}
+{{ form.media }}
+{% endblock %}
+
 {% block style %}
+
 <style>
 .profile-img{
 		position:relative;
