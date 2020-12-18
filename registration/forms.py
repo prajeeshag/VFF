@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from bootstrap_datepicker_plus import DatePickerInput
 
 from .models import (
     Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
@@ -92,9 +93,7 @@ class OfficialsUpdateForm(forms.ModelForm):
                   'phone_number', 'date_of_birth', 'email',
                   'occupation']
         widgets = {
-            'date_of_birth': forms.SelectDateWidget(
-                years=[*range(1950, 2010, 1)]),
-        }
+            'date_of_birth': DatePickerInput()}
 
 
 class OfficialsCreationForm(forms.ModelForm):
@@ -113,8 +112,7 @@ class OfficialsCreationForm(forms.ModelForm):
 
         widgets = {
             'role': forms.HiddenInput(),
-            'date_of_birth': forms.SelectDateWidget(
-                years=[*range(1950, 2010, 1)]),
+            'date_of_birth': DatePickerInput(),
         }
 
 
@@ -125,9 +123,9 @@ class PlayerCreationForm(OfficialsCreationForm):
     weight = forms.IntegerField(
         required=True, help_text="Weight in Kilograms")
     prefered_foot = forms.ChoiceField(
-        choices=PlayerInfo.foot_choices, required=True)
+        choices=[('', '---'), ]+PlayerInfo.foot_choices, required=True)
     favorite_position = forms.ChoiceField(
-        choices=PlayerInfo.position_choices, required=True)
+        choices=[('', '---'), ]+PlayerInfo.position_choices, required=True)
     address_proof = forms.ImageField(help_text="Document for address proof")
     age_proof = forms.ImageField(help_text="Documents for age proof")
 

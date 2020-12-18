@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.forms',
     'sorl.thumbnail',
     'crispy_forms',
+    'bootstrap_datepicker_plus',
+    'bootstrap4',
     'registration.apps.RegistrationConfig',
 ]
 
@@ -138,3 +140,7 @@ LOGOUT_REDIRECT_URL = '/login'
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+BOOTSTRAP4 = {
+    'include_jquery': True,
+    'javascript_in_head': True,
+}
