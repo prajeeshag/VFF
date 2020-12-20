@@ -47,6 +47,9 @@ class ClubDetails(models.Model):
     date_of_formation = models.IntegerField(
         null=True, blank=True, verbose_name="Year of formation of the Club")
 
+    def __str__(self):
+        return "%s details" % (self.club)
+
 
 class Officials(models.Model):
     role_choices = [
@@ -125,6 +128,9 @@ class PlayerInfo(models.Model):
         max_length=10, blank=False, choices=foot_choices)
     favorite_position = models.CharField(
         max_length=20, blank=False, choices=position_choices)
+
+    def __str__(self):
+        return "%s's player info" % (self.official,)
 
 
 def get_image_upload_path(instance, filename):
