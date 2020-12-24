@@ -1,0 +1,22 @@
+
+  <div class="rounded border p-3 mb-4">
+	<div class="bg-info text-center mb-2 p-2 h4 rounded">Clubs</div>
+  <div class="row">
+	  {% for club in clubs %}
+		<div class="col-md-4 mb-3">
+			<div class="card w-auto shadow ">
+				<div class="card-header text-dark h5">{{club}}</div>
+				<div class="card-body">
+					<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{club.clubdetails.contact_number}}</p>
+					<p class="card-title text-secondary h6"><strong>Address: </strong> {{club.clubdetails.address}}</p>
+					<p class="card-title text-secondary h6"><strong>Year of Formation: </strong> {{club.clubdetails.date_of_formation}}</p>
+					<form action="/hijack/{{ club.user.id }}/" method="post">
+						{% csrf_token %}
+						<button type="submit" class="btn btn-warning">Login as {{ club.user.username  }}</button>
+					</form>
+    		</div>
+  		</div>
+  	</div>
+		{% endfor %}
+  </div>
+  </div>
