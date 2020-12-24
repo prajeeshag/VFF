@@ -4,6 +4,9 @@
 
 {% block content %}
 
+{% if user.is_staff %}
+	{% include "registration/home_admin.html" %}
+{% else %}
 	<div class="card w-auto mb-4 ">
 		<div class="card-header text-dark text-center h2 bg-warning">{{user.club}}</div>
     <div class="card-body">
@@ -138,5 +141,5 @@
 		</div>
 		{% endif %}
 	</div>
-	
+{% endif %}	
 {% endblock %}
