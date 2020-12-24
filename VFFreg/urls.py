@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('registration.urls')),
     path('', include('django.contrib.auth.urls')),
-    path('hijack/', include('hijack.urls', namespace='hijack')),
+    path('admin/', include('loginas.urls')),
 ]
 
 if settings.DEBUG:
