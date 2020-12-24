@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'bootstrap_datepicker_plus',
     'bootstrap4',
-    'loginas',
+    'hijack',
+    'compat',
     'registration.apps.RegistrationConfig',
 ]
 
@@ -161,3 +162,4 @@ CSRF_COOKIE_SECURE = True
 BOOTSTRAP4 = {
     'include_jquery': True,
 }
+HIJACK_USE_BOOTSTRAP = True

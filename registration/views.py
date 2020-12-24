@@ -27,11 +27,15 @@ class HomePageView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['jerseypictures'] = self.request.user.club.jerseypictures.all()
-        ctx['clubdetails'] = self.request.user.club.clubdetails
-        ctx['players'] = self.request.user.club.Officials.filter(role="Player")
-        ctx['officials'] = self.request.user.club.Officials.exclude(
-            role="Player")
+        if self.request.user.is_staff:
+            ctx['clubs'] = Club.objects.all()
+        else:
+            ctx['jerseypictures'] = self.request.user.club.jerseypictures.all()
+            ctx['clubdetails'] = self.request.user.club.clubdetails
+            ctx['players'] = self.request.user.club.Officials.filter(
+                role="Player")
+            ctx['officials'] = self.request.user.club.Officials.exclude(
+                role="Player")
         return ctx
 
 
