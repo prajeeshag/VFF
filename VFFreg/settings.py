@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = '#(jv6__=f7*1hb_058qrh!e@ci7)g3qr)2w_v!xs7c2s2830br'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['157.245.96.237']
+ALLOWED_HOSTS = ['157.245.96.237','vfl.nmlstore.com']
 
 
 # Application definition
@@ -152,11 +152,11 @@ DATABASES = {
     }
 }
 
-#SESSION_COOKIE_SECURE=True
-
-#CSRF_COOKIE_SECURE=True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+#SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
 BOOTSTRAP4 = {
     'include_jquery': True,
-    'javascript_in_head': True,
 }
