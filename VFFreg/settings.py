@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'bootstrap4',
     'hijack',
     'compat',
+    'django_unused_media',
     'registration.apps.RegistrationConfig',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
