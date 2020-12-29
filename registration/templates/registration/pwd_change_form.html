@@ -1,0 +1,14 @@
+{% extends 'registration/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+	<div class="py-3">
+		<div class="h4"> Change password</div>
+  <form method="post">
+    {% csrf_token %}
+		{{ form|crispy }}
+    <button type="submit" class="btn btn-success">Submit</button>
+  </form>
+	</div>
+{% endblock %}
