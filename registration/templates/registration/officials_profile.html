@@ -12,7 +12,7 @@
 		<div class="mb-4">
 			<div class="profile-img">
 				<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-profile-picture.png' %}" {% endif %} alt="" width="200"/>
-				{% if object.profilepicture %}
+				{% if object.profilepicture and edit %}
 				<a href="{% url 'UpdateOfficialsImage' object.profilepicture.pk %}" class="file btn btn-lg btn-primary"> Change Photo </a>
 				{% endif %}
 			</div>
@@ -77,11 +77,14 @@
 			{% endif %}
 		</div>
 
+		{% if edit %}
 		<div class="text-center mb-4"> 
 			<a href="{% url 'UpdateOfficials' object.pk %}" class="btn btn-primary"> Edit details</a> 
 		</div>
+		{% endif %}
 
 
+		{% if edit %}
 		<div class="row mx-3">
 			{% if object.addressproof %}
 			<div class="col-md-6 p-2">
@@ -115,10 +118,14 @@
 			</div>
 			{% endif %}
 		</div>
+		{% endif %}
 
+		{% if edit %}
 		<div class="text-center mb-4"> 
 			<a href="{% url 'DeleteOfficials' object.pk %}" class="btn btn-warning"> Delete Profile </a> 
 		</div>
+		{% endif %}
+
   </div>
 
 {% endblock %}

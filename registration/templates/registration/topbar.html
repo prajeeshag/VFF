@@ -9,11 +9,23 @@
 
     <div class="collapse navbar-collapse justify-content-between" id="collapsibleNavbar">
         <ul class="navbar-nav">
+					{% if user.is_authenticated %}
+          <li class="nav-item text-center" >
+              <a href="{% url 'home' %}" class="nav-link"><span>Home</span></a>
+          </li>
+          <li class="nav-item text-center" >
+              <a href="{% url 'ClubList' %}" class="nav-link"><span>Clubs</span></a>
+          </li>
+					{% endif %}
         </ul>
         <ul class="navbar-nav">
 					{% if user.is_authenticated %}
           <li class="nav-item text-center" >
+							{% if user.club %}
+              <div class="nav-link px-1">{{user.club}}</div>
+							{% else %}
               <div class="nav-link px-1">{{user.username}}</div>
+							{% endif %}
           </li>
           <li class="nav-item text-center" >
               <a href="{% url 'logout' %}" class="nav-link"><span>logout</span></a>
