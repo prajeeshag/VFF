@@ -1,7 +1,7 @@
 
 
-<nav class="navbar bg-dark navbar-dark navbar-expand-sm justify-content-between">
-	  <a class="navbar-brand" href="#">VFL</a>
+<nav class="navbar bg-dark navbar-dark navbar-expand justify-content-between">
+	<div class="navbar-brand" class="h1">VFL</div>
 
 		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
 			 <span class="navbar-toggler-icon"></span>
@@ -10,25 +10,25 @@
     <div class="collapse navbar-collapse justify-content-between" id="collapsibleNavbar">
         <ul class="navbar-nav">
 					{% if user.is_authenticated %}
-          <li class="nav-item text-center" >
-              <a href="{% url 'home' %}" class="nav-link"><span>Home</span></a>
-          </li>
-          <li class="nav-item text-center" >
-              <a href="{% url 'ClubList' %}" class="nav-link"><span>Clubs</span></a>
+          <li class="nav-item dropdown" >
+						  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Menu</a>
+							<div class="dropdown-menu dropdown-menu-left" aria-labelledby="navbarDropdown">
+								<a href="{% url 'home' %}" class="dropdown-item">Home</a>
+								<a href="{% url 'ClubList' %}" class="dropdown-item">Clubs</a>
+							</div>
           </li>
 					{% endif %}
         </ul>
         <ul class="navbar-nav">
 					{% if user.is_authenticated %}
-          <li class="nav-item text-center" >
-							{% if user.club %}
-              <div class="nav-link px-1">{{user.club}}</div>
-							{% else %}
-              <div class="nav-link px-1">{{user.username}}</div>
-							{% endif %}
-          </li>
-          <li class="nav-item text-center" >
-              <a href="{% url 'logout' %}" class="nav-link"><span>logout</span></a>
+          <li class="nav-item dropdown" >
+						  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+							{% if user.club %} {{user.club}} {% else %} {{user.username}} {% endif %}
+							</a>
+							<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+								<a href="{% url 'pwdchange' %}" class="dropdown-item">Change password</a>
+								<a href="{% url 'logout' %}" class="dropdown-item">logout</a>
+							</div>
           </li>
 					{% else %}
           <li class="nav-item text-center" >
