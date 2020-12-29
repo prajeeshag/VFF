@@ -23,7 +23,7 @@
 					{% if user.is_authenticated %}
           <li class="nav-item dropdown" >
 						  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-							{% if user.club %} {{user.club}} {% else %} {{user.username}} {% endif %}
+								<span class="d-none d-md-inline">{% if user.club %} {{user.club}} {% else %} {{user.username}} {% endif %}</span>
 							</a>
 							<div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
 								<a href="{% url 'pwdchange' %}" class="dropdown-item">Change password</a>
