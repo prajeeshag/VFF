@@ -8,6 +8,7 @@ from django.template import loader
 from django.utils.safestring import mark_safe
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import HttpResponseForbidden
 
 
 from .forms import (
@@ -78,6 +79,12 @@ class DeleteJersey(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     template_name = 'registration/officials_confirm_delete.html'
     success_message = 'Jersey has been deleted'
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse('home')
 
@@ -88,6 +95,12 @@ class UpdateJersey(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     login_url = reverse_lazy('login')
     template_name = 'registration/officials_form.html'
     success_message = 'Jersey has been updated'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('home')
@@ -157,6 +170,12 @@ class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'registration/officials_form.html'
     success_message = 'Club details has been updated'
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.club.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse('home')
 
@@ -167,6 +186,12 @@ class UpdateAddressProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     login_url = reverse_lazy('login')
     template_name = 'registration/officials_form.html'
     success_message = 'Address proof picture has been updated'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user.club.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
@@ -179,6 +204,12 @@ class UpdateAgeProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = 'registration/officials_form.html'
     success_message = 'Age proof picture has been updated'
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user.club.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
@@ -189,6 +220,12 @@ class UpdateOfficialsImage(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     login_url = reverse_lazy('login')
     template_name = 'registration/officials_form.html'
     success_message = 'Profile picture has been updated'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.user.club.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
@@ -203,6 +240,12 @@ class DeleteOfficials(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     def get_success_url(self):
         return reverse('home')
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.club.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
 
 class UpdateOfficials(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     login_url = reverse_lazy('login')
@@ -210,6 +253,12 @@ class UpdateOfficials(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     form_class = OfficialsUpdateForm
     template_name = 'registration/officials_form.html'
     success_message = 'Profile has been updated'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.club.user != self.request.user:
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_form_class(self):
         if self.object.role == 'Player':
