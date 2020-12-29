@@ -10,6 +10,7 @@
 					<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{club.clubdetails.contact_number}}</p>
 					<p class="card-title text-secondary h6"><strong>Address: </strong> {{club.clubdetails.address}}</p>
 					<p class="card-title text-secondary h6"><strong>Year of Formation: </strong> {{club.clubdetails.date_of_formation}}</p>
+					<p class="card-text">Last login: {{club.user.last_login}}</p>
 					<form action="/hijack/{{ club.user.id }}/" method="post">
 						{% csrf_token %}
 						<button type="submit" class="btn btn-warning">Login as {{ club.user.username  }}</button>

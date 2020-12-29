@@ -10,6 +10,7 @@ from .views import (SignUpView, HomePageView, AddOfficials,
                     )
 
 urlpatterns = [
+    path('', LoginView.as_view(redirect_authenticated_user=True)),
     path('login/', LoginView.as_view(redirect_authenticated_user=True), name='login'),
     path('pwdchange/',
          PasswordChangeView.as_view(template_name='registration/pwd_change_form.html'), name='pwdchange'),
