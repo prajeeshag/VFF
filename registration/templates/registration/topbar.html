@@ -1,0 +1,31 @@
+
+
+<nav class="navbar bg-dark navbar-dark navbar-expand-sm justify-content-between">
+	  <a class="navbar-brand" href="#">VFL</a>
+
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+			 <span class="navbar-toggler-icon"></span>
+		</button>
+
+    <div class="collapse navbar-collapse justify-content-between" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+        </ul>
+        <ul class="navbar-nav">
+					{% if user.is_authenticated %}
+          <li class="nav-item text-center" >
+              <div class="nav-link px-1">{{user.username}}</div>
+          </li>
+          <li class="nav-item text-center" >
+              <a href="{% url 'logout' %}" class="nav-link"><span>logout</span></a>
+          </li>
+					{% else %}
+          <li class="nav-item text-center" >
+              <a href="{% url 'signup' %}" class="nav-link" ><span>Sign Up</span></a>
+          </li>
+          <li class="nav-item text-center" >
+              <a href="{% url 'login' %}" class="nav-link" ><span>Log In</span></a>
+          </li>
+  				{% endif %}
+        </ul>
+    </div>
+</nav>

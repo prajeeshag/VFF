@@ -4,6 +4,7 @@
 
 {% block content %}
 
+<div class="row p-3 justify-content-center">
 {% if user.is_staff %}
 	{% include "registration/home_admin.html" %}
 {% else %}
@@ -141,5 +142,6 @@
 		</div>
 		{% endif %}
 	</div>
-{% endif %}	
+{% endif %}
+</div>
 {% endblock %}

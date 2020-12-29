@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth.views import LoginView
 from .views import (SignUpView, HomePageView, AddOfficials,
                     UpdateOfficials, UpdateClubDetails, OfficialsProfileView,
                     UpdateOfficialsImage, AddJersey, UpdateJersey, DeleteOfficials,
@@ -6,6 +7,7 @@ from .views import (SignUpView, HomePageView, AddOfficials,
                     )
 
 urlpatterns = [
+    path('login/', LoginView.as_view(redirect_authenticated_user=True), name='login'),
     path('signup/', SignUpView.as_view(), name='signup'),
     path('home/', HomePageView.as_view(), name='home'),
     path('addofficials/<str:role>/', AddOfficials.as_view(), name='AddOfficials'),
