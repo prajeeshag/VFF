@@ -30,19 +30,10 @@
   <body>
 		{% hijack_notification %}
 		<div class="container">
-      <div class="row justify-content-center">
-        <div class="col-12">
-      		<h1>VFL Registration</h1>
-      		{% if user.is_authenticated %}
-      		  <a href="{% url 'logout' %}">logout</a>
-      		{% else %}
-      		  <a href="{% url 'login' %}">login</a> / <a href="{% url 'signup' %}">signup</a>
-      		{% endif %}
-          <hr class="mt-0 mb-4">
-          {% block content %}
-          {% endblock %}
-        </div>
-      </div>
+				{% block navbar %}
+					{% include "registration/topbar.html" %}
+			  {% endblock %}
+        {% block content %} {% endblock %}
     </div>	
 		{% if not 'javascript_in_head'|bootstrap_setting %}
 			{% bootstrap_javascript jquery='full' %} 
