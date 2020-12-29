@@ -4,6 +4,7 @@ from .views import (SignUpView, HomePageView, AddOfficials,
                     UpdateOfficials, UpdateClubDetails, OfficialsProfileView,
                     UpdateOfficialsImage, AddJersey, UpdateJersey, DeleteOfficials,
                     DeleteJersey, UpdateAgeProof, UpdateAddressProof,
+                    ClubListView, ClubDetailView,
                     )
 
 urlpatterns = [
@@ -41,4 +42,10 @@ urlpatterns = [
 
     path('deletejersey/<int:pk>/',
          DeleteJersey.as_view(), name='DeleteJersey'),
+
+    path('clubs/',
+         ClubListView.as_view(), name='ClubList'),
+
+    path('club/<int:pk>/',
+         ClubDetailView.as_view(), name='ClubDetail'),
 ]

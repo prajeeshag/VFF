@@ -1,0 +1,84 @@
+{% extends 'registration/base.html' %}
+
+{% load thumbnail %}
+
+{% block content %}
+
+<div class="col-12 p-3 justify-content-center">
+
+	<div class="card w-auto mb-4 ">
+		<div class="card-header text-dark text-center h2 bg-warning">{{object}}</div>
+    <div class="card-body">
+			<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{object.clubdetails.contact_number}}</p>
+			<p class="card-title text-secondary h6"><strong>Address: </strong> {{object.clubdetails.address}}</p>
+			<p class="card-title text-secondary h6"><strong>Year of Formation: </strong> {{object.clubdetails.date_of_formation}}</p>
+    </div>
+  </div>
+
+  <div class="rounded border p-3 mb-4 text-center">
+		<div class="bg-info text-center mb-2 p-2 h4 rounded">Jersey</div>
+		<div class="row">
+		{% if jerseypictures|length > 0 %}
+		{% for jersey in jerseypictures %}
+			<div class="col-md-4 mb-4">
+				<div class="card w-auto shadow ">
+					<div class="card-header text-dark h5">Jersery {{forloop.counter}}</div>
+					{% thumbnail jersey.image "300x300" as im %}
+					<div class="p-2 m-auto" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+					{% endthumbnail %}
+  			</div>
+  		</div>
+		{% endfor %}
+		{% endif %}
+  	</div>
+  </div>
+
+		
+  <div class="rounded border p-3 mb-4">
+		<div class="bg-info text-center mb-2 p-2 h4 rounded">Officials</div>
+		<div class="row">
+	  {% for official in officials %}
+			<div class="col-md-4 mb-3">
+				<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow " style="text-decoration:none">
+					<div class="card-header text-dark h5">{{official.role}}</div>
+					{% thumbnail official.profilepicture.image "300x300" as im %}
+					<div class="p-2 m-auto" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+					{% endthumbnail %}
+					<div class="card-body bg-light">
+  		  	  <div class="card-title h5 text-center text-dark">{{official}}</div>
+  		  	</div>
+				</a>
+			</div>
+		{% endfor %}
+		</div>
+  </div>
+
+  <div class="rounded border p-3 mb-4">
+		<div class="bg-info text-center mb-2 p-2 h4 rounded">Players</div>
+		<div class="row">
+			{% for official in players %}
+			<div class="col-md-4 mb-3">
+				<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow " style="text-decoration:none">
+					<div class="card-header text-dark h4"> {{official.role }} {{ forloop.counter }}</div>
+					{% thumbnail official.profilepicture.image "300x300" as im %}
+					<div class="p-2 m-auto" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+					{% endthumbnail %}
+					<div class="card-body">
+						<div class="card-title h5 text-center text-dark">{{official}}</div>
+						<p class="card-title text-secondary h6">Favourite position: {{official.Player.favorite_position}}</p>
+						<p class="card-title text-secondary h6">Prefered foot: {{official.Player.prefered_foot}}</p>
+					</div>
+				</a>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+
+{% endblock %}

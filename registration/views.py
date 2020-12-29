@@ -40,6 +40,16 @@ class HomePageView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+class ClubListView(LoginRequiredMixin, TemplateView):
+    template_name = 'registration/club_list.html'
+    login_url = reverse_lazy('login')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['clubs'] = Club.objects.all()
+        return ctx
+
+
 class SignUpView(SuccessMessageMixin, CreateView):
     form_class = SignUpForm
     success_url = reverse_lazy('login')
@@ -307,4 +317,21 @@ class OfficialsProfileView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx['edit'] = self.object.club.user == self.request.user
+        return ctx
+
+
+class ClubDetailView(LoginRequiredMixin, DetailView):
+    template_name = 'registration/club_details.html'
+    login_url = reverse_lazy('login')
+    model = Club
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['jerseypictures'] = self.object.jerseypictures.all()
+        ctx['clubdetails'] = self.object.clubdetails
+        ctx['players'] = self.object.Officials.filter(
+            role="Player")
+        ctx['officials'] = self.object.Officials.exclude(
+            role="Player")
         return ctx
