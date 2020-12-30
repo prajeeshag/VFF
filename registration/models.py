@@ -1,6 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 from django.core.files.images import get_image_dimensions
-from django.contrib.auth.models import User
 import datetime
 import posixpath
 from django.conf import settings
@@ -8,7 +8,7 @@ from django.conf import settings
 
 class Club(models.Model):
     user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name='club')
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='club')
     club_name = models.CharField(
         max_length=50, blank=False, help_text="Name of the Club")
 
@@ -35,6 +35,10 @@ class Club(models.Model):
             if official.is_manager():
                 return official
         return None
+
+    def total_players(self):
+        players = self.Officials.filter(role="Player")
+        return players.count()
 
 
 class ClubDetails(models.Model):
@@ -75,7 +79,7 @@ class Officials(models.Model):
     club = models.ForeignKey(Club, blank=False,
                              on_delete=models.CASCADE, related_name="Officials")
 
-    user = models.OneToOneField(User, blank=True, null=True,
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, blank=True, null=True,
                                 on_delete=models.CASCADE, related_name="Official")
 
     role = models.CharField(max_length=10, choices=role_choices)
