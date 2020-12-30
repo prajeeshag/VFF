@@ -12,6 +12,7 @@
 			<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{object.clubdetails.contact_number}}</p>
 			<p class="card-title text-secondary h6"><strong>Address: </strong> {{object.clubdetails.address}}</p>
 			<p class="card-title text-secondary h6"><strong>Year of Formation: </strong> {{object.clubdetails.date_of_formation}}</p>
+			<p class="card-title text-secondary h6"><strong>Total Players : </strong> {{object.total_players}}</p>
     </div>
   </div>
 
@@ -73,6 +74,7 @@
 						<div class="card-title h5 text-center text-dark">{{official}}</div>
 						<p class="card-title text-secondary h6">Favourite position: {{official.Player.favorite_position}}</p>
 						<p class="card-title text-secondary h6">Prefered foot: {{official.Player.prefered_foot}}</p>
+						<p class="card-title text-secondary h6">Age: {{official.get_age}}</p>
 					</div>
 				</a>
 			</div>

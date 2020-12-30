@@ -17,6 +17,8 @@
 
 		<link rel="stylesheet" type="text/css" href="{% static 'hijack/hijack-styles.css' %}" />
 
+		<script src="https://kit.fontawesome.com/53ea411157.js" crossorigin="anonymous"></script>
+
 	{% bootstrap_css %}
   {% block style %}	{% endblock %}
 
@@ -29,7 +31,7 @@
   </head>
   <body>
 		{% hijack_notification %}
-		<div class="container">
+		<div class="container-fluid">
 				{% block navbar %}
 					{% include "registration/topbar.html" %}
 			  {% endblock %}
