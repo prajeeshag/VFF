@@ -1,0 +1,22 @@
+{% extends 'registration/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+	
+	<h2 class="py-3">Update and verify email for account {{ user }}</h2>
+	{% if user.verification_email_send %}
+		<div class="p-3">
+			<p> A verification email has already been sent to {{ user.email }} </p>
+			<a href="{% url 'verifyemail' reset='1' %}" class="btn btn-link">Click to send again</a>
+		</div>
+	{% else %}
+  <form method="post">
+    {% csrf_token %}
+		{{ form|crispy }}
+		<div class="text-center">
+			<button type="submit" class="btn btn-primary mb-4 btn-lg">Submit</button>
+		</div>
+  </form>
+	{% endif %}
+{% endblock %}

@@ -2,11 +2,11 @@ from django.urls import path
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.views import PasswordChangeView
 
-from .views import (SignUpView, HomePageView, AddOfficials,
+from .views import (SignUpViewPersonal, HomePageView, AddOfficials,
                     UpdateOfficials, UpdateClubDetails, OfficialsProfileView,
                     UpdateOfficialsImage, AddJersey, UpdateJersey, DeleteOfficials,
                     DeleteJersey, UpdateAgeProof, UpdateAddressProof,
-                    ClubListView, ClubDetailView,
+                    ClubListView, ClubDetailView, VerifyEmail,
                     )
 
 urlpatterns = [
@@ -14,7 +14,7 @@ urlpatterns = [
     path('login/', LoginView.as_view(redirect_authenticated_user=True), name='login'),
     path('pwdchange/',
          PasswordChangeView.as_view(template_name='registration/pwd_change_form.html'), name='pwdchange'),
-    path('signup/', SignUpView.as_view(), name='signup'),
+    path('signup/', SignUpViewPersonal.as_view(), name='signup'),
     path('home/', HomePageView.as_view(), name='home'),
     path('addofficials/<str:role>/', AddOfficials.as_view(), name='AddOfficials'),
 
@@ -53,4 +53,10 @@ urlpatterns = [
 
     path('club/<int:pk>/',
          ClubDetailView.as_view(), name='ClubDetail'),
+
+    path('verifyemail/',
+         VerifyEmail.as_view(), name='verifyemail'),
+
+    path('verifyemail/<int:reset>/',
+         VerifyEmail.as_view(), name='verifyemail'),
 ]

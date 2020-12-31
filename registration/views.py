@@ -9,12 +9,19 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseForbidden
+from django.contrib.auth import get_user_model
+from django.shortcuts import redirect, render
+from django.contrib.auth.tokens import default_token_generator
+
+from django_email_verification import sendConfirm
+
+from users.decorators import verified_email_required
 
 
 from .forms import (
-    SignUpForm, OfficialsCreationForm, PlayerCreationForm,
+    SignUpFormClub, OfficialsCreationForm, PlayerCreationForm,
     OfficialsUpdateForm, PlayerUpdateForm, ProfilePictureForm,
-    AddressProofForm, AgeProofForm,
+    AddressProofForm, AgeProofForm, SignUpFormPersonal,
 )
 from .models import (
     Officials, PlayerInfo, Club, ClubDetails, JerseyPicture,
@@ -22,6 +29,7 @@ from .models import (
 )
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class HomePageView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/home.html'
     login_url = reverse_lazy('login')
@@ -40,6 +48,7 @@ class HomePageView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class ClubListView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/club_list.html'
     login_url = reverse_lazy('login')
@@ -50,14 +59,16 @@ class ClubListView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
-class SignUpView(SuccessMessageMixin, CreateView):
-    form_class = SignUpForm
+class SignUpViewClub(SuccessMessageMixin, CreateView):
+    form_class = SignUpFormClub
     success_url = reverse_lazy('login')
     template_name = 'registration/signup.html'
     success_message = 'User has been created'
 
     def form_valid(self, form):
         user = form.save(commit=False)
+        User = get_user_model()
+        user.user_type = User.CLUB
         club_name = form.cleaned_data['club_name']
         address = form.cleaned_data['address']
         contact_number = form.cleaned_data['contact_number']
@@ -68,6 +79,24 @@ class SignUpView(SuccessMessageMixin, CreateView):
         return super().form_valid(form)
 
 
+class SignUpViewPersonal(SuccessMessageMixin, CreateView):
+    form_class = SignUpFormPersonal
+    success_url = reverse_lazy('login')
+    template_name = 'registration/signup.html'
+    success_message = 'User has been created'
+
+    def form_valid(self, form):
+        user = form.save(commit=False)
+        User = get_user_model()
+        user.user_type = User.PERSONAL
+        user.save()
+        sendConfirm(user)
+        user.verification_email_send = True
+        user.save()
+        return super().form_valid(form)
+
+
+@method_decorator(verified_email_required, name='dispatch')
 class AddJersey(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = JerseyPicture
     fields = ['image']
@@ -83,6 +112,7 @@ class AddJersey(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse('home')
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class DeleteJersey(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = JerseyPicture
     login_url = reverse_lazy('login')
@@ -99,6 +129,7 @@ class DeleteJersey(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return reverse('home')
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class UpdateJersey(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = JerseyPicture
     fields = ['image']
@@ -116,6 +147,7 @@ class UpdateJersey(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('home')
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class AddOfficials(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     login_url = reverse_lazy('login')
     form_class = OfficialsCreationForm
@@ -173,6 +205,7 @@ class AddOfficials(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.pk})
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ClubDetails
     fields = ['address', 'contact_number', 'date_of_formation']
@@ -190,6 +223,7 @@ class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('home')
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class UpdateAddressProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = AddressProof
     form_class = AddressProofForm
@@ -207,6 +241,7 @@ class UpdateAddressProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class UpdateAgeProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = AgeProof
     form_class = AgeProofForm
@@ -224,6 +259,7 @@ class UpdateAgeProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class UpdateOfficialsImage(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ProfilePicture
     form_class = ProfilePictureForm
@@ -241,6 +277,7 @@ class UpdateOfficialsImage(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class DeleteOfficials(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     login_url = reverse_lazy('login')
     model = Officials
@@ -257,6 +294,7 @@ class DeleteOfficials(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class UpdateOfficials(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     login_url = reverse_lazy('login')
     model = Officials
@@ -310,6 +348,7 @@ class UpdateOfficials(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().form_valid(form)
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class OfficialsProfileView(LoginRequiredMixin, DetailView):
     template_name = 'registration/officials_profile.html'
     login_url = reverse_lazy('login')
@@ -321,6 +360,7 @@ class OfficialsProfileView(LoginRequiredMixin, DetailView):
         return ctx
 
 
+@method_decorator(verified_email_required, name='dispatch')
 class ClubDetailView(LoginRequiredMixin, DetailView):
     template_name = 'registration/club_details.html'
     login_url = reverse_lazy('login')
@@ -335,3 +375,32 @@ class ClubDetailView(LoginRequiredMixin, DetailView):
         ctx['officials'] = self.object.Officials.exclude(
             role="Player")
         return ctx
+
+
+@method_decorator(verified_email_required, name='dispatch')
+class VerifyEmail(LoginRequiredMixin, UpdateView):
+    model = get_user_model()
+    fields = ['email']
+    template_name = 'registration/email_verify.html'
+    success_url = reverse_lazy('login')
+
+    def dispatch(self, request, *args, **kwargs):
+        reset = kwargs.get('reset', 0) == 1
+
+        if self.request.user.email_verified:
+            return redirect('home')
+        elif reset:
+            self.request.user.verification_email_send = False
+            self.request.user.save()
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        user = form.save()
+        sendConfirm(user)
+        user.verification_email_send = True
+        user.save()
+        return super().form_valid(form)

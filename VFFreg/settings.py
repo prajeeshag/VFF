@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+from .local_settings import *
 from pathlib import Path
 import os
 
@@ -46,8 +47,10 @@ INSTALLED_APPS = [
     'hijack',
     'compat',
     'django_unused_media',
+    'users.apps.UsersConfig',
     'registration.apps.RegistrationConfig',
     'django_cleanup.apps.CleanupConfig',
+    'django_email_verification',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +152,6 @@ BOOTSTRAP4 = {
     'javascript_in_head': True,
 }
 HIJACK_USE_BOOTSTRAP = True
+
+AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = ('users.backends.AuthBackend',)

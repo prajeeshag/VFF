@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
 from bootstrap_datepicker_plus import DatePickerInput
 
 from .models import (
@@ -13,7 +15,7 @@ class ImageWidget(forms.ClearableFileInput):
     template_name = 'widgets/image.html'
 
 
-class SignUpForm(UserCreationForm):
+class SignUpFormClub(UserCreationForm):
 
     club_name = forms.CharField(
         label='Name of the Club', max_length=100, required=True)
@@ -26,9 +28,15 @@ class SignUpForm(UserCreationForm):
         label='Contact number', max_length=10, min_length=10, required=True)
 
     class Meta:
-        model = User
-        fields = ('username', 'club_name', 'address',
+        model = get_user_model()
+        fields = ('username', 'club_name', 'address', 'email',
                   'contact_number', 'password1', 'password2')
+
+
+class SignUpFormPersonal(UserCreationForm):
+    class Meta:
+        model = get_user_model()
+        fields = ('username', 'email', 'password1', 'password2')
 
 
 class ProfilePictureForm(forms.ModelForm):
