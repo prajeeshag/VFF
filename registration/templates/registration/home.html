@@ -7,143 +7,33 @@
 <div class="col-12 p-3 justify-content-center">
 {% if user.is_staff %}
 	{% include "registration/home_admin.html" %}
-{% else %}
-	<div class="card w-auto mb-4 ">
-		<div class="card-header text-dark text-center h2 bg-warning">{{user.club}}</div>
-    <div class="card-body">
-			<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{clubdetails.contact_number}}</p>
-			<p class="card-title text-secondary h6"><strong>Address: </strong> {{clubdetails.address}}</p>
-			<p class="card-title text-secondary h6"><strong>Year of Formation: </strong> {{clubdetails.date_of_formation}}</p>
-			<a href="{% url 'UpdateClubDetails' clubdetails.pk %}" class="btn btn-primary">Edit details</a>
-    </div>
-  </div>
-
-  <div class="rounded border p-3 mb-4 text-center">
-		<div class="bg-info text-center mb-2 p-2 h4 rounded">Jersey</div>
-		<div class="row">
-		{% if jerseypictures|length > 0 %}
-		  {% for jersey in jerseypictures %}
-			<div class="col-md-4 mb-4">
-				<div class="card w-auto shadow ">
-					<div class="card-header text-dark h5">Jersery {{forloop.counter}}</div>
-					{% thumbnail jersey.image "300x300" as im %}
-					<div class="p-2 m-auto" style="max-width: 300px;">
-						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
-					</div>
-					{% endthumbnail %}
-  			  <div class="card-body">
-						<a href="{% url 'UpdateJersey' jersey.pk %}" class="btn btn-primary">Change</a>
-						<a href="{% url 'DeleteJersey' jersey.pk %}" class="btn btn-warning">Delete</a>
-  			  </div>
-  			</div>
-  		</div>
+{% elif user.is_club %}
+	{% include "registration/home_club.html" %}
+{% elif user.is_personal %}
+  {% if user.Official %}
+	{% include "registration/officials_home.html" with object=user.Official %}
+	{% else %}
+	<div> 
+		<div class="h4">Accept the invitation to link your profile and thus join your club</div>
+		<div>
+			{% with invitations=user.invitations.all %}
+			{% if invitations %}
+			<ul>
+			{% for invi in invitations %}
+			<li>
+			<p>Invitation from club {{ invi.club }}. If you accept the invitation your profile will be linked to <a href="{% url  'OfficialsProfileView' invi.profile.pk %}">{{ invi.profile }}</a>. 
+			<a href="{% url 'acceptinvitation' invi.profile.pk %}" class="px-2" >Accept</a>
+			</p>
+			</li>
 			{% endfor %}
-		{% endif %}
-
-		{% if jerseypictures|length < 3 %}
-			<div class="col-md-4 mb-4">
-				<div class="card w-auto shadow ">
-					<div class="card-header text-dark h5">Jersery {{jerseypictures|length|add:"1"}}</div>
-  			  <div class="card-body">
-						<p class="card-text text-dark">Add upto three jersey. Atleast 1 jersey is mandatory.</p>
-						<a href={% url 'AddJersey' %} class='btn btn-primary mb-2'>Add</a>
-  			  </div>
-  			</div>
-		{% endif %}
-  	</div>
-  </div>
-
-		
-  <div class="rounded border p-3 mb-4">
-	<div class="bg-info text-center mb-2 p-2 h4 rounded">Officials</div>
-  <div class="row">
-	  {% for official in officials %}
-		<div class="col-md-4 mb-3">
-			<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow " style="text-decoration:none">
-				<div class="card-header text-dark h5">{{official.role}}</div>
-				{% thumbnail official.profilepicture.image "300x300" as im %}
-				<div class="p-2 m-auto" style="max-width: 300px;">
-					<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
-				</div>
-				{% endthumbnail %}
-  		  <div class="card-body bg-light">
-  		    <div class="card-title h5 text-center text-dark">{{official}}</div>
-  		  </div>
-  		</a>
-  	</div>
-		{% endfor %}
-
-		{% if not user.club.president %}
-		<div class="col-md-4 mb-3">
-			<div class="card w-auto shadow ">
-				<div class="card-header text-dark h5">President</div>
-  	  	<div class="card-body">
-  		    <p class="card-title text-danger">President of the club</p>
-					<a href={% url 'AddOfficials' 'President' %} class="btn btn-primary">Add</a>
-  	  	</div>
-			</div>
-  	</div>
-		{% endif %}
-
-		{% if not user.club.secretary %}
-		<div class="col-md-4 mb-3">
-			<div class="card w-auto shadow ">
-				<div class="card-header text-dark h5">Secretary</div>
-  	  	<div class="card-body">
-					<p class="card-text text-danger">Secretary of the club.</p>
-					<a href={% url 'AddOfficials' 'Secretary' %} class="btn btn-primary">Add</a>
-  	  	</div>
-			</div>
-  	</div>
-		{% endif %}
-
-		{% if not user.club.manager %}
-		<div class="col-md-4 mb-3">
-			<div class="card w-auto shadow ">
-				<div class="card-header text-dark h5">Manager</div>
-  	  	<div class="card-body">
-					<p class="card-text text-danger">Manager of the Football Team.</p>
-					<a href={% url 'AddOfficials' 'Manager' %} class="btn btn-primary">Add</a>
-  	  	</div>
-			</div>
-  	</div>
-		{% endif %}
-  </div>
-  </div>
-
-  <div class="rounded border p-3 mb-4">
-	<div class="bg-info text-center mb-2 p-2 h4 rounded">Players</div>
-  <div class="row">
-	  {% for official in players %}
-		<div class="col-md-4 mb-3">
-		<a href="{% url 'OfficialsProfileView' official.pk %}" class="card w-auto shadow " style="text-decoration:none">
-			<div class="card-header text-dark h4"> {{official.role }} {{ forloop.counter }}</div>
-			{% thumbnail official.profilepicture.image "300x300" as im %}
-			<div class="p-2 m-auto" style="max-width: 300px;">
-			<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
-			</div>
-			{% endthumbnail %}
-  	  <div class="card-body">
-  		  <div class="card-title h5 text-center text-dark">{{official}}</div>
-			  <p class="card-title text-secondary h6">Favourite position: {{official.Player.favorite_position}}</p>
-			  <p class="card-title text-secondary h6">Prefered foot: {{official.Player.prefered_foot}}</p>
-  	  </div>
-  	</a>
+			</ul>
+			{% else %}
+			<p class="text-danger">You have no invitations from any club yet. Ask you club admin to sent invitation.</p>
+			{% endif %}
+			{% endwith %}
 		</div>
-		{% endfor %}
-
-		{% if players|length < 25	%}
-		<div class="col-md-4 mb-3">
-		<div class="card w-auto shadow">
-			<div class="card-header h4"> Player {{ players|length|add:"1" }} </div>
-  	  <div class="card-body">
-  	    <p class="card-title">A minimum of 15 players is required for club registration. Maximum 25 players can be added.</p>
-				<a href={% url 'AddOfficials' 'Player' %} class="btn btn-primary"> Add </a>
-  	  </div>
-  	</div>
-		</div>
-		{% endif %}
 	</div>
+	{% endif %}
 {% endif %}
 </div>
 {% endblock %}

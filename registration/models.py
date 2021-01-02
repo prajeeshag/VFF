@@ -76,7 +76,7 @@ class Officials(models.Model):
     occupation = models.CharField(
         max_length=100, help_text="Occupation", blank=True)
 
-    club = models.ForeignKey(Club, blank=False,
+    club = models.ForeignKey(Club, blank=True, null=True,
                              on_delete=models.CASCADE, related_name="Officials")
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, blank=True, null=True,
@@ -208,3 +208,28 @@ class JerseyPicture(AbstractImage):
 
     def __str__(self):
         return "Jersey of %s" % (self.user,)
+
+
+class Invitations(models.Model):
+    player = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='invitations',
+        blank=False, null=False)
+    club = models.ForeignKey(
+        Club,
+        on_delete=models.CASCADE,
+        related_name='invitations',
+        blank=False, null=False)
+    profile = models.OneToOneField(
+        Officials,
+        on_delete=models.CASCADE,
+        related_name='invitation',
+        blank=True, null=True
+    )
+
+    class Meta:
+        unique_together = ['player', 'club']
+
+    def __str__(self):
+        return "Invitation for {} by {} ".format(self.player, self.club)

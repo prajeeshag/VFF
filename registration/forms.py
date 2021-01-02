@@ -7,7 +7,7 @@ from bootstrap_datepicker_plus import DatePickerInput
 
 from .models import (
     Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
-    AgeProof, AddressProof,
+    AgeProof, AddressProof, Invitations,
 )
 
 
@@ -94,16 +94,6 @@ class JerseyForm(forms.ModelForm):
         }
 
 
-class OfficialsUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Officials
-        fields = ['first_name', 'last_name', 'address',
-                  'phone_number', 'date_of_birth', 'email',
-                  'occupation']
-        widgets = {
-            'date_of_birth': DatePickerInput()}
-
-
 class OfficialsCreationForm(forms.ModelForm):
     image = forms.ImageField(max_length=255, label='Photo')
     x1 = forms.IntegerField(min_value=0, widget=forms.HiddenInput, initial=0)
@@ -138,13 +128,20 @@ class PlayerCreationForm(OfficialsCreationForm):
     age_proof = forms.ImageField(help_text="Documents for age proof")
 
 
-class PlayerUpdateForm(OfficialsUpdateForm):
-    height = forms.IntegerField(
-        required=True, min_value=100, max_value=200,
-        help_text="Height in Centimeters")
-    weight = forms.IntegerField(
-        required=True, help_text="Weight in Kilograms")
-    prefered_foot = forms.ChoiceField(
-        choices=PlayerInfo.foot_choices, required=True)
-    favorite_position = forms.ChoiceField(
-        choices=PlayerInfo.position_choices, required=True)
+class LinkPlayerForm(forms.ModelForm):
+    class Meta:
+        model = Invitations
+        fields = ['player', 'profile']
+
+        widgets = {
+            'profile': forms.HiddenInput(),
+        }
+
+    def __init__(self, club, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        Users = get_user_model()
+        self.fields['player'].queryset = Users.objects.filter(
+            Official__isnull=True).filter(
+            club__isnull=True).filter(
+            is_staff=False).exclude(
+            invitations__club=club)

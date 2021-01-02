@@ -3,10 +3,10 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.views import PasswordChangeView
 
 from .views import (SignUpViewPersonal, HomePageView, AddOfficials,
-                    UpdateOfficials, UpdateClubDetails, OfficialsProfileView,
-                    UpdateOfficialsImage, AddJersey, UpdateJersey, DeleteOfficials,
-                    DeleteJersey, UpdateAgeProof, UpdateAddressProof,
+                    UpdateClubDetails, OfficialsProfileView,
+                    AddJersey, UpdateJersey, LinkPlayer,
                     ClubListView, ClubDetailView, VerifyEmail,
+                    DeleteJersey, DeleteInvitation, AcceptInvitation,
                     )
 
 urlpatterns = [
@@ -18,20 +18,27 @@ urlpatterns = [
     path('home/', HomePageView.as_view(), name='home'),
     path('addofficials/<str:role>/', AddOfficials.as_view(), name='AddOfficials'),
 
-    path('updateofficials/<int:pk>/',
-         UpdateOfficials.as_view(), name='UpdateOfficials'),
+    path('linkplayer/<int:pk>/',
+         LinkPlayer.as_view(), name='linkplayer'),
 
-    path('deleteofficials/<int:pk>/',
-         DeleteOfficials.as_view(), name='DeleteOfficials'),
+    path('DeleteInvitation/<int:pk>/',
+         DeleteInvitation.as_view(), name='deleteinvitation'),
 
-    path('updateimage/<int:pk>/',
-         UpdateOfficialsImage.as_view(), name='UpdateOfficialsImage'),
+    path('AcceptInvitation/<int:pk>/',
+         AcceptInvitation.as_view(), name='acceptinvitation'),
 
-    path('updateageproof/<int:pk>/',
-         UpdateAgeProof.as_view(), name='UpdateAgeProof'),
 
-    path('updateaddressproof/<int:pk>/',
-         UpdateAddressProof.as_view(), name='UpdateAddressProof'),
+    # path('deleteofficials/<int:pk>/',
+    # DeleteOfficials.as_view(), name='DeleteOfficials'),
+
+    # path('updateimage/<int:pk>/',
+    # UpdateOfficialsImage.as_view(), name='UpdateOfficialsImage'),
+
+    # path('updateageproof/<int:pk>/',
+    # UpdateAgeProof.as_view(), name='UpdateAgeProof'),
+
+    # path('updateaddressproof/<int:pk>/',
+    # UpdateAddressProof.as_view(), name='UpdateAddressProof'),
 
     path('officials/<int:pk>/',
          OfficialsProfileView.as_view(), name='OfficialsProfileView'),

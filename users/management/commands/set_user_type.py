@@ -16,6 +16,7 @@ class Command(BaseCommand):
         for user in users:
             if not user.is_staff and hasattr(user, 'club'):
                 user.user_type = User.CLUB
+                user.email_verified = True
                 user.save()
                 print("User {} set as {}".format(
                     user.username, User.CLUB))
