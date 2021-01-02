@@ -18,12 +18,15 @@ from django.urls import path, include
 
 from django.conf import settings
 from django.conf.urls.static import static
+from django_email_verification import urls as mail_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('users.urls')),
     path('', include('registration.urls')),
     path('', include('django.contrib.auth.urls')),
     path('hijack/', include('hijack.urls', namespace='hijack')),
+    path('email/', include(mail_urls)),
 ]
 
 if settings.DEBUG:

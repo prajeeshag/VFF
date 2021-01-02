@@ -1,11 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth import get_user_model
+
 from bootstrap_datepicker_plus import DatePickerInput
 
 from .models import (
     Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
-    AgeProof, AddressProof,
+    AgeProof, AddressProof, Invitations,
 )
 
 
@@ -13,7 +15,7 @@ class ImageWidget(forms.ClearableFileInput):
     template_name = 'widgets/image.html'
 
 
-class SignUpForm(UserCreationForm):
+class SignUpFormClub(UserCreationForm):
 
     club_name = forms.CharField(
         label='Name of the Club', max_length=100, required=True)
@@ -26,9 +28,15 @@ class SignUpForm(UserCreationForm):
         label='Contact number', max_length=10, min_length=10, required=True)
 
     class Meta:
-        model = User
-        fields = ('username', 'club_name', 'address',
+        model = get_user_model()
+        fields = ('username', 'club_name', 'address', 'email',
                   'contact_number', 'password1', 'password2')
+
+
+class SignUpFormPersonal(UserCreationForm):
+    class Meta:
+        model = get_user_model()
+        fields = ('username', 'email', 'password1', 'password2')
 
 
 class ProfilePictureForm(forms.ModelForm):
@@ -86,16 +94,6 @@ class JerseyForm(forms.ModelForm):
         }
 
 
-class OfficialsUpdateForm(forms.ModelForm):
-    class Meta:
-        model = Officials
-        fields = ['first_name', 'last_name', 'address',
-                  'phone_number', 'date_of_birth', 'email',
-                  'occupation']
-        widgets = {
-            'date_of_birth': DatePickerInput()}
-
-
 class OfficialsCreationForm(forms.ModelForm):
     image = forms.ImageField(max_length=255, label='Photo')
     x1 = forms.IntegerField(min_value=0, widget=forms.HiddenInput, initial=0)
@@ -130,13 +128,20 @@ class PlayerCreationForm(OfficialsCreationForm):
     age_proof = forms.ImageField(help_text="Documents for age proof")
 
 
-class PlayerUpdateForm(OfficialsUpdateForm):
-    height = forms.IntegerField(
-        required=True, min_value=100, max_value=200,
-        help_text="Height in Centimeters")
-    weight = forms.IntegerField(
-        required=True, help_text="Weight in Kilograms")
-    prefered_foot = forms.ChoiceField(
-        choices=PlayerInfo.foot_choices, required=True)
-    favorite_position = forms.ChoiceField(
-        choices=PlayerInfo.position_choices, required=True)
+class LinkPlayerForm(forms.ModelForm):
+    class Meta:
+        model = Invitations
+        fields = ['player', 'profile']
+
+        widgets = {
+            'profile': forms.HiddenInput(),
+        }
+
+    def __init__(self, club, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        Users = get_user_model()
+        self.fields['player'].queryset = Users.objects.filter(
+            Official__isnull=True).filter(
+            club__isnull=True).filter(
+            is_staff=False).exclude(
+            invitations__club=club)

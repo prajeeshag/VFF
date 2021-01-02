@@ -1,9 +1,5 @@
-{% extends 'registration/base.html' %}
-
 {% load thumbnail %}
 {% load static %}
-
-{% block content %}
 
 	<a href="{% url 'home' %}" class="btn btn-link"> back </a>
   <div class="shadow rounded bg-light" style="overflow: hidden;">
@@ -13,7 +9,7 @@
 			<div class="profile-img">
 				<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-profile-picture.png' %}" {% endif %} alt="" width="200"/>
 				{% if object.profilepicture and edit %}
-				{% comment %}<a href="{% url 'UpdateOfficialsImage' object.profilepicture.pk %}" class="file btn btn-lg btn-primary"> Change Photo </a>{% endcomment %}
+				<a href="{% url 'UpdateOfficialsImage' object.profilepicture.pk %}" class="file btn btn-lg btn-primary"> Change Photo </a>
 				{% endif %}
 			</div>
 		</div>
@@ -77,6 +73,12 @@
 			{% endif %}
 		</div>
 
+		{% if edit %}
+		<div class="text-center mb-4"> 
+			<a href="{% url 'UpdateOfficials' object.pk %}" class="btn btn-primary"> Edit details</a> 
+		</div>
+		{% endif %}
+
 
 		{% if edit %}
 		<div class="row mx-3">
@@ -88,7 +90,7 @@
 					<div class="mb-4">
 						<div class="profile-img">
 							<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-document.png' %}" {% endif %} alt="" width="300"/>
-							{% comment %}<a href="{% url 'UpdateAddressProof' object.addressproof.pk %}" class="file btn btn-lg btn-primary"> Change </a>{% endcomment %}
+							<a href="{% url 'UpdateAddressProof' object.addressproof.pk %}" class="file btn btn-lg btn-primary"> Change </a>
 						</div>
 					</div>
 					{% endwith %}
@@ -104,7 +106,7 @@
 					<div class="mb-4">
 						<div class="profile-img">
 							<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-document.png' %}" {% endif %} alt="" width="300"/>
-							{% comment %}<a href="{% url 'UpdateAgeProof' object.ageproof.pk %}" class="file btn btn-lg btn-primary"> Change </a>{% endcomment %}
+							<a href="{% url 'UpdateAgeProof' object.ageproof.pk %}" class="file btn btn-lg btn-primary"> Change </a>
 						</div>
 					</div>
 					{% endwith %}
@@ -114,15 +116,13 @@
 		</div>
 		{% endif %}
 
-		{% comment %}{% if edit %}{% endcomment %}
-		{% comment %}<div class="text-center mb-4"> {% endcomment %}
-			{% comment %}<a href="{% url 'DeleteOfficials' object.pk %}" class="btn btn-warning"> Delete Profile </a> {% endcomment %}
-		{% comment %}</div>{% endcomment %}
-		{% comment %}{% endif %}{% endcomment %}
+		{% if edit %}
+		<div class="text-center mb-4"> 
+			<a href="{% url 'DeleteOfficials' object.pk %}" class="btn btn-warning"> Delete Profile </a> 
+		</div>
+		{% endif %}
 
   </div>
-
-{% endblock %}
 
 
 {% block style %}
