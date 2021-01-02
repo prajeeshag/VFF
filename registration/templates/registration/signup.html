@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-  <h2>Sign up</h2>
+  <h2>Sign up only for Players</h2>
   <form method="post">
     {% csrf_token %}
 		{{ form|crispy }}
