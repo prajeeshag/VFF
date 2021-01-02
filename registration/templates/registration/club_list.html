@@ -9,6 +9,7 @@
 		<div class="bg-info text-center mb-2 p-2 h4 rounded">Clubs Total: {{ clubs|length }}</div>
 		<div class="row">
 		  {% for club in clubs %}
+			{% if club.user.is_active %}
 			<div class="col-md-4 mb-3">
 				<a href="{% url 'ClubDetail' club.pk %}" class="card w-auto shadow ">
 					<div class="card-header text-dark h5 text-center">{{club}}</div>
@@ -18,6 +19,7 @@
   			</a>
   		</div>
 			{% endfor %}
+			{% endif %}
   	</div>
   </div>
 </div>
