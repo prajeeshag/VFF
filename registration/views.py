@@ -55,7 +55,7 @@ class ClubListView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['clubs'] = Club.objects.all()
+        ctx['clubs'] = Club.objects.filter(user__is_active=True)
         return ctx
 
 
