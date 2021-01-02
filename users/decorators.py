@@ -12,8 +12,6 @@ def verified_email_required(
         @login_required(redirect_field_name=redirect_field_name, login_url=login_url)
         def _wrapped_view(request, *args, **kwargs):
             if not request.user.is_staff and not request.user.email_verified:
-                sendConfirm(request.user)
-                request.user.verification_email_send = True
                 return render(request, "registration/email_verify.html")
             return view_func(request, *args, **kwargs)
         return _wrapped_view
