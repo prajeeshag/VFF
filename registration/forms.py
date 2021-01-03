@@ -143,5 +143,6 @@ class LinkPlayerForm(forms.ModelForm):
         self.fields['player'].queryset = Users.objects.filter(
             Official__isnull=True).filter(
             club__isnull=True).filter(
-            is_staff=False).exclude(
+            is_staff=False).filter(
+            email_verified=True).exclude(
             invitations__club=club)
