@@ -1,0 +1,32 @@
+
+{% extends 'registration/base.html' %}
+{% load my_tags %}
+
+{% block content_main %}
+
+{% with clubs|length|addstr:" clubs have registered so far for VFL2021 " as subtitle %}
+{% include "snippets/header-light.html" with title="Clubs" subtitle=subtitle icon='globe' %}
+{% endwith %}
+
+<div class="container">
+	<div class="row">
+		{% if user.club %}
+			<div class="col-12">
+			<h3 class="mb-0">My Club</h3>
+			<hr class="mt-2 mb-4" />
+			</div>
+			{% include 'registration/club_card.html' with club=user.club %}
+			<div class="col-12">
+			<h3 class="mb-0 mt-4">Other Clubs</h3>
+			<hr class="mt-2 mb-4" />
+			</div>
+		{% endif %}
+		{% for club in clubs %}
+			{% if club != user.club %}
+				{% include 'registration/club_card.html' with club=club %}
+			{% endif %}
+		{% endfor %}
+	</div>
+</div>
+
+{% endblock %}

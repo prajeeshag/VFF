@@ -1,0 +1,140 @@
+
+{% extends 'registration/base.html' %}
+
+{% load thumbnail %}
+
+{% block content_main %}
+
+{% include "snippets/header-simplified.html" with title=object %}
+
+<div class="container">
+
+	<div class="mb-4">
+		<div class="row">
+		<div class="col-10">
+			<h3 class="mb-0 mt-5">General Information</h3>
+		</div>
+		{% if user == object.user %}
+		<div class="col-2">
+			<p class="mb-0 mt-5 text-right">
+			<a href="{% url 'UpdateClubDetails' object.clubdetails.pk %}"><i class="fa fa-edit"></i></a>
+			</p>
+		</div>
+		{% endif %}
+		</div>
+		<hr class="mt-2 mb-4" />
+		<p class="card-title text-secondary h6"><strong>Address: </strong> {{object.clubdetails.address}}</p>
+		<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{object.clubdetails.contact_number}}</p>
+		<p class="card-title text-secondary h6"><strong>Year of Formation: </strong> {{object.clubdetails.date_of_formation}}</p>
+		<p class="card-title text-secondary h6"><strong>Total Players : </strong> {{object.total_players}}</p>
+		<p class="card-title text-secondary h6"><strong>U19 Players : </strong> {{object.num_under19_players}}</p>
+		<p class="card-title text-secondary h6"><strong>U21 Players : </strong> {{object.num_under21_players}}</p>
+	</div>
+
+	<div class="mb-4">
+		<div class="row">
+		<div class="col-10">
+			<h3 class="mb-0 mt-5">Jersey</h3>
+			{% if user == object.user and jerseypictures|length < 3 %}
+			<small> Add upto 3 Jerseys </small>
+			{% endif %}
+		</div>
+		{% if user == object.user and jerseypictures|length < 3 %}
+		<div class="col-2">
+			<p class="mb-0 mt-5 text-right">
+			<a href="{% url 'AddJersey' %}"><i class="fa fa-plus"></i></a>
+			</p>
+		</div>
+		{% endif %}
+		</div>
+		<hr class="mt-2 mb-4" />
+		<div class="row">
+			{% if jerseypictures|length > 0 %}
+			{% for jersey in jerseypictures %}
+			<div class="col-md-4 mb-4">
+				<div class="card w-auto">
+					{% thumbnail jersey.image "300x300" as im %}
+					<div class="p-2 m-auto" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+					<div class="card-body">
+						<a class="btn btn-link" href="{% url 'UpdateJersey' jersey.pk %}"><i class="fa fa-edit"></i> edit </a>
+						<a class="btn btn-link" href="{% url 'DeleteJersey' jersey.pk %}"><i class="fa fa-trash"></i> delete </a>
+					</div>
+					{% endthumbnail %}
+				</div>
+			</div>
+			{% endfor %}
+			{% endif %}
+		</div>
+	</div>
+
+
+	<div class="mb-4">
+		<div class="row">
+		<div class="col-12">
+			<h3 class="mb-0 mt-5">Club Officials</h3>
+		</div>
+		{% if user == object.user %}
+		<div class="col-12">
+		{% if not user.club.president %}
+			<a class="mr-2" href="{% url 'AddOfficials' 'President' %}"><i class="fa fa-plus"></i> President </a>
+		{% endif %}
+		{% if not user.club.secretary %}
+			<a class="mr-2" href="{% url 'AddOfficials' 'Secretary' %}"><i class="fa fa-plus"></i> Secretary </a>
+		{% endif %}
+		{% if not user.club.manager %}
+			<a class="mr-2" href="{% url 'AddOfficials' 'Manager' %}"><i class="fa fa-plus"></i> Manager </a>
+		{% endif %}
+		</div>
+		{% endif %}
+		</div>
+		<hr class="mt-2 mb-4" />
+		<div class="row">
+			{% for official in officials %}
+			<div class="col-md-4 mb-3">
+				<div class="card w-auto ">
+					{% thumbnail official.profilepicture.image "300x300" as im %}
+					<div class="p-2 m-auto" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+					{% endthumbnail %}
+					<div class="card-body text-center">
+						<p class="card-title">{{official.role}}</p>
+						<p class="card-title">{{official}}</p>
+						<p class="card-text "><i data-feather="phone"></i> {{ official.phone_number }}</p>
+						<a href="{% url 'OfficialsProfileView' official.pk %}" class="btn btn-link"> View Profile </a>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div class="mb-4">
+		<h3 class="mb-0 mt-5">Players</h3>
+		<hr class="mt-2 mb-4" />
+		<div class="row">
+			{% for official in players %}
+			<div class="col-md-4 mb-3">
+				<div class="card w-auto ">
+					{% thumbnail official.profilepicture.image "300x300" as im %}
+					<div class="p-2 m-auto" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+					{% endthumbnail %}
+					<div class="card-body text-center">
+						<div class="card-title">{{official}}</div>
+						<p class="card-text "><i data-feather="phone"></i> {{ official.phone_number }}</p>
+						<p class="card-text h6">Favourite position: {{official.Player.favorite_position}}</p>
+						<p class="card-text h6">Prefered foot: {{official.Player.prefered_foot}}</p>
+						<p class="card-text h6">Age: {{official.get_age}}</p>
+						<a href="{% url 'OfficialsProfileView' official.pk %}" class="btn btn-link"> View Profile </a>
+					</div>
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+{% endblock %}

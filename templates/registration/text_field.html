@@ -1,0 +1,12 @@
+
+{% load my_tags %}
+{% if col %}
+{% with col|addstr:" p-1 d-flex d-md-block justify-content-between" as class %}
+<div class="{{ class }}">
+{% endwith %}
+{% else %}
+	<div class="col-md-4 p-1 d-flex d-md-block justify-content-between">
+{% endif %}
+	<h6 class="d-inline d-md-block text-black-50">{{ name }}</h6>
+	<h5 class="d-inline d-md-block">{{ value|default:"---" }}</h5>
+</div>

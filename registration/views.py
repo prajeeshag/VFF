@@ -13,9 +13,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 
-from django_email_verification import sendConfirm
-
-from users.decorators import verified_email_required
+from allauth.account.decorators import verified_email_required
 
 
 from .forms import (
@@ -29,29 +27,71 @@ from .models import (
 )
 
 
-@method_decorator(verified_email_required, name='dispatch')
+class breadcrumbMixin(object):
+
+    breadcrumbs = []
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['breadcrumbs'] = self.get_breadcrumbs()
+        return ctx
+
+    def get_breadcrumbs(self):
+        breadcrumbs = [self.make_breadcrumbs(name='Home', viewname='home')]
+        for bc in self.breadcrumbs:
+            if bc[0] == 'Home':
+                continue
+            breadcrumbs.append(self.make_breadcrumbs(
+                name=bc[0], viewname=bc[1]))
+        return breadcrumbs
+
+    def make_breadcrumbs(self, name=None, viewname=None, obj=None):
+        bcname = name
+        if not bcname:
+            if obj:
+                bcname = str(obj)
+            else:
+                return None
+
+        if not viewname:
+            bclink = None
+        elif obj:
+            bclink = reverse(viewname, kwargs={'pk': obj.pk})
+        else:
+            bclink = reverse(viewname)
+
+        return (bcname, bclink)
+
+
+# @method_decorator(verified_email_required, name='dispatch')
 class HomePageView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/home.html'
     login_url = reverse_lazy('login')
 
+    def dispatch(self, request, *args, **kwargs):
+        return redirect('ClubList')
+
+
+class OfficialsListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
+    template_name = 'registration/officials_list.html'
+    login_url = reverse_lazy('login')
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        if self.request.user.is_staff:
-            ctx['clubs'] = Club.objects.all()
-        elif self.request.user.is_club():
-            ctx['jerseypictures'] = self.request.user.club.jerseypictures.all()
-            ctx['clubdetails'] = self.request.user.club.clubdetails
-            ctx['players'] = self.request.user.club.Officials.filter(
-                role="Player")
-            ctx['officials'] = self.request.user.club.Officials.exclude(
-                role="Player")
+        clubpk = self.kwargs.get('club', None)
+        if clubpk:
+            obj = get_object_or_404(Club, pk=clubpk)
+            ctx['officials'] = obj.Officials.all()
+        else:
+            ctx['officials'] = Officials.objects.all()
+
         return ctx
 
 
-@method_decorator(verified_email_required, name='dispatch')
-class ClubListView(LoginRequiredMixin, TemplateView):
+class ClubListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
     template_name = 'registration/club_list.html'
     login_url = reverse_lazy('login')
+    breadcrumbs = [('Club List', None), ]
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -89,18 +129,15 @@ class SignUpViewPersonal(SuccessMessageMixin, CreateView):
         user = form.save(commit=False)
         User = get_user_model()
         user.user_type = User.PERSONAL
-        user.verification_email_send = True
         user.save()
-        sendConfirm(user)
         return super().form_valid(form)
 
 
-@method_decorator(verified_email_required, name='dispatch')
-class AddJersey(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class AddJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, CreateView):
     model = JerseyPicture
     fields = ['image']
     login_url = reverse_lazy('login')
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/jersey_form.html'
     success_message = 'Jersey has been added'
 
     def form_valid(self, form):
@@ -110,12 +147,18 @@ class AddJersey(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def get_success_url(self):
         return reverse('home')
 
+    def get_breadcrumbs(self):
+        bc = super().get_breadcrumbs()
+        bc.append(self.make_breadcrumbs(
+            viewname='ClubDetail', obj=self.request.user.club))
+        bc.append(self.make_breadcrumbs(name='Add Jersey'))
+        return bc
 
-@method_decorator(verified_email_required, name='dispatch')
-class DeleteJersey(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
+
+class DeleteJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, DeleteView):
     model = JerseyPicture
     login_url = reverse_lazy('login')
-    template_name = 'registration/officials_confirm_delete.html'
+    template_name = 'registration/jersey_confirm_delete.html'
     success_message = 'Jersey has been deleted'
 
     def dispatch(self, request, *args, **kwargs):
@@ -125,15 +168,21 @@ class DeleteJersey(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('ClubDetail', kwargs={'pk': self.object.club.pk})
+
+    def get_breadcrumbs(self):
+        bc = super().get_breadcrumbs()
+        bc.append(self.make_breadcrumbs(
+            viewname='ClubDetail', obj=self.object.user))
+        bc.append(self.make_breadcrumbs(name='Delete Jersey'))
+        return bc
 
 
-@method_decorator(verified_email_required, name='dispatch')
-class UpdateJersey(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class UpdateJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, UpdateView):
     model = JerseyPicture
     fields = ['image']
     login_url = reverse_lazy('login')
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/jersey_form.html'
     success_message = 'Jersey has been updated'
 
     def dispatch(self, request, *args, **kwargs):
@@ -143,15 +192,28 @@ class UpdateJersey(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('ClubDetail', kwargs={'pk': self.object.club.pk})
+
+    def get_breadcrumbs(self):
+        bc = super().get_breadcrumbs()
+        bc.append(self.make_breadcrumbs(
+            viewname='ClubDetail', obj=self.object.user))
+        bc.append(self.make_breadcrumbs(name='Update Jersey'))
+        return bc
 
 
-@method_decorator(verified_email_required, name='dispatch')
-class AddOfficials(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+class AddOfficials(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, CreateView):
     login_url = reverse_lazy('login')
     form_class = OfficialsCreationForm
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/add_officials_form.html'
     success_message = 'Profile has been created'
+
+    def get_breadcrumbs(self):
+        bc = super().get_breadcrumbs()
+        bc.append(self.make_breadcrumbs(
+            viewname='ClubDetail', obj=self.request.user.club))
+        bc.append(self.make_breadcrumbs(name='Add '+self.kwargs['role']))
+        return bc
 
     def get_form_class(self):
         if self.kwargs['role'] == 'Player':
@@ -204,12 +266,11 @@ class AddOfficials(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.pk})
 
 
-@method_decorator(verified_email_required, name='dispatch')
-class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class UpdateClubDetails(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, UpdateView):
     model = ClubDetails
     fields = ['address', 'contact_number', 'date_of_formation']
     login_url = reverse_lazy('login')
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/club_detail_form.html'
     success_message = 'Club details has been updated'
 
     def dispatch(self, request, *args, **kwargs):
@@ -219,15 +280,21 @@ class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('home')
+        return reverse('ClubDetail', kwargs={'pk', self.object.pk})
+
+    def get_breadcrumbs(self):
+        bc = super().get_breadcrumbs()
+        bc.append(self.make_breadcrumbs(
+            viewname='ClubDetail', obj=self.object.club))
+        bc.append(self.make_breadcrumbs(name='details'))
+        return bc
 
 
-@method_decorator(verified_email_required, name='dispatch')
 class UpdateAddressProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = AddressProof
     form_class = AddressProofForm
     login_url = reverse_lazy('login')
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/address_proof_form.html'
     success_message = 'Address proof picture has been updated'
 
     def dispatch(self, request, *args, **kwargs):
@@ -240,12 +307,11 @@ class UpdateAddressProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
 
-@method_decorator(verified_email_required, name='dispatch')
 class UpdateAgeProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = AgeProof
     form_class = AgeProofForm
     login_url = reverse_lazy('login')
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/age_proof_form.html'
     success_message = 'Age proof picture has been updated'
 
     def dispatch(self, request, *args, **kwargs):
@@ -258,12 +324,11 @@ class UpdateAgeProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
 
-@method_decorator(verified_email_required, name='dispatch')
 class UpdateOfficialsImage(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ProfilePicture
     form_class = ProfilePictureForm
     login_url = reverse_lazy('login')
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/profile_picture_form.html'
     success_message = 'Profile picture has been updated'
 
     def dispatch(self, request, *args, **kwargs):
@@ -276,7 +341,6 @@ class UpdateOfficialsImage(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
 
-@method_decorator(verified_email_required, name='dispatch')
 class DeleteOfficials(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     login_url = reverse_lazy('login')
     model = Officials
@@ -293,11 +357,10 @@ class DeleteOfficials(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
 
-@method_decorator(verified_email_required, name='dispatch')
 class DeleteInvitation(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     login_url = reverse_lazy('login')
     model = Invitations
-    template_name = 'registration/officials_confirm_delete.html'
+    template_name = 'registration/invitation_confirm_delete.html'
     success_message = 'Invitations has been deleted'
 
     def dispatch(self, request, *args, **kwargs):
@@ -310,7 +373,6 @@ class DeleteInvitation(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
         return reverse('home')
 
 
-@method_decorator(verified_email_required, name='dispatch')
 class AcceptInvitation(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     login_url = reverse_lazy('login')
     model = Officials
@@ -334,11 +396,10 @@ class AcceptInvitation(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().form_valid(form)
 
 
-@method_decorator(verified_email_required, name='dispatch')
 class LinkPlayer(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     login_url = reverse_lazy('login')
     form_class = LinkPlayerForm
-    template_name = 'registration/officials_form.html'
+    template_name = 'registration/link_player_form.html'
     success_message = 'Official has been linked to a user'
 
     def get_form_kwargs(self):
@@ -369,23 +430,34 @@ class LinkPlayer(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return initial
 
 
-@method_decorator(verified_email_required, name='dispatch')
-class OfficialsProfileView(LoginRequiredMixin, DetailView):
+class OfficialsProfileView(LoginRequiredMixin, breadcrumbMixin, DetailView):
     template_name = 'registration/officials_profile.html'
     login_url = reverse_lazy('login')
     model = Officials
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['edit'] = self.object.club.user == self.request.user
         return ctx
 
+    def get_breadcrumbs(self):
+        bc = super().get_breadcrumbs()
+        bc.append(self.make_breadcrumbs(
+            viewname='ClubDetail', obj=self.object.club))
+        bc.append(self.make_breadcrumbs(name=self.object.role))
+        return bc
 
-@method_decorator(verified_email_required, name='dispatch')
-class ClubDetailView(LoginRequiredMixin, DetailView):
-    template_name = 'registration/club_details.html'
+
+class ClubDetailView(LoginRequiredMixin, breadcrumbMixin, DetailView):
+    template_name = 'registration/club_detail.html'
     login_url = reverse_lazy('login')
     model = Club
+    breadcrumbs = [('Club List', 'ClubList'), ]
+
+    def get_breadcrumbs(self):
+        bc = super().get_breadcrumbs()
+        bc.append(self.make_breadcrumbs(
+            viewname='ClubDetail', obj=self.object))
+        return bc
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -396,29 +468,3 @@ class ClubDetailView(LoginRequiredMixin, DetailView):
         ctx['officials'] = self.object.Officials.exclude(
             role="Player")
         return ctx
-
-
-class VerifyEmail(LoginRequiredMixin, UpdateView):
-    model = get_user_model()
-    fields = ['email']
-    template_name = 'registration/email_verify.html'
-    success_url = reverse_lazy('login')
-
-    def dispatch(self, request, *args, **kwargs):
-        reset = kwargs.get('reset', None)
-        if self.request.user.email_verified:
-            return redirect('home')
-        elif reset:
-            self.request.user.verification_email_send = False
-            self.request.user.save()
-
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_object(self, queryset=None):
-        return self.request.user
-
-    def form_valid(self, form):
-        user = form.save()
-        user.verification_email_send = True
-        sendConfirm(user)
-        return super().form_valid(form)

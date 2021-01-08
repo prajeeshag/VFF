@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block body %}
+	<body onload="document.forms['logout'].submit()">
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{% url 'account_logout' %}" name="logout">
+  {% csrf_token %}
+  {% if redirect_field_value %}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
+  {% endif %}
+</form>
+{% endblock %}

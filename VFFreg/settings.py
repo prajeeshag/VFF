@@ -38,6 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'django.contrib.staticfiles',
     'django.forms',
     'sorl.thumbnail',
@@ -50,8 +55,10 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'registration.apps.RegistrationConfig',
     'django_cleanup.apps.CleanupConfig',
-    'django_email_verification',
+    'widget_tweaks',
+    'mytags',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -68,7 +75,9 @@ ROOT_URLCONF = 'VFFreg.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -113,7 +122,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+SITE_ID = 2
 
+# Allauth options
+ACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -142,7 +157,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_REDIRECT_URL = '/home'
-LOGOUT_REDIRECT_URL = '/login'
+LOGOUT_REDIRECT_URL = 'accounts/login'
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
@@ -154,4 +169,7 @@ BOOTSTRAP4 = {
 HIJACK_USE_BOOTSTRAP = True
 
 AUTH_USER_MODEL = 'users.User'
-AUTHENTICATION_BACKENDS = ('users.backends.AuthBackend',)
+AUTHENTICATION_BACKENDS = (
+    'users.backends.AuthBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
