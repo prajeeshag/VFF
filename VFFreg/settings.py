@@ -122,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SITE_ID = 2
+SITE_ID = 3
 
 # Allauth options
 ACCOUNT_EMAIL_REQUIRED = True
