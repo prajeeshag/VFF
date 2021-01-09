@@ -17,7 +17,7 @@
 		{% if user == object.user %}
 		<div class="col-2">
 			<p class="mb-0 mt-5 text-right">
-			<a href="{% url 'UpdateClubDetails' object.clubdetails.pk %}"><i class="fa fa-edit"></i></a>
+			<a href="{% url 'UpdateClubDetails' object.clubdetails.pk %}"><i data-feather="edit"></i></a>
 			</p>
 		</div>
 		{% endif %}

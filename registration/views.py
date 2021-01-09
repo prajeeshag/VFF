@@ -82,8 +82,10 @@ class OfficialsListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
         if clubpk:
             obj = get_object_or_404(Club, pk=clubpk)
             ctx['officials'] = obj.Officials.all()
+            ctx['title'] = "Member's of {}".format(obj)
         else:
             ctx['officials'] = Officials.objects.all()
+            ctx['title'] = "Member's of VFL"
 
         return ctx
 
