@@ -1,0 +1,35 @@
+
+<div class="col-md-4">
+	<div class="card mb-4 card-header-actions">
+		<div class="card-header">
+			{{club}}
+
+			<div class="dropdown no-caret">
+				<button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<i data-feather="more-vertical"></i>
+				</button>
+				<div class="dropdown-menu dropdown-menu-right animated--fade-in-up" aria-labelledby="dropdownMenuButton">
+					{% if user.is_staff %}
+						<a class="dropdown-item" href="{% url 'officials_list_view' club=club.pk %}">list of people</a>
+					{% endif %}
+					{% if user.is_superuser %}
+					<form action="/hijack/{{ club.user.id }}/" method="post">
+						{% csrf_token %}
+						<button type="submit" class="dropdown-item text-danger">Hijack</button>
+					</form>
+					{% endif %}
+				</div>
+			</div>
+
+		</div>
+		<div class="card-body">
+			<p class="card-title text-grey h6"> <i class="fas fa-phone-alt"></i> {{club.get_contact_number}}</p>
+			<p class="card-title text-grey h6"> <strong>Total Players: </strong> {{club.total_players}}</p>
+			<p class="card-title text-grey h6"> <strong>U19 Players: </strong> {{club.num_under19_players}}</p>
+			<p class="card-title text-grey h6"> <strong>U21 Players: </strong> {{club.num_under21_players}}</p>
+			<div class="text-center">
+				<a class="btn btn-link" href="{% url 'ClubDetail' club.pk %}">View profile</a>
+			</div>
+		</div>
+	</div>
+</div>

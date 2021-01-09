@@ -40,6 +40,25 @@ class Club(models.Model):
         players = self.Officials.filter(role="Player")
         return players.count()
 
+    def get_contact_number(self):
+        if self.manager():
+            return "{} (Team Manager)".format(self.manager().phone_number)
+        return "{} (Club Admin)".format(self.clubdetails.contact_number)
+
+    def num_undern_players(self, n):
+        players = self.Officials.filter(role="Player")
+        num = 0
+        for player in players:
+            if player.get_age() <= n:
+                num = num + 1
+        return num
+
+    def num_under21_players(self):
+        return self.num_undern_players(21)
+
+    def num_under19_players(self):
+        return self.num_undern_players(19)
+
 
 class ClubDetails(models.Model):
     club = models.OneToOneField(
@@ -80,7 +99,7 @@ class Officials(models.Model):
                              on_delete=models.CASCADE, related_name="Officials")
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, blank=True, null=True,
-                                on_delete=models.CASCADE, related_name="Official")
+                                on_delete=models.SET_NULL, related_name="Official")
 
     role = models.CharField(max_length=10, choices=role_choices)
 
@@ -135,6 +154,12 @@ class PlayerInfo(models.Model):
 
     def __str__(self):
         return "%s's player info" % (self.official,)
+
+    def get_height(self):
+        return "{} cm".format(self.height)
+
+    def get_weight(self):
+        return "{} kg".format(self.weight)
 
 
 def get_image_upload_path(instance, filename):

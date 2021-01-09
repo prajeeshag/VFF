@@ -1,0 +1,23 @@
+{% load socialaccount %}
+{% get_providers as socialaccount_providers %}
+{% for provider in socialaccount_providers %}
+{% if provider.name == "Google" %}
+
+<a href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}" 
+	class="btn btn-icon btn-google mx-1">
+	<i class="fab fa-google fa-fw fa-sm"></i>
+</a>
+
+
+{% elif provider.name == "Facebook" %}
+
+<a href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}" 
+	class="btn btn-icon btn-facebook mx-1">
+	<i class="fab fa-facebook-f fa-fw fa-sm"></i>
+</a>
+
+{% else %}
+  <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}}" 
+     href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">{{provider.name}}</a>
+{% endif %}
+{% endfor %}

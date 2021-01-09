@@ -1,20 +1,14 @@
 from django.urls import path
-from django.contrib.auth.views import LoginView
 from django.contrib.auth.views import PasswordChangeView
 
-from .views import (SignUpViewPersonal, HomePageView, AddOfficials,
+from .views import (HomePageView, AddOfficials,
                     UpdateClubDetails, OfficialsProfileView,
                     AddJersey, UpdateJersey, LinkPlayer,
-                    ClubListView, ClubDetailView, VerifyEmail,
+                    ClubListView, ClubDetailView, OfficialsListView,
                     DeleteJersey, DeleteInvitation, AcceptInvitation,
                     )
 
 urlpatterns = [
-    path('', LoginView.as_view(redirect_authenticated_user=True)),
-    path('login/', LoginView.as_view(redirect_authenticated_user=True), name='login'),
-    path('pwdchange/',
-         PasswordChangeView.as_view(template_name='registration/pwd_change_form.html'), name='pwdchange'),
-    path('signup/', SignUpViewPersonal.as_view(), name='signup'),
     path('home/', HomePageView.as_view(), name='home'),
     path('addofficials/<str:role>/', AddOfficials.as_view(), name='AddOfficials'),
 
@@ -26,19 +20,6 @@ urlpatterns = [
 
     path('AcceptInvitation/<int:pk>/',
          AcceptInvitation.as_view(), name='acceptinvitation'),
-
-
-    # path('deleteofficials/<int:pk>/',
-    # DeleteOfficials.as_view(), name='DeleteOfficials'),
-
-    # path('updateimage/<int:pk>/',
-    # UpdateOfficialsImage.as_view(), name='UpdateOfficialsImage'),
-
-    # path('updateageproof/<int:pk>/',
-    # UpdateAgeProof.as_view(), name='UpdateAgeProof'),
-
-    # path('updateaddressproof/<int:pk>/',
-    # UpdateAddressProof.as_view(), name='UpdateAddressProof'),
 
     path('officials/<int:pk>/',
          OfficialsProfileView.as_view(), name='OfficialsProfileView'),
@@ -61,9 +42,9 @@ urlpatterns = [
     path('club/<int:pk>/',
          ClubDetailView.as_view(), name='ClubDetail'),
 
-    path('verifyemail/',
-         VerifyEmail.as_view(), name='verifyemail'),
+    path('officialslist/',
+         OfficialsListView.as_view(), name='officials_list_view'),
 
-    path('verifyemail/<int:reset>/',
-         VerifyEmail.as_view(), name='verifyemail'),
+    path('officialslist/<int:club>/',
+         OfficialsListView.as_view(), name='officials_list_view'),
 ]

@@ -1,0 +1,53 @@
+{% extends 'registration/base.html' %}
+{% load static %}
+{% load thumbnail %}
+
+{% block content_main %}
+
+{% include "snippets/header-simplified.html" with title=title %}
+
+<div class="container">
+	<div class="mb-4">
+		<div class="card-body">
+			<div class="datatable">
+				<table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Role</th>
+							<th>Club</th>
+							<th>Phone</th>
+							<th>Age</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<th>Name</th>
+							<th>Role</th>
+							<th>Club</th>
+							<th>Phone</th>
+							<th>Age</th>
+						</tr>
+					</tfoot>
+					<tbody>
+						{% for official in officials %}
+						<tr>
+							<td><a href="{% url 'OfficialsProfileView' official.pk %}">{{ official }}</a></td>
+							<td>{{ official.role }}</td>
+							<td>{{ official.club }}</td>
+							<td>{{ official.phone_number }}</td>
+							<td>{{ official.get_age }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+
+{% block scripts_extra %}
+	<script src=" {% static 'assets/demo/datatables-demo.js' %} "></script>
+{% endblock %}

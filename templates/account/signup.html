@@ -1,0 +1,60 @@
+
+{% extends 'account/auth_base.html' %}	
+
+{% load static %}
+{% load i18n %}
+{% load account socialaccount %}
+{% load widget_tweaks %}
+
+{% get_providers as socialaccount_providers %}
+
+{% block content_main %}
+<div id="layoutAuthentication_content">
+	<main>
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-xl-8 col-lg-9">
+					<!-- Social registration form-->
+					<div class="card my-5">
+						<div class="card-body p-5 text-center">
+							<div class="h2 font-weight-light mb-3">VFL</div>
+							<div class="h3 font-weight-light mb-3">Create an Account</div>
+							<div class="small text-muted mb-2">Sign in using...</div>
+							<!-- Social registration links-->
+							{% include "socialaccount/snippets/provider_list.html" with process="login" %}
+						</div>
+						<hr class="my-0" />
+						<div class="card-body p-5">
+							<div class="text-center small text-muted mb-4">...or enter your information below.</div>
+							<!-- Login form-->
+							<form method="POST" action="{% url 'account_signup' %}">
+								{% include "snippets/form_common.html" %}
+
+								{% for field in form.visible_fields %}
+								<div class="form-group">
+									{{ field | add_label_class:"text-gray-600 small" }}
+									{% render_field field class="form-control form-control-solid" %}
+								</div>
+								{% endfor %}
+
+								<!-- Form Group (form submission)-->
+								<div class="form-group d-flex align-items-center justify-content-between">
+									<div class="form-group"><a class="small" href=" {% url 'account_reset_password' %} ">Forgot your password?</a></div>
+									<button class="btn btn-primary" type="submit">Create Account</button>
+								</div>
+							</form>
+						</div>
+						<hr class="my-0" />
+						<div class="card-body px-5 py-4">
+							<div class="small text-center">
+								Have an account?
+								<a href=" {% url 'account_login' %} ">Sign in!</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</div>
+{% endblock %}

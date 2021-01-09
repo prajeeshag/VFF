@@ -1,0 +1,26 @@
+
+{% load widget_tweaks %}
+
+{% for hidden_field in form.hidden_fields %}
+{{ hidden_field  }}
+{% endfor %}
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger" role="alert">
+	{% for error in form.non_field_errors %}
+	{{ error }}
+	{% endfor %}
+</div>
+{% endif %}	
+
+{% for field in form.visible_fields %}
+{% if field.name != 'remember' %}
+<div class="form-group">
+	{% if label %} {{ field.label_tag }} {% endif %}
+	{% render_field field class="form-control form-control-solid" placeholder=field.label %}
+</div>
+{% endif %}
+{% endfor %}
+{% if redirect_field_value %}
+<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+{% endif %}
