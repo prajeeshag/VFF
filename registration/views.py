@@ -75,6 +75,10 @@ class HomePageView(LoginRequiredMixin, TemplateView):
 class OfficialsListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
     template_name = 'registration/officials_list.html'
     login_url = reverse_lazy('login')
+    breadcrumbs = [
+        ('Club List', 'ClubList'),
+        ('List of People', None),
+    ]
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -83,10 +87,11 @@ class OfficialsListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
             obj = get_object_or_404(Club, pk=clubpk)
             ctx['officials'] = obj.Officials.all()
             ctx['title'] = "Member's of {}".format(obj)
+            ctx['club'] = True
         else:
             ctx['officials'] = Officials.objects.all()
             ctx['title'] = "Member's of VFL"
-
+            ctx['club'] = False
         return ctx
 
 

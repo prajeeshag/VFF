@@ -15,8 +15,10 @@
 						<tr>
 							<th>Name</th>
 							<th>Role</th>
-							<th>Club</th>
 							<th>Phone</th>
+							{% if not club %}
+							<th>Club</th>
+							{% endif %}
 							<th>Age</th>
 						</tr>
 					</thead>
@@ -24,8 +26,10 @@
 						<tr>
 							<th>Name</th>
 							<th>Role</th>
-							<th>Club</th>
 							<th>Phone</th>
+							{% if not club %}
+							<th>Club</th>
+							{% endif %}
 							<th>Age</th>
 						</tr>
 					</tfoot>
@@ -34,8 +38,10 @@
 						<tr>
 							<td><a href="{% url 'OfficialsProfileView' official.pk %}">{{ official }}</a></td>
 							<td>{{ official.role }}</td>
-							<td>{{ official.club }}</td>
 							<td>{{ official.phone_number }}</td>
+							{% if not club %}
+							<td>{{ official.club }}</td>
+							{% endif %}
 							<td>{{ official.get_age }}</td>
 						</tr>
 						{% endfor %}
