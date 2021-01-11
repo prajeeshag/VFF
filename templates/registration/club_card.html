@@ -17,6 +17,7 @@
 						{% csrf_token %}
 						<button type="submit" class="dropdown-item text-danger">Hijack</button>
 					</form>
+					<a class="dropdown-item" href="{% url 'dp_edit_list' club.pk %}">Dp edit</a>
 					{% endif %}
 				</div>
 			</div>

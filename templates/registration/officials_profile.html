@@ -14,12 +14,19 @@
 
 
 <div class="container">
-	<div class="mb-4 text-center">
-		{% with image=object.profilepicture.image %}
-		<img {% if image %} src="{{ image.url }}" {% else %} src="{% static 'media/image/blank-profile-picture.png' %}" {% endif %} alt="" width="200"/>
-		{% endwith %}
-	</div>
 
+	<div class="mb-4 text-center">
+		{% with object.profilepicture as dp %}
+		{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}
+		<div class="p-2 m-auto" style="max-width: 300px;">
+			<img class="rounded-circle" src="{{ im.url }}" alt="Card image cap">
+			{% comment %}<img src="{{ im.url }}" alt="Card image cap">{% endcomment %}
+		</div>
+		{% endthumbnail %}
+		{% endwith %}
+		<a href="{% url 'dp_edit' object.profilepicture.pk %}"><i data-feather='edit-3'></i></a>
+	</div>
+	<hr/>
 	<div class="row mx-3">
 
 		{% with object.get_age|addstr:" Years" as value %}

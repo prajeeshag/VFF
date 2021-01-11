@@ -1,0 +1,18 @@
+{% load i18n %}
+{% load thumbnail %}
+
+<div id="{{ image_id }}" class="image-input">
+    {% if image_url %}
+				{% thumbnail image_url "300x300" upscale=False  as thumb %}
+        <img src="{{ thumb.url }}" alt="{% trans "thumbnail" %}" />
+				{% endthumbnail %}
+    {% else %}
+        <img alt="{% trans "thumbnail" %}"/>
+    {% endif %}
+    <div class="input-field mt-2">
+			<label class="file-upload-btn btn btn-outline-primary">
+					<i data-feather="file"></i> &nbsp; New file
+					{% include "django/forms/widgets/input.html" %}
+			</label>
+    </div>
+</div>

@@ -93,19 +93,7 @@
 		<div class="row">
 			{% for official in officials %}
 			<div class="col-md-4 mb-3">
-				<div class="card w-auto ">
-					{% thumbnail official.profilepicture.image "300x300" as im %}
-					<div class="p-2 m-auto" style="max-width: 300px;">
-						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
-					</div>
-					{% endthumbnail %}
-					<div class="card-body text-center">
-						<p class="card-title">{{official.role}}</p>
-						<p class="card-title">{{official}}</p>
-						<p class="card-text "><i data-feather="phone"></i> {{ official.phone_number }}</p>
-						<a href="{% url 'OfficialsProfileView' official.pk %}" class="btn btn-link"> View Profile </a>
-					</div>
-				</div>
+				{% include "registration/officials_card.html" with official=official %}
 			</div>
 			{% endfor %}
 		</div>
@@ -117,21 +105,7 @@
 		<div class="row">
 			{% for official in players %}
 			<div class="col-md-4 mb-3">
-				<div class="card w-auto ">
-					{% thumbnail official.profilepicture.image "300x300" as im %}
-					<div class="p-2 m-auto" style="max-width: 300px;">
-						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
-					</div>
-					{% endthumbnail %}
-					<div class="card-body text-center">
-						<div class="card-title">{{official}}</div>
-						<p class="card-text "><i data-feather="phone"></i> {{ official.phone_number }}</p>
-						<p class="card-text h6">Favourite position: {{official.Player.favorite_position}}</p>
-						<p class="card-text h6">Prefered foot: {{official.Player.prefered_foot}}</p>
-						<p class="card-text h6">Age: {{official.get_age}}</p>
-						<a href="{% url 'OfficialsProfileView' official.pk %}" class="btn btn-link"> View Profile </a>
-					</div>
-				</div>
+				{% include "registration/officials_card.html" with official=official %}
 			</div>
 			{% endfor %}
 		</div>

@@ -1,0 +1,27 @@
+
+{% load thumbnail %}
+
+<div class="card w-auto ">
+	{% with official.profilepicture as dp %}
+	{% thumbnail dp.image "300x300" upscale=False cropbox=dp.cropbox as im %}
+		<div class="p-2 m-auto text-center" style="max-width: 300px;">
+			<img class="card-img-top rounded-circle" src="{{ im.url }}" alt="Card image cap">
+		</div>
+		<hr/>
+	{% endthumbnail %}
+	{% endwith %}
+	<div class="card-body text-center">
+		{% if not official.is_player %}
+		<p class="card-title">{{official.role}}</p>
+		{% endif %}
+		<p class="card-title">{{official}}</p>
+		<p class="card-text "><i data-feather="phone"></i> {{ official.phone_number }}</p>
+		{% if official.is_player %}
+		<p class="card-text">Favourite position: {{official.Player.favorite_position}}</p>
+		<p class="card-text">Prefered foot: {{official.Player.prefered_foot}}</p>
+		<p class="card-text">Age: {{official.get_age}}</p>
+		{% endif %}
+		<a href="{% url 'OfficialsProfileView' official.pk %}" class="btn btn-link"> View Profile </a>
+	</div>
+</div>
+

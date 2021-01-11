@@ -13,13 +13,15 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
 
+from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
+
 from allauth.account.decorators import verified_email_required
 
 
 from .forms import (
     SignUpFormClub, OfficialsCreationForm, PlayerCreationForm,
     ProfilePictureForm, AddressProofForm, AgeProofForm,
-    SignUpFormPersonal, LinkPlayerForm,
+    SignUpFormPersonal, LinkPlayerForm, dpEditForm, dpFormSet
 )
 from .models import (
     Officials, PlayerInfo, Club, ClubDetails, JerseyPicture,
@@ -475,3 +477,32 @@ class ClubDetailView(LoginRequiredMixin, breadcrumbMixin, DetailView):
         ctx['officials'] = self.object.Officials.exclude(
             role="Player")
         return ctx
+
+
+class dpEditView(LoginRequiredMixin, UpdateView):
+    model = ProfilePicture
+    form_class = dpEditForm
+    template_name = 'registration/dp_edit.html'
+
+    def get_success_url(self):
+        return reverse('OfficialsProfileView',kwargs={'pk':self.object.user.pk})
+
+
+class dpEditListView(LoginRequiredMixin, ModelFormSetView):
+    model = ProfilePicture
+    form_class = dpEditForm
+    formset_class = dpFormSet
+    template_name = 'registration/dp_edit_list.html'
+    factory_kwargs = {'extra': 0, 'max_num': 10}
+
+    def get_success_url(self):
+        clubid = self.kwargs.get('clubid', None)
+        if clubid:
+            return reverse('dp_edit_list', kwargs={'clubid': clubid})
+        return reverse('dp_edit_list')
+
+    def get_formset_kwargs(self):
+        kwargs = super(ModelFormSetView, self).get_formset_kwargs()
+        if 'clubid' in self.kwargs:
+            kwargs['clubid'] = self.kwargs['clubid']
+        return kwargs

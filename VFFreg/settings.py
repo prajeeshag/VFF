@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'registration.apps.RegistrationConfig',
     'django_cleanup.apps.CleanupConfig',
     'widget_tweaks',
-    'mytags',
+    'myapp',
+    'extra_views',
 ]
 
 
@@ -85,6 +86,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -174,3 +176,5 @@ AUTHENTICATION_BACKENDS = (
     'users.backends.AuthBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
+
+THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
