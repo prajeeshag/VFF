@@ -1,9 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.files.images import get_image_dimensions
+from django.conf import settings
+from django.urls import reverse
+from django.core.files import File
+
+from PIL import Image as Img
+from PIL import ExifTags
+from io import BytesIO
 import datetime
 import posixpath
-from django.conf import settings
+
+import os
+import decimal
 
 
 class Club(models.Model):
@@ -126,6 +135,9 @@ class Officials(models.Model):
                 ((today.month, today.day) < (dob.month, dob.day))
         return None
 
+    def get_absolute_url(self):
+        return reverse('OfficialsProfileView', kwargs={'pk': self.pk})
+
 
 class PlayerInfo(models.Model):
 
@@ -173,6 +185,9 @@ def get_image_upload_path(instance, filename):
 
 
 class AbstractImage(models.Model):
+
+    __original_image = None
+
     image = models.ImageField(
         upload_to=get_image_upload_path, max_length=255)
 
@@ -180,27 +195,79 @@ class AbstractImage(models.Model):
     y1 = models.PositiveIntegerField("Cropbox (top)", default=0)
     x2 = models.PositiveIntegerField("Cropbox (right)", default=0)
     y2 = models.PositiveIntegerField("Cropbox (bottom)", default=0)
+    checked = models.BooleanField(default=False)
+    orientation = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
         abstract = True
 
+    def __init__(self, *args, **kwargs):
+        super(AbstractImage, self).__init__(*args, **kwargs)
+        self.__original_image = self.image
+
+    def save(self, set_orientation=False, *args, **kwargs):
+        EXIF_ORIENTATION = 0x0112
+        if self.image != self.__original_image or set_orientation:
+            pilImage = Img.open(BytesIO(self.image.read()))
+            try:
+                exif = pilImage._getexif()
+            except Exception:
+                exif = None
+
+            orientation = 1
+            if exif:
+                orientation = exif.get(EXIF_ORIENTATION)
+
+            if not orientation:
+                orientation = 1
+
+            self.orientation = orientation
+
+        return super(AbstractImage, self).save(*args, **kwargs)
+
     def cropbox(self):
-        width, height = get_image_dimensions(self.original)
-        if (self.x1 >= self.x2 or self.y1 >= self.y2 or self.x1 < 0
-                or self.y1 < 0 or self.x2 > width or self.y2 > height):
-            return '{},{},{},{}'.format(0, 0, width, height)
+        W, H = self.get_dimensions()
+        w, h = W, H
+        if self.orientation > 4:
+            w, h = H, W
+        if (self.x1 + self.y1 + self.x2 + self.y2 == 0 or
+                self.x1 >= self.x2 or self.y1 >= self.y2):
+            wh = min(w, h)
+            x1, y1 = (w-wh)*0.5, 0.
+            x2, y2 = x1+wh, y1+wh
+            return '{},{},{},{}'.format(x1, y1, x2, y2)
+
         return '{},{},{},{}'.format(self.x1, self.y1, self.x2, self.y2)
 
-    def cropbox_percent(self):
-        width, height = get_image_dimensions(self.original)
-        if (self.x1 >= self.x2 or self.y1 >= self.y2 or self.x1 < 0
-                or self.y1 < 0 or self.x2 > width or self.y2 > height):
-            return '{} {} {} {}'.format(0, 0, 100, 100)
-        x1 = self.x1/width*100
-        x2 = self.x2/width*100
-        y1 = self.y1/height*100
-        y2 = self.y2/height*100
-        return ('{:.2f} {:.2f} {:.2f} {:.2f}').format(x1, y1, x2, y2)
+    def get_cropbox_frac(self):
+        W, H = self.get_dimensions()
+        w, h = W, H
+        if self.orientation > 4:
+            w, h = H, W
+        if (self.x1 + self.y1 + self.x2 + self.y2 == 0 or
+                self.x1 >= self.x2 or self.y1 >= self.y2):
+            wh = min(w, h)
+            x1, y1 = (w-wh)*0.5/w, 0.
+            x2, y2 = (x1+wh)/w, (y1+wh)/h
+
+            return (x1, y1, x2, y2)
+
+        x1, x2 = self.x1/w, self.x2/w
+        y1, y2 = self.y1/h, self.y2/h
+
+        return (x1, y1, x2, y2)
+
+    def set_cropbox_frac(self, x1, y1, x2, y2):
+        W, H = self.get_dimensions()
+        w, h = W, H
+        if self.orientation > 4:
+            w, h = H, W
+
+        self.x1, self.x2 = w * x1, w * x2
+        self.y1, self.y2 = h * y1, h * y2
+
+    def get_dimensions(self):
+        return (self.image.width, self.image.height)
 
 
 class AddressProof(AbstractImage):
@@ -224,7 +291,10 @@ class ProfilePicture(AbstractImage):
         Officials, on_delete=models.CASCADE, related_name='profilepicture')
 
     def __str__(self):
-        return "Photo of %s" % (self.user,)
+        user = 'User'
+        if hasattr(self, 'user'):
+            user = self.user
+        return "Photo of %s" % (user,)
 
 
 class JerseyPicture(AbstractImage):

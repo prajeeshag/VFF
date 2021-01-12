@@ -5,8 +5,8 @@
 <div class="{{ class }}">
 {% endwith %}
 {% else %}
-	<div class="col-md-4 p-1 d-flex d-md-block justify-content-between">
+	<div class="col-md-4 p-1 justify-content-between">
 {% endif %}
-	<h6 class="d-inline d-md-block text-black-50">{{ name }}</h6>
-	<h5 class="d-inline d-md-block">{{ value|default:"---" }}</h5>
+	<h6 class="text-black-50">{{ name }}</h6>
+	<h5>{{ value|default:"---" }}</h5>
 </div>

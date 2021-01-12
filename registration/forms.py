@@ -1,7 +1,9 @@
 from django import forms
+from django.forms.models import BaseModelFormSet
 from django.contrib.auth.forms import UserCreationForm
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from bootstrap_datepicker_plus import DatePickerInput
 
@@ -9,6 +11,8 @@ from .models import (
     Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
     AgeProof, AddressProof, Invitations,
 )
+
+from myapp.widgets import ImageInput
 
 
 class ImageWidget(forms.ClearableFileInput):
@@ -37,6 +41,64 @@ class SignUpFormPersonal(UserCreationForm):
     class Meta:
         model = get_user_model()
         fields = ('username', 'email', 'password1', 'password2')
+
+
+class dpFormSet(BaseModelFormSet):
+    def __init__(self, *args, **kwargs):
+        clubid = kwargs.pop('clubid', None)
+        super().__init__(*args, **kwargs)
+        if clubid is None:
+            qs = ProfilePicture.objects.filter(checked=False)
+        else:
+            qs = ProfilePicture.objects.filter(
+                user__club__pk=clubid).filter(checked=False)
+
+        qs1 = qs.order_by('pk')
+        self.queryset = qs1[:10]
+
+
+class dpEditForm(forms.ModelForm):
+    xp1 = forms.DecimalField(min_value=0., max_value=1., localize=False,
+                             widget=forms.HiddenInput, initial=0)
+    xp2 = forms.DecimalField(min_value=0., max_value=1., localize=False,
+                             widget=forms.HiddenInput, initial=0)
+    yp1 = forms.DecimalField(min_value=0., max_value=1., localize=False,
+                             widget=forms.HiddenInput, initial=0)
+    yp2 = forms.DecimalField(min_value=0., max_value=1., localize=False,
+                             widget=forms.HiddenInput, initial=0)
+
+    class Meta:
+        model = ProfilePicture
+        fields = ['checked', ]
+        widgets = {
+            'checked': forms.HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.image:
+            xp1, yp1, xp2, yp2 = self.instance.get_cropbox_frac()
+            self.fields['xp1'].initial = xp1
+            self.fields['xp2'].initial = xp2
+            self.fields['yp1'].initial = yp1
+            self.fields['yp2'].initial = yp2
+
+    def clean(self):
+        data = super().clean()
+        xp1, yp1 = data['xp1'], data['yp1']
+        xp2, yp2 = data['xp2'], data['yp2']
+        if xp1 >= xp2 or yp1 >= yp2:
+            raise ValidationError("Incorrect Cropbox")
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        data = self.cleaned_data
+        xp1, yp1 = data['xp1'], data['yp1']
+        xp2, yp2 = data['xp2'], data['yp2']
+        obj.set_cropbox_frac(xp1, yp1, xp2, yp2)
+        if commit:
+            obj.save()
+        return obj
 
 
 class ProfilePictureForm(forms.ModelForm):
