@@ -1,0 +1,24 @@
+
+{% extends 'registration/base.html' %}
+{% load my_tags %}
+{% load static %}
+{% load thumbnail %}
+
+{% block content_main %}
+<div class="container">
+	<div class="row">
+		<form method="post" enctype="multipart/form-data">
+			{% include 'snippets/form_common.html' with form=form %}
+			<div id="dp_upload">
+				{{ form.image }}
+			</div>
+		</form>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+	<script src="{% static 'Jcrop/jcrop.js' %}"></script>
+	<script src="{% static 'js/dpedit.js' %}"></script>		
+{% endblock %}
+

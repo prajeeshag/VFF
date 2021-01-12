@@ -6,25 +6,14 @@
 
 {% block content_main %}
 
-{% with "Edit DP of "|addstr:form.instance.user as title %}
+{% with "Profile photo of "|addstr:form.instance.user as title %}
 {% include "snippets/header-light.html" with title=title icon='edit' %}
 {% endwith %}
 
 <div class="container">
-	<form method="post" enctype="multipart/form-data">
-		<div class="flex justify-content-center">
-			<div class="col-md-4 dpedit">
-				{% include 'snippets/form_common.html' with form=form %}
-				{% thumbnail form.instance.image "300x300" upscale=False as im %}
-				<div class="p-2 m-auto" style="max-width: 300px;">
-					<img src="{{ im.url }}" alt="Card image cap">
-				</div>
-				{% endthumbnail %}
-				{{ form }}
-			</div>
-			<button type="submit" class="btn btn-primary mb-2"> <i data-feather="upload"></i> &nbsp; Submit </button>
-		</div>
-	</form>
+	<div class="flex justify-content-center">
+		{% include 'snippets/dp_edit.html' with form=form %}
+	</div>
 </div>
 
 {% endblock %}
