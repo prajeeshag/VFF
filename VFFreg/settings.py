@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'myapp',
     'extra_views',
+    'django_archive',
 ]
 
 
@@ -195,3 +196,4 @@ AUTHENTICATION_BACKENDS = (
 )
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
+ARCHIVE_FILENAME="vfl_archive"
