@@ -196,3 +196,4 @@ AUTHENTICATION_BACKENDS = (
 )
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
+ARCHIVE_FILENAME="archive/%Y-%m-%d--%H-%M-%S"
