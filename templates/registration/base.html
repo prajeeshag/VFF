@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load hijack_tags %}
 
 {% block styles %}
 <link href=" {% static 'css/styles.css' %} " rel="stylesheet" />
@@ -8,9 +9,16 @@
 <link rel="icon" type="image/x-icon" href=" {% static 'assets/img/favicon.png' %} " />
 <script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+
 {% endblock %}
 
-{% block body %} <body class="nav-fixed"> {% endblock %}
+{% block body %} 
+  {% if request|is_hijacked %} 
+		<body class="nav-static"> 
+	{% else %}
+		<body class="nav-fixed"> 
+	{% endif %}
+{% endblock %}
 
 	{% block content %}
 		{% include 'registration/topbar.html' %}

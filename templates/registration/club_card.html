@@ -9,7 +9,7 @@
 					<i data-feather="more-vertical"></i>
 				</button>
 				<div class="dropdown-menu dropdown-menu-right animated--fade-in-up" aria-labelledby="dropdownMenuButton">
-					{% if user.is_staff %}
+					{% if user.is_staff or user == club.user %}
 						<a class="dropdown-item" href="{% url 'officials_list_view' club=club.pk %}">list of people</a>
 					{% endif %}
 					{% if user.is_superuser %}

@@ -93,7 +93,11 @@
 		<div class="row">
 			{% for official in officials %}
 			<div class="col-md-4 mb-3">
+				{% if forloop.count == 1 %}
+				{% include "registration/officials_card.html" with official=official  showtooltip=True %}
+				{% else %}
 				{% include "registration/officials_card.html" with official=official %}
+				{% endif %}
 			</div>
 			{% endfor %}
 		</div>
@@ -112,3 +116,4 @@
 	</div>
 </div>
 {% endblock %}
+
