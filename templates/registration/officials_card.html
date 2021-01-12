@@ -9,24 +9,29 @@
 		</div>
 	{% endthumbnail %}
 	{% endwith %}
-	{% if official.club.user == user %}
+	{% if official.club.user == user or user.is_superuser %}
 	<div class="text-center">
-		<a {% if showtooltip %} class="showtooltip" {% endif %} data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo"  href="{% url 'dp_edit' official.profilepicture.pk %}"><i data-feather='edit-3'></i></a>
+		<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo"  href="{% url 'dp_edit' official.profilepicture.pk %}"><i data-feather='camera'></i></a>
 	</div>
 	{% endif %}
 	<hr/>
 	<div class="card-body text-center">
 		{% if not official.is_player %}
-		<p class="card-title">{{official.role}}</p>
+		<p class="card-title h6">{{official.role}}</p>
 		{% endif %}
-		<p class="card-title">{{official}}</p>
-		<p class="card-text "><i data-feather="phone"></i> {{ official.phone_number }}</p>
-		{% if official.is_player %}
-		<p class="card-text">Favourite position: {{official.Player.favorite_position}}</p>
-		<p class="card-text">Prefered foot: {{official.Player.prefered_foot}}</p>
-		<p class="card-text">Age: {{official.get_age}}</p>
+		<p class="card-title h5">{{official}}</p>
+		<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ official.phone_number }}</p>
+		<p class="card-text font-weight-bolder"><i data-feather="calendar"></i> {{ official.date_of_birth }}</p>
+		{% comment %}{% if official.is_player %}{% endcomment %}
+			{% comment %}<p class="card-text">Favourite position: {{official.Player.favorite_position}}</p>{% endcomment %}
+			{% comment %}<p class="card-text">Prefered foot: {{official.Player.prefered_foot}}</p>{% endcomment %}
+			{% comment %}<p class="card-text">Age: {{official.get_age}}</p>{% endcomment %}
+		{% comment %}{% endif %}{% endcomment %}
+		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="View Profile" href={{ official.get_absolute_url }} class="btn btn-secondary btn-icon"><i data-feather="eye"></i></a>
+
+		{% if official.club.user == user or user.is_superuser %}
+			<a data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" href="{% url 'officials_edit' official.pk %}" class="btn btn-primary btn-icon"><i data-feather="edit"></i></a>
 		{% endif %}
-		<a href="{% url 'OfficialsProfileView' official.pk %}" class="btn btn-link"> View Profile </a>
 	</div>
 </div>
 

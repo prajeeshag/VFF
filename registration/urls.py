@@ -2,8 +2,8 @@ from django.urls import path
 from django.contrib.auth.views import PasswordChangeView
 
 from .views import (HomePageView, AddOfficials, dpEditView, dpEditListView,
-                    UpdateClubDetails, OfficialsProfileView,
-                    AddJersey, UpdateJersey, LinkPlayer,
+                    UpdateClubDetails, OfficialsProfileView, dpUploadView,
+                    AddJersey, UpdateJersey, LinkPlayer, officialsEditView,
                     ClubListView, ClubDetailView, OfficialsListView,
                     DeleteJersey, DeleteInvitation, AcceptInvitation,
                     )
@@ -51,9 +51,15 @@ urlpatterns = [
     path('dpedit1/<int:pk>/',
          dpEditView.as_view(), name='dp_edit'),
 
+    path('dpupload/<int:pk>/',
+         dpUploadView.as_view(), name='dp_upload'),
+
     path('dpedit/',
          dpEditListView.as_view(), name='dp_edit_list'),
 
     path('dpedit/<int:clubid>/',
          dpEditListView.as_view(), name='dp_edit_list'),
+
+    path('officialsedit/<int:pk>/',
+         officialsEditView.as_view(), name='officials_edit'),
 ]

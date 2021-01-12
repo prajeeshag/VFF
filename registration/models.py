@@ -24,6 +24,9 @@ class Club(models.Model):
     def __str__(self):
         return "%s" % (self.club_name)
 
+    def get_absolute_url(self):
+        return reverse('ClubDetail', kwargs={'pk': self.pk})
+
     def president(self):
         officials = self.Officials.all()
         for official in officials:
@@ -296,6 +299,12 @@ class ProfilePicture(AbstractImage):
             user = self.user
         return "Photo of %s" % (user,)
 
+    def get_absolute_url(self):
+        return reverse('dp_edit', kwargs={'pk': self.pk})
+
+    def get_upload_url(self):
+        return reverse('dp_upload', kwargs={'pk': self.pk})
+
 
 class JerseyPicture(AbstractImage):
     user = models.ForeignKey(
@@ -328,3 +337,10 @@ class Invitations(models.Model):
 
     def __str__(self):
         return "Invitation for {} by {} ".format(self.player, self.club)
+
+
+# class Verify(models.Model):
+    # official = models.OneToOneField(
+        # Officials, on_delete=models.CASCADE, null=True)
+    # verified = models.BooleanField(default=False)
+    # message = models.TextField(blank=True)
