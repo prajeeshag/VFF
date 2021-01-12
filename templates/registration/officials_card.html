@@ -7,9 +7,14 @@
 		<div class="p-2 m-auto text-center" style="max-width: 300px;">
 			<img class="card-img-top rounded-circle" src="{{ im.url }}" alt="Card image cap">
 		</div>
-		<hr/>
 	{% endthumbnail %}
 	{% endwith %}
+	{% if official.club.user == user %}
+	<div class="text-center">
+		<a {% if showtooltip %} class="showtooltip" {% endif %} data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo"  href="{% url 'dp_edit' official.profilepicture.pk %}"><i data-feather='edit-3'></i></a>
+	</div>
+	{% endif %}
+	<hr/>
 	<div class="card-body text-center">
 		{% if not official.is_player %}
 		<p class="card-title">{{official.role}}</p>

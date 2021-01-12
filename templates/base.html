@@ -6,6 +6,7 @@
 {% load widget_tweaks %}
 {% load hijack_tags %}
 
+
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
@@ -22,6 +23,10 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
 	{% endblock %}
 
+	{% if request|is_hijacked %}
+		<link rel="stylesheet" type="text/css" href="{% static 'hijack/hijack-styles.css' %}" />
+	{% endif %}
+
 	{% block styles_extra %} {% endblock %}
 
 	</head>
@@ -29,7 +34,9 @@
 	{% block body %}
 	<body class="bg-primary">
 	{% endblock %}
+	{% hijack_notification %}
 
+		
 	{% block content %}
 	{% endblock %}
 
