@@ -196,4 +196,3 @@ AUTHENTICATION_BACKENDS = (
 )
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
-ARCHIVE_FILENAME="vfl_archive"
