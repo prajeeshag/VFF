@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'django.forms',
     'sorl.thumbnail',
     'crispy_forms',
-    'bootstrap_datepicker_plus',
     'bootstrap4',
     'hijack',
     'compat',

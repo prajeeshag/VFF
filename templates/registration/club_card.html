@@ -29,7 +29,7 @@
 			<p class="card-title text-grey h6"> <strong>U19 Players: </strong> {{club.num_under19_players}}</p>
 			<p class="card-title text-grey h6"> <strong>U21 Players: </strong> {{club.num_under21_players}}</p>
 			<div class="text-center">
-				<a class="btn btn-link" href="{% url 'ClubDetail' club.pk %}">View profile</a>
+				<a data-toggle="tooltip" data-placement="top" title="" data-original-title="View Club Profile" href={{ club.get_absolute_url }} class="btn btn-secondary btn-icon"><i data-feather="eye"></i></a>
 				{% if user.is_staff %}
 				<a class="btn btn-link" href="{% url 'officials_list_view' club=club.pk %}"><i data-feather="list"></i></a>
 				{% endif %}

@@ -57,10 +57,12 @@
 					<div class="p-2 m-auto" style="max-width: 300px;">
 						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
 					</div>
+					{% if user == object.user %}
 					<div class="card-body">
 						<a class="btn btn-link" href="{% url 'UpdateJersey' jersey.pk %}"><i class="fa fa-edit"></i> edit </a>
 						<a class="btn btn-link" href="{% url 'DeleteJersey' jersey.pk %}"><i class="fa fa-trash"></i> delete </a>
 					</div>
+					{% endif %}
 					{% endthumbnail %}
 				</div>
 			</div>

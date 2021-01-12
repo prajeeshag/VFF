@@ -23,8 +23,8 @@
 		</div>
 		{% endthumbnail %}
 		{% endwith %}
-		{% if object.club.user == user %}
-		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo" href="{% url 'dp_edit' object.profilepicture.pk %}"><i data-feather='edit-3'></i></a>
+		{% if object.club.user == user or user.is_staff %}
+		<a class="btn btn-secondary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo" href="{% url 'dp_edit' object.profilepicture.pk %}"><i data-feather='camera'></i></a>
 		{% endif %}
 	</div>
 	<hr/>
@@ -51,6 +51,10 @@
 			<h6 class="text-black-50">Address</h6>
 			<h5 >{{object.address}}</h5>
 		</div>
+
+		{% if object.club.user == user or user.is_staff %}
+			<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" href="{% url 'officials_edit' object.pk %}"><i data-feather='edit'></i></a>
+		{% endif %}
 
 	</div>
 </div>

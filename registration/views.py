@@ -21,7 +21,8 @@ from allauth.account.decorators import verified_email_required
 from .forms import (
     SignUpFormClub, OfficialsCreationForm, PlayerCreationForm,
     ProfilePictureForm, AddressProofForm, AgeProofForm,
-    SignUpFormPersonal, LinkPlayerForm, dpEditForm, dpFormSet
+    SignUpFormPersonal, LinkPlayerForm, dpEditForm, dpFormSet,
+    dpUploadForm, OfficialsEditForm
 )
 from .models import (
     Officials, PlayerInfo, Club, ClubDetails, JerseyPicture,
@@ -333,23 +334,6 @@ class UpdateAgeProof(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
 
 
-class UpdateOfficialsImage(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
-    model = ProfilePicture
-    form_class = ProfilePictureForm
-    login_url = reverse_lazy('login')
-    template_name = 'registration/profile_picture_form.html'
-    success_message = 'Profile picture has been updated'
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if obj.user.club.user != self.request.user:
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
-
-
 class DeleteOfficials(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     login_url = reverse_lazy('login')
     model = Officials
@@ -479,13 +463,49 @@ class ClubDetailView(LoginRequiredMixin, breadcrumbMixin, DetailView):
         return ctx
 
 
+class dpUploadView(LoginRequiredMixin, UpdateView):
+    model = ProfilePicture
+    form_class = dpUploadForm
+    template_name = 'registration/dp_upload.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if ( not self.request.user.is_staff and
+                obj.user.club.user != self.request.user):
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return self.object.get_absolute_url()
+
+
 class dpEditView(LoginRequiredMixin, UpdateView):
     model = ProfilePicture
     form_class = dpEditForm
     template_name = 'registration/dp_edit.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if ( not self.request.user.is_staff and
+                obj.user.club.user != self.request.user):
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
     def get_success_url(self):
-        return reverse('OfficialsProfileView',kwargs={'pk':self.object.user.pk})
+        return reverse('OfficialsProfileView', kwargs={'pk': self.object.user.pk})
+
+
+class officialsEditView(LoginRequiredMixin, UpdateView):
+    model = Officials
+    form_class = OfficialsEditForm
+    template_name = 'registration/officials_edit_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if ( not self.request.user.is_staff and
+                obj.club.user != self.request.user):
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
 
 
 class dpEditListView(LoginRequiredMixin, ModelFormSetView):
