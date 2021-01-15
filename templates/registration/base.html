@@ -1,9 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load hijack_tags %}
+{% load sass_tags %}
 
 {% block styles %}
-<link href=" {% static 'css/styles.css' %} " rel="stylesheet" />
+{% comment %}<link href=" {% static 'css/styles.css' %} " rel="stylesheet" />{% endcomment %}
+{% if debug %}
+	<link href="{% sass_src 'main.scss' %}" rel="stylesheet" type="text/css" />
+{% }
+	<link href=" {% static 'css/main.css' %} " rel="stylesheet" />
+{% endif %}
+	
 <link href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css" rel="stylesheet" crossorigin="anonymous" />
 <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" crossorigin="anonymous" />
 <link rel="icon" type="image/x-icon" href=" {% static 'assets/img/favicon.png' %} " />
