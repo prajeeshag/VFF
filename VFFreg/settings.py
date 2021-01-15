@@ -27,7 +27,7 @@ SECRET_KEY = '#(jv6__=f7*1hb_058qrh!e@ci7)g3qr)2w_v!xs7c2s2830br'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['157.245.96.237','vfl.nmlstore.com']
+ALLOWED_HOSTS = ['157.245.96.237','vleague.in','www.vleague.in']
 
 
 # Application definition
