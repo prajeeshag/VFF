@@ -16,12 +16,15 @@
 		<meta name="author" content="" />
 		<title>V F L</title>
 
-	{% block styles %}
-		<link href=" {% static 'css/styles.css' %} " rel="stylesheet" />
+		<link href="https://cdn.materialdesignicons.com/5.4.55/css/materialdesignicons.min.css" rel="stylesheet">
+		<link href=" {% static 'css/mdi-icon.css' %} " rel="stylesheet" />
+		<link href=" {% static 'css/main.css' %} " rel="stylesheet" />
 		<link rel="icon" type="image/x-icon" href=" {% static 'assets/img/favicon.png' %} " />
-		<script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
-	{% endblock %}
+
+		{% block styles %}
+			<script data-search-pseudo-elements defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js" crossorigin="anonymous"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js" crossorigin="anonymous"></script>
+		{% endblock %}
 
 	{% if request|is_hijacked %}
 		<link rel="stylesheet" type="text/css" href="{% static 'hijack/hijack-styles.css' %}" />
@@ -31,20 +34,18 @@
 
 	</head>
 
-	{% block body %}
-	<body class="bg-primary">
-	{% endblock %}
-	{% hijack_notification %}
-
+	
+	<body {% block body %} class="bg-dark" {% endblock %}>
+		{% hijack_notification %}
 		
-	{% block content %}
-	{% endblock %}
+		{% block content %}
+		{% endblock %}
 
-	{% block scripts %}
-		<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-		<script src=" {% static 'js/scripts.js' %} "></script>
-	{% endblock %}
+		{% block scripts %}
+			<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+			<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+			<script src=" {% static 'js/scripts.js' %} "></script>
+		{% endblock %}
 
 	{% block scripts_extra %} {% endblock %}
 
