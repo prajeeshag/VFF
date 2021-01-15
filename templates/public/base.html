@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load hijack_tags %}
+{% load sass_tags %}
+
+{% block styles %}
+{% endblock %}
+
+{% block body %} class="bg-dark" {% endblock %}
+
+{% block content %}
+	<div class="container mt-4">
+		<div class="bg-cyan">
+			<img src="{% static  'brochure/vfl-1.png' %}" class="img-fluid">
+		</div>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+	<script> feather.replace() </script>
+{% endblock %}

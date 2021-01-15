@@ -25,7 +25,8 @@ urlpatterns = [
     path('', include('registration.urls')),
     path('hijack/', include('hijack.urls', namespace='hijack')),
     path('accounts/', include('allauth.urls')),
-    path('', login, name='login'),
+    path('', include('public.urls')),
+    path('login/', login, name='login'),
 ]
 
 if settings.DEBUG:
