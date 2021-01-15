@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "myapp",
     "extra_views",
+    "public",
 ]
 
 
