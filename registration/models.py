@@ -1,18 +1,16 @@
+
+import datetime
+from io import BytesIO
+import posixpath
+from PIL import Image as Img
+from PIL import ExifTags
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.files.images import get_image_dimensions
 from django.conf import settings
 from django.urls import reverse
 from django.core.files import File
-
-from PIL import Image as Img
-from PIL import ExifTags
-from io import BytesIO
-import datetime
-import posixpath
-
-import os
-import decimal
 
 
 class Club(models.Model):
@@ -81,6 +79,8 @@ class ClubDetails(models.Model):
         max_length=10, blank=False, help_text="Contact number")
     date_of_formation = models.IntegerField(
         null=True, blank=True, verbose_name="Year of formation of the Club")
+    abbr = models.CharField(max_length=4, blank=True, null=True, unique=True,
+                            verbose_name="Club abbreviation(3-4 characters)")
 
     def __str__(self):
         return "%s details" % (self.club)
