@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 
 from .models import (
     Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
-    AgeProof, AddressProof, Invitations,
+    AgeProof, AddressProof, Invitations, ClubDetails
 )
 
 from myapp.widgets import ImageInput
@@ -219,16 +219,10 @@ class abbrForm(forms.ModelForm):
     class Meta:
         model = ClubDetails
         fields = ['abbr', ]
-        widgets = {
-            'abbr': forms.CharField(max_length=4, min_length=3)
-        }
 
 
 class clubDetailsForm(forms.ModelForm):
 
     class Meta:
         model = ClubDetails
-        fields = ['address', 'contact_number', 'date_of_formation', 'abbr']
-        widgets = {
-            'abbr': forms.CharField(max_length=4, min_length=3)
-        }
+        fields = ['address', 'contact_number', 'date_of_formation']

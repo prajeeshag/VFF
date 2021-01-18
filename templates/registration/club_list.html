@@ -30,3 +30,9 @@
 </div>
 
 {% endblock %}
+
+{% block scripts_extra %}
+	<script type="text/javascript">
+		$(window).on('load', function() { $('#id_abbr_modal').modal('show'); });
+	</script>
+{% endblock %}

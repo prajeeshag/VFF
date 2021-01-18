@@ -23,12 +23,13 @@
 		{% endif %}
 		</div>
 		<hr class="mt-2 mb-4" />
-		<p class="card-title text-secondary h6"><strong>Address: </strong> {{object.clubdetails.address}}</p>
-		<p class="card-title text-secondary h6"><strong>Contact number: </strong> {{object.clubdetails.contact_number}}</p>
-		<p class="card-title text-secondary h6"><strong>Year of Formation: </strong> {{object.clubdetails.date_of_formation}}</p>
-		<p class="card-title text-secondary h6"><strong>Total Players : </strong> {{object.total_players}}</p>
-		<p class="card-title text-secondary h6"><strong>U19 Players : </strong> {{object.num_under19_players}}</p>
-		<p class="card-title text-secondary h6"><strong>U21 Players : </strong> {{object.num_under21_players}}</p>
+		<h4 class="card-title text-secondary"> <strong>{{ object.clubdetails.abbr|default:"" }}</strong></h4>
+		<p class="card-title text-secondary h6">Address: <strong> {{object.clubdetails.address}}</strong></p>
+		<p class="card-title text-secondary h6">Contact number: <strong> {{object.clubdetails.contact_number}}</strong></p>
+		<p class="card-title text-secondary h6">Year of Formation: <strong> {{object.clubdetails.date_of_formation}}</strong></p>
+		<p class="card-title text-secondary h6">Total Players : <strong> {{object.total_players}}</strong></p>
+		<p class="card-title text-secondary h6">U19 Players : <strong> {{object.num_under19_players}}</strong></p>
+		<p class="card-title text-secondary h6">U21 Players : <strong> {{object.num_under21_players}}</strong></p>
 	</div>
 
 	<div class="mb-4">
