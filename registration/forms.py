@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 
 from .models import (
     Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
-    AgeProof, AddressProof, Invitations,
+    AgeProof, AddressProof, Invitations, ClubDetails
 )
 
 from myapp.widgets import ImageInput
@@ -213,3 +213,16 @@ class LinkPlayerForm(forms.ModelForm):
             is_staff=False).filter(
             email_verified=True).exclude(
             invitations__club=club)
+
+
+class abbrForm(forms.ModelForm):
+    class Meta:
+        model = ClubDetails
+        fields = ['abbr', ]
+
+
+class clubDetailsForm(forms.ModelForm):
+
+    class Meta:
+        model = ClubDetails
+        fields = ['address', 'contact_number', 'date_of_formation']

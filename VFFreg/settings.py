@@ -190,9 +190,3 @@ AUTHENTICATION_BACKENDS = (
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
 ARCHIVE_FILENAME = "archive/%Y-%m-%d--%H-%M-%S"
-
-if DEBUG:
-    INSTALLED_APPS.append('sass_processor',)
-    SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR, 'frontend')
-    SASS_PROCESSOR_AUTO_INCLUDE = False
-    SASS_PROCESSOR_INCLUDE_FILE_PATTERN = r'^.+\.scss$'

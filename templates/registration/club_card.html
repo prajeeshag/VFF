@@ -2,38 +2,52 @@
 <div class="col-md-4">
 	<div class="card mb-4 card-header-actions">
 		<div class="card-header">
-			{{club}}
-
+			{% if club.clubdetails.abbr %}
+				{{ club.clubdetails.abbr|upper }}
+			{% else %}
+				{{club}}
+			{% endif %}
 			<div class="dropdown no-caret">
-				<button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-					<i data-feather="more-vertical"></i>
-				</button>
-				<div class="dropdown-menu dropdown-menu-right animated--fade-in-up" aria-labelledby="dropdownMenuButton">
-					{% if user.is_staff or user == club.user %}
-						<a class="dropdown-item" href="{% url 'officials_list_view' club=club.pk %}">list of people</a>
-					{% endif %}
-					{% if user.is_superuser %}
-					<form action="/hijack/{{ club.user.id }}/" method="post">
-						{% csrf_token %}
-						<button type="submit" class="dropdown-item text-danger">Hijack</button>
-					</form>
-					<a class="dropdown-item" href="{% url 'dp_edit_list' club.pk %}">Dp edit</a>
-					{% endif %}
-				</div>
+				{% if user.is_staff or user == club.user %}
+					<button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i data-feather="more-vertical"></i>
+					</button>
+					<div class="dropdown-menu dropdown-menu-right animated--fade-in-up" aria-labelledby="dropdownMenuButton">
+						{% if user.is_staff or user == club.user %}
+							<a class="dropdown-item" href="{% url 'officials_list_view' club=club.pk %}">list of people</a>
+						{% endif %}
+						{% if user.is_superuser %}
+						<form action="/hijack/{{ club.user.id }}/" method="post">
+							{% csrf_token %}
+							<button type="submit" class="dropdown-item text-danger">Hijack</button>
+						</form>
+						<a class="dropdown-item" href="{% url 'dp_edit_list' club.pk %}">Dp edit</a>
+						{% endif %}
+					</div>
+			  {% endif %}
 			</div>
-
 		</div>
 		<div class="card-body">
+			{% if club.clubdetails.abbr %}
+				<p class="card-title text-grey h4">{{ club|upper }}</p>
+			{% endif %}
 			<p class="card-title text-grey h6"> <i class="fas fa-phone-alt"></i> {{club.get_contact_number}}</p>
 			<p class="card-title text-grey h6"> <strong>Total Players: </strong> {{club.total_players}}</p>
 			<p class="card-title text-grey h6"> <strong>U19 Players: </strong> {{club.num_under19_players}}</p>
 			<p class="card-title text-grey h6"> <strong>U21 Players: </strong> {{club.num_under21_players}}</p>
-			<div class="text-center">
+			<div class="text-center mb-2">
 				<a data-toggle="tooltip" data-placement="top" title="" data-original-title="View Club Profile" href={{ club.get_absolute_url }} class="btn btn-secondary btn-icon"><i data-feather="eye"></i></a>
 				{% if user.is_staff %}
 				<a class="btn btn-link" href="{% url 'officials_list_view' club=club.pk %}"><i data-feather="list"></i></a>
 				{% endif %}
 			</div>
+			{% if club.user == user and not club.clubdetails.abbr %}
+			<div class="text-center">
+				<button class="btn btn-warning btn-sm" type="button" data-toggle="modal" data-target="#id_abbr_modal">
+					Update Abbreviation
+				</button>	
+			</div>
+			{% endif %}
 		</div>
 	</div>
 </div>
