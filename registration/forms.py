@@ -213,3 +213,22 @@ class LinkPlayerForm(forms.ModelForm):
             is_staff=False).filter(
             email_verified=True).exclude(
             invitations__club=club)
+
+
+class abbrForm(forms.ModelForm):
+    class Meta:
+        model = ClubDetails
+        fields = ['abbr', ]
+        widgets = {
+            'abbr': forms.CharField(max_length=4, min_length=3)
+        }
+
+
+class clubDetailsForm(forms.ModelForm):
+
+    class Meta:
+        model = ClubDetails
+        fields = ['address', 'contact_number', 'date_of_formation', 'abbr']
+        widgets = {
+            'abbr': forms.CharField(max_length=4, min_length=3)
+        }

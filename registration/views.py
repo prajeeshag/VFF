@@ -22,7 +22,7 @@ from .forms import (
     SignUpFormClub, OfficialsCreationForm, PlayerCreationForm,
     ProfilePictureForm, AddressProofForm, AgeProofForm,
     SignUpFormPersonal, LinkPlayerForm, dpEditForm, dpFormSet,
-    dpUploadForm, OfficialsEditForm
+    dpUploadForm, OfficialsEditForm, abbrForm, clubDetailsForm
 )
 from .models import (
     Officials, PlayerInfo, Club, ClubDetails, JerseyPicture,
@@ -278,7 +278,7 @@ class AddOfficials(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, Cre
 
 class UpdateClubDetails(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, UpdateView):
     model = ClubDetails
-    fields = ['address', 'contact_number', 'date_of_formation']
+    form_class = clubDetailsForm
     login_url = reverse_lazy('login')
     template_name = 'registration/club_detail_form.html'
     success_message = 'Club details has been updated'
@@ -470,7 +470,7 @@ class dpUploadView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if ( not self.request.user.is_staff and
+        if (not self.request.user.is_staff and
                 obj.user.club.user != self.request.user):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
@@ -486,7 +486,7 @@ class dpEditView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if ( not self.request.user.is_staff and
+        if (not self.request.user.is_staff and
                 obj.user.club.user != self.request.user):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
@@ -502,7 +502,7 @@ class officialsEditView(LoginRequiredMixin, UpdateView):
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
-        if ( not self.request.user.is_staff and
+        if (not self.request.user.is_staff and
                 obj.club.user != self.request.user):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
@@ -526,3 +526,12 @@ class dpEditListView(LoginRequiredMixin, ModelFormSetView):
         if 'clubid' in self.kwargs:
             kwargs['clubid'] = self.kwargs['clubid']
         return kwargs
+
+
+class abbrUpdateView(LoginRequiredMixin, UpdateView):
+    model = ClubDetails
+    form_class = abbrForm
+    template_name = 'registration/abbr_form.html'
+
+    def get_success_url(self):
+        return reverse('home')
