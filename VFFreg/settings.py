@@ -10,25 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
-from .local_settings import *
 from pathlib import Path
 import os
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "#(jv6__=f7*1hb_058qrh!e@ci7)g3qr)2w_v!xs7c2s2830br"
+SECRET_KEY = config('SECRET_KEY',
+                    default="#(jv6__=f7*1hb_058qrh!e@ci7lsdjflajdl!xs7c2s2830br")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['157.245.96.237','vleague.in','www.vleague.in']
-
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(),
+                       default='127.0.0.1, localhost')
 
 # Application definition
 
@@ -42,7 +44,6 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
     'django.contrib.staticfiles',
     'django.forms',
     'sorl.thumbnail',
@@ -99,6 +100,17 @@ WSGI_APPLICATION = "VFFreg.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+DATABASES = {
+    "default": {
+        "ENGINE": config('DB_ENGINE', default="django.db.backends.sqlite3"),
+        "NAME": config('DB_NAME', default=BASE_DIR / "db.sqlite3"),
+        'USER': config('DB_USER', default=''),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default=''),
+        'PORT': config('DB_PORT', default='')
+    }
+}
+
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -117,7 +129,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SITE_ID = 3
+SITE_ID = config('SITE_ID', default=2, cast=int)
 
 # Allauth options
 ACCOUNT_EMAIL_REQUIRED = True
@@ -150,7 +162,6 @@ def location(x):
 STATIC_URL = "/static/"
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
-    os.path.join(BASE_DIR, "frontend/static"),
 )
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
