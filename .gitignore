@@ -114,3 +114,4 @@ pyvenv.cfg
 *.sass-cache
 *.packages
 *.dart_tool
+*.*/
