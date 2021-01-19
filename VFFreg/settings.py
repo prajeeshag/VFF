@@ -10,24 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
-from .local_settings import *
 from pathlib import Path
 import os
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "#(jv6__=f7*1hb_058qrh!e@ci7)g3qr)2w_v!xs7c2s2830br"
+SECRET_KEY = config('SECRET_KEY',
+                    default="#(jv6__=f7*1hb_058qrh!e@ci7lsdjflajdl!xs7c2s2830br")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(),
+                       default='127.0.0.1, localhost')
 
 
 # Application definition
@@ -101,8 +104,12 @@ WSGI_APPLICATION = "VFFreg.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": config('DB_ENGINE', default="django.db.backends.sqlite3"),
+        "NAME": config('DB_NAME', default=BASE_DIR / "db.sqlite3"),
+        'USER': config('DB_USER', default=''),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default=''),
+        'PORT': config('DB_PORT', default='')
     }
 }
 
@@ -125,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SITE_ID = 2
+SITE_ID = config('SITE_ID', default=2, cast=int)
 
 # Allauth options
 ACCOUNT_EMAIL_REQUIRED = True
