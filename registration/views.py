@@ -26,7 +26,7 @@ from .forms import (
 )
 from .models import (
     Officials, PlayerInfo, Club, ClubDetails, JerseyPicture,
-    ProfilePicture, AddressProof, AgeProof, Invitations
+    ProfilePicture, AddressProof, AgeProof, Invitations, Grounds
 )
 
 
@@ -535,3 +535,23 @@ class abbrUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse('home')
+
+
+class groundUpdateView(LoginRequiredMixin, ModelFormSetView):
+    model = Grounds
+    fields = ['name', ]
+    template_name = 'registration/grounds_form.html'
+    factory_kwargs = {'extra': 10, 'max_num': 50}
+
+    def get_success_url(self):
+        return reverse('grounds')
+
+
+class clubGrdUpdateView(LoginRequiredMixin, ModelFormSetView):
+    model = ClubDetails
+    fields = ['home_ground', ]
+    template_name = 'registration/club_ground_form.html'
+    factory_kwargs = {'extra': 0, 'max_num': 0}
+
+    def get_success_url(self):
+        return reverse('club_grounds')

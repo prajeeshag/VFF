@@ -72,6 +72,14 @@ class Club(models.Model):
         return self.num_undern_players(21)-self.num_under19_players()
 
 
+class Grounds(models.Model):
+    name = models.CharField(max_length=50, blank=False)
+    address = models.TextField(max_length=200, blank=True)
+
+    def __str__(self):
+        return "%s" % (self.name)
+
+
 class ClubDetails(models.Model):
     club = models.OneToOneField(
         Club, on_delete=models.CASCADE, related_name='clubdetails')
@@ -81,8 +89,10 @@ class ClubDetails(models.Model):
         max_length=10, blank=False, help_text="Contact number")
     date_of_formation = models.IntegerField(
         null=True, blank=True, verbose_name="Year of formation of the Club")
-    abbr = models.CharField(max_length=4, validators=[MinLengthValidator(3),], blank=True,
+    abbr = models.CharField(max_length=4, validators=[MinLengthValidator(3), ], blank=True,
                             null=True, unique=True, verbose_name="Club abbreviation(3-4 characters)")
+    home_ground = models.ForeignKey(Grounds, null=True, related_name='of_club',
+                                    on_delete=models.SET_NULL)
 
     def __str__(self):
         return "%s details" % (self.club)
@@ -342,7 +352,7 @@ class Invitations(models.Model):
 
 
 # class Verify(models.Model):
-    # official = models.OneToOneField(
-        # Officials, on_delete=models.CASCADE, null=True)
-    # verified = models.BooleanField(default=False)
-    # message = models.TextField(blank=True)
+# official = models.OneToOneField(
+# Officials, on_delete=models.CASCADE, null=True)
+# verified = models.BooleanField(default=False)
+# message = models.TextField(blank=True)
