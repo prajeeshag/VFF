@@ -201,3 +201,10 @@ AUTHENTICATION_BACKENDS = (
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
 ARCHIVE_FILENAME = "archive/%Y-%m-%d--%H-%M-%S"
+
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='')
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_PORT = config('EMAIL_PORT', default=523, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
