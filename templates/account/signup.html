@@ -16,16 +16,21 @@
 				<div class="col-xl-8 col-lg-9">
 					<!-- Social registration form-->
 					<div class="card my-5">
+						{% get_providers as socialaccount_providers %}
 						<div class="card-body p-5 text-center">
 							<div class="h2 font-weight-light mb-3">VFL</div>
 							<div class="h3 font-weight-light mb-3">Create an Account</div>
+							{% if socialaccount_providers %}
 							<div class="small text-muted mb-2">Sign in using...</div>
 							<!-- Social registration links-->
 							{% include "socialaccount/snippets/provider_list.html" with process="login" %}
+							{% endif %}
 						</div>
 						<hr class="my-0" />
 						<div class="card-body p-5">
+							{% if socialaccount_providers %}
 							<div class="text-center small text-muted mb-4">...or enter your information below.</div>
+							{% endif %}
 							<!-- Login form-->
 							<form method="POST" action="{% url 'account_signup' %}">
 								{% include "snippets/form_common.html" %}
