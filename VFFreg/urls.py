@@ -15,19 +15,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls.i18n import i18n_patterns
 
 from django.conf import settings
 from django.conf.urls.static import static
 from allauth.account.views import login
 
-urlpatterns = [
+
+urlpatterns = i18n_patterns(
     path('admin/', admin.site.urls),
     path('', include('registration.urls')),
     path('hijack/', include('hijack.urls', namespace='hijack')),
     path('accounts/', include('allauth.urls')),
     path('', include('public.urls')),
-    path('login/', login, name='login'),
-]
+    path('login/', login, name='login')
+)
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
