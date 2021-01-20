@@ -14,13 +14,24 @@ from pathlib import Path
 import os
 from decouple import config, Csv
 
+from django.utils.translation import ugettext_lazy as _
+
+
+LANGUAGES = (
+            ('en', _('English')),
+            ('ml', _('Malayalam')),
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-ROOT_DIR = Path(__file__).resolve().parent
 
+
+def location(x):
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), x)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY',
@@ -68,6 +79,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -91,6 +103,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.media",
+                'django.template.context_processors.i18n',
             ],
         },
     },
@@ -164,10 +177,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 
-def location(x):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), x)
-
-
 STATIC_URL = "/static/"
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
@@ -200,8 +209,10 @@ EMAIL_PORT = config('EMAIL_PORT', default=523, cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-#recaptcha settings
+# recaptcha settings
 RECAPTCHA_DOMAIN = 'www.recaptcha.net'
-SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error',]
-RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY',default='MyRecaptchaKey123')
-RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default= 'MyRecaptchaPrivateKey456')
+SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error', ]
+#RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
+#RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
+
+LOCALE_PATHS = (location('locale'), )
