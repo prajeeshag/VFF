@@ -140,7 +140,8 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_FORMS = {
     'signup': 'users.forms.SignupForm',
-    'login': 'users.forms.LoginForm'
+    'login': 'users.forms.LoginForm',
+    'reset_password': 'users.forms.ResetPasswordForm',
 }
 
 # Internationalization
