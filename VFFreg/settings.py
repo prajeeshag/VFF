@@ -10,24 +10,27 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
-from .local_settings import *
 from pathlib import Path
 import os
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ROOT_DIR = Path(__file__).resolve().parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "#(jv6__=f7*1hb_058qrh!e@ci7)g3qr)2w_v!xs7c2s2830br"
+SECRET_KEY = config('SECRET_KEY',
+                    default="#(jv6__=f7*1hb_058qrh!e@ci7lsdjflajdl!xs7c2s2830br")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv(),
+                       default='*,')
 
 
 # Application definition
@@ -101,8 +104,12 @@ WSGI_APPLICATION = "VFFreg.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": config('DB_ENGINE', default="django.db.backends.sqlite3"),
+        "NAME": config('DB_NAME', default=BASE_DIR / "db.sqlite3"),
+        'USER': config('DB_USER', default=''),
+        'PASSWORD': config('DB_PASSWORD', default=''),
+        'HOST': config('DB_HOST', default=''),
+        'PORT': config('DB_PORT', default='')
     }
 }
 
@@ -125,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-SITE_ID = 2
+SITE_ID = config('SITE_ID', default=2, cast=int)
 
 # Allauth options
 ACCOUNT_EMAIL_REQUIRED = True
@@ -163,7 +170,6 @@ def location(x):
 STATIC_URL = "/static/"
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
-    os.path.join(BASE_DIR, "frontend/static"),
 )
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
@@ -186,6 +192,15 @@ AUTHENTICATION_BACKENDS = (
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
 ARCHIVE_FILENAME = "archive/%Y-%m-%d--%H-%M-%S"
 
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='')
+EMAIL_HOST = config('EMAIL_HOST', default='')
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_PORT = config('EMAIL_PORT', default=523, cast=int)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
 #recaptcha settings
 RECAPTCHA_DOMAIN = 'www.recaptcha.net'
 SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error',]
+RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY',default='MyRecaptchaKey123')
+RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default= 'MyRecaptchaPrivateKey456')

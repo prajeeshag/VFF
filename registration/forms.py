@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 
 from .models import (
     Officials, Club, PlayerInfo, JerseyPicture, ProfilePicture,
-    AgeProof, AddressProof, Invitations, ClubDetails
+    AgeProof, AddressProof, Invitations, ClubDetails, Grounds
 )
 
 from myapp.widgets import ImageInput

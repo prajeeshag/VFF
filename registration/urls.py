@@ -6,7 +6,7 @@ from .views import (HomePageView, AddOfficials, dpEditView, dpEditListView,
                     AddJersey, UpdateJersey, LinkPlayer, officialsEditView,
                     ClubListView, ClubDetailView, OfficialsListView,
                     DeleteJersey, DeleteInvitation, AcceptInvitation,
-                    abbrUpdateView,
+                    abbrUpdateView, groundUpdateView, clubGrdUpdateView,
                     )
 
 urlpatterns = [
@@ -66,4 +66,10 @@ urlpatterns = [
 
     path('abbr/<int:pk>/',
          abbrUpdateView.as_view(), name='abbr'),
+
+    path('grnds/',
+         groundUpdateView.as_view(), name='grounds'),
+
+    path('clubgrnds/',
+         clubGrdUpdateView.as_view(), name='club_grounds'),
 ]
