@@ -190,17 +190,6 @@ FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'vff_prod',
-        'USER': 'vff',
-        'PASSWORD': 'vff2020',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
-}
-
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
