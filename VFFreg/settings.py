@@ -59,7 +59,8 @@ INSTALLED_APPS = [
     'myapp',
     'extra_views',
     'django_archive',
-    "public",
+    'public',
+    'captcha',
 ]
 
 
@@ -137,6 +138,11 @@ SOCIALACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_FORMS = {
+    'signup': 'users.forms.SignupForm',
+    'login': 'users.forms.LoginForm'
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
@@ -208,3 +214,9 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_PORT = config('EMAIL_PORT', default=523, cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+
+#recaptcha settings
+RECAPTCHA_DOMAIN = 'www.recaptcha.net'
+SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error',]
+RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY',default='MyRecaptchaKey123')
+RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default= 'MyRecaptchaPrivateKey456')
