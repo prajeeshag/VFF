@@ -22,13 +22,17 @@ from django.conf.urls.static import static
 from allauth.account.views import login
 
 
-urlpatterns = i18n_patterns(
+urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('registration.urls')),
     path('hijack/', include('hijack.urls', namespace='hijack')),
+]
+
+urlpatterns += i18n_patterns(
+    path('', include('registration.urls')),
     path('accounts/', include('allauth.urls')),
     path('', include('public.urls')),
-    path('login/', login, name='login')
+    path('login/', login, name='login'),
+    path('users/', include('users.urls'))
 )
 
 

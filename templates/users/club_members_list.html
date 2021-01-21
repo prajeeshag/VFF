@@ -1,0 +1,60 @@
+{% extends 'registration/base.html' %}
+{% load static %}
+{% load thumbnail %}
+{% load my_tags %}
+
+{% block content_main %}
+
+{% with "members of "|addstr:object.name as title %}
+	{% include "snippets/header-simplified.html" with title=title %}
+{% endwith %}
+
+<div class="container">
+	<div class="mb-4">
+		<div class="card-body">
+			<div class="datatable">
+				<table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Role</th>
+							<th>Phone</th>
+							<th>Age</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<th>Name</th>
+							<th>Role</th>
+							<th>Phone</th>
+							<th>Age</th>
+						</tr>
+					</tfoot>
+					<tbody>
+						{% for member in object.officials.all %}
+						<tr>
+							<td><a href="{% url 'OfficialsProfileView' member.pk %}">{{ member }}</a></td>
+							<td>{{ member.role }}</td>
+							<td>{{ member.phone_number }}</td>
+							<td>{{ member.get_age }}</td>
+						</tr>
+						{% endfor %}
+						{% for member in object.players.all %}
+						<tr>
+							<td><a href="{% url 'OfficialsProfileView' member.pk %}">{{ member }}</a></td>
+							<td>Player</td>
+							<td>{{ member.phone_number }}</td>
+							<td>{{ member.get_age }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+	<script src=" {% static 'assets/demo/datatables-demo.js' %} "></script>
+{% endblock %}

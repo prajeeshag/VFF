@@ -29,44 +29,9 @@ from .models import (
     ProfilePicture, AddressProof, AgeProof, Invitations, Grounds
 )
 
-
-class breadcrumbMixin(object):
-
-    breadcrumbs = []
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['breadcrumbs'] = self.get_breadcrumbs()
-        return ctx
-
-    def get_breadcrumbs(self):
-        breadcrumbs = [self.make_breadcrumbs(name='Home', viewname='home')]
-        for bc in self.breadcrumbs:
-            if bc[0] == 'Home':
-                continue
-            breadcrumbs.append(self.make_breadcrumbs(
-                name=bc[0], viewname=bc[1]))
-        return breadcrumbs
-
-    def make_breadcrumbs(self, name=None, viewname=None, obj=None):
-        bcname = name
-        if not bcname:
-            if obj:
-                bcname = str(obj)
-            else:
-                return None
-
-        if not viewname:
-            bclink = None
-        elif obj:
-            bclink = reverse(viewname, kwargs={'pk': obj.pk})
-        else:
-            bclink = reverse(viewname)
-
-        return (bcname, bclink)
+from core.mixins import breadcrumbMixin
 
 
-# @method_decorator(verified_email_required, name='dispatch')
 class HomePageView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/home.html'
     login_url = reverse_lazy('login')
@@ -107,40 +72,6 @@ class ClubListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         ctx['clubs'] = Club.objects.filter(user__is_active=True)
         return ctx
-
-
-class SignUpViewClub(SuccessMessageMixin, CreateView):
-    form_class = SignUpFormClub
-    success_url = reverse_lazy('home')
-    template_name = 'registration/signup.html'
-    success_message = 'User has been created'
-
-    def form_valid(self, form):
-        user = form.save(commit=False)
-        User = get_user_model()
-        user.user_type = User.CLUB
-        club_name = form.cleaned_data['club_name']
-        address = form.cleaned_data['address']
-        contact_number = form.cleaned_data['contact_number']
-        user.save()
-        club = Club.objects.create(user=user, club_name=club_name)
-        ClubDetails.objects.create(
-            club=club, address=address, contact_number=contact_number)
-        return super().form_valid(form)
-
-
-class SignUpViewPersonal(SuccessMessageMixin, CreateView):
-    form_class = SignUpFormPersonal
-    success_url = reverse_lazy('login')
-    template_name = 'registration/signup.html'
-    success_message = 'User has been created, Please login.'
-
-    def form_valid(self, form):
-        user = form.save(commit=False)
-        User = get_user_model()
-        user.user_type = User.PERSONAL
-        user.save()
-        return super().form_valid(form)
 
 
 class AddJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, CreateView):

@@ -1,3 +1,6 @@
+import datetime
+
+from django.shortcuts import reverse
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
@@ -35,14 +38,18 @@ class User(AbstractUser):
     def is_player(self):
         return self.user_type == self.PLAYER
 
+    def is_clubofficial(self):
+        return self.user_type == self.CLUBOFFICIAL
+
 
 class PhoneNumber(models.Model):
-    phone_number = models.CharField(_('Phone number'), max_length=10,
-                                    validators=[validate_phone_number, ],
-                                    unique=True, blank=False)
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    verified = models.BooleanField()
+    number = models.CharField(_('Phone number'), max_length=10,
+                              validators=[validate_phone_number, ],
+                              unique=True, blank=False)
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return("%s" % (self.number,))
 
 
 class Grounds(models.Model):
@@ -62,7 +69,7 @@ class ClubProfile(models.Model):
         related_name='clubprofile')
     name = models.CharField(_('Name'), max_length=50, blank=False, unique=True)
     address = models.TextField(_('Address'), max_length=200, blank=False)
-    pincode = models.TextField(_("Pincode"), validators=[
+    pincode = models.CharField(_("Pincode"), max_length=10, validators=[
                                validate_Indian_pincode, ], blank=False)
     year_of_formation = models.IntegerField(
         _('Year of formation'), blank=True, null=True)
@@ -77,40 +84,44 @@ class ClubProfile(models.Model):
         return "%s" % (self.name)
 
     def get_absolute_url(self):
-        return reverse('ClubProfile', kwargs={'pk': self.pk})
-
-    def president(self):
-        officials = self.Officials.all()
-        for official in officials:
-            if official.is_president():
-                return official
-        return None
-
-    def secretary(self):
-        officials = self.Officials.all()
-        for official in officials:
-            if official.is_secretary():
-                return official
-        return None
+        return reverse('users:clubdetails', kwargs={'pk': self.pk})
 
     def manager(self):
-        officials = self.Officials.all()
-        for official in officials:
-            if official.is_manager():
-                return official
-        return None
+        officials = self.officials.filter(
+            role=ClubOfficialsProfile.MANAGER)
+        if not officials:
+            return None
+        return officials[0]
+
+    def president(self):
+        officials = self.officials.filter(
+            role=ClubOfficialsProfile.PRESIDENT)
+        if not officials:
+            return None
+        return officials[0]
+
+    def secretary(self):
+        officials = self.officials.filter(
+            role=ClubOfficialsProfile.SECRETARY)
+        if not officials:
+            return None
+        return officials[0]
 
     def total_players(self):
-        players = self.Officials.filter(role="Player")
-        return players.count()
+        return self.players.all().count()
 
     def get_contact_number(self):
         if self.manager():
             return "{} (Team Manager)".format(self.manager().phone_number)
-        return "{} (Club Admin)".format(self.clubdetails.contact_number)
+
+        if self.president():
+            return "{} (President)".format(self.president().phone_number)
+
+        if self.secretary():
+            return "{} (Secretary)".format(self.secretary().phone_number)
 
     def num_undern_players(self, n):
-        players = self.Officials.filter(role="Player")
+        players = self.players.all()
         num = 0
         for player in players:
             if player.get_age() <= n:
@@ -275,12 +286,14 @@ class Profile(models.Model):
     last_name = models.CharField(_('Last Name'), max_length=100, blank=False)
     dob = models.DateField(_("Birthday"), blank=False)
     address = models.TextField(_('Address'), max_length=200, blank=False)
-    pincode = models.TextField(_("Pincode"), validators=[
+    pincode = models.CharField(_("Pincode"), max_length=10, validators=[
                                validate_Indian_pincode, ], blank=False)
     student = models.BooleanField(_("Student"), default=False)
     occupation = models.CharField(_('Occupation'), max_length=100, blank=True)
     profilepicture = models.OneToOneField(
         ProfilePicture, on_delete=models.SET_NULL, null=True)
+    phone_number = models.OneToOneField(
+        PhoneNumber, on_delete=models.SET_NULL, null=True)
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -296,7 +309,7 @@ class Profile(models.Model):
     def get_age(self):
         if self.dob is not None:
             today = datetime.date.today()
-            dob = self.date_of_birth
+            dob = self.dob
             return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
         return None
 
@@ -317,6 +330,9 @@ class ClubOfficialsProfile(Profile):
 
     class Meta:
         unique_together = ['club', 'role']
+
+    def get_absolute_url(self):
+        return reverse('users:clubofficialsprofile', kwargs={'pk': self.pk})
 
 
 class PlayerProfile(Profile):
@@ -355,3 +371,6 @@ class PlayerProfile(Profile):
 
     def get_weight(self):
         return "{} kg".format(self.weight)
+
+    def get_absolute_url(self):
+        return reverse('users:playersprofile', kwargs={'pk': self.pk})

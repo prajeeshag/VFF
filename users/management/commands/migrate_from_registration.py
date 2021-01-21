@@ -7,6 +7,7 @@ from users.models import Grounds as Grnds2
 from users.models import (
     ClubProfile, ClubOfficialsProfile, PlayerProfile,
     Jersey, ProfilePicture, Documents, Document,
+    PhoneNumber,
 )
 
 
@@ -26,7 +27,7 @@ class Command(BaseCommand):
         home_ground_name = user.club.clubdetails.home_ground.name
         home_ground = Grnds2.objects.get(name=home_ground_name)
         club_pincode = '000000'
-        obj, created = ClubProfile.objects.get_or_create(
+        obj, created = ClubProfile.objects.update_or_create(
             user=user,
             name=club_name,
             address=club_address,
@@ -49,7 +50,7 @@ class Command(BaseCommand):
             y2 = jersey.y2
             orientation = jersey.orientation
 
-            _, created = Jersey.objects.get_or_create(
+            _, created = Jersey.objects.update_or_create(
                 user=user, image=image, x1=x1, x2=x2, y1=y1,
                 y2=y2, checked=False, jersey_type=jersey_type)
 
@@ -66,12 +67,13 @@ class Command(BaseCommand):
         y2 = dp.y2
         orientation = dp.orientation
 
-        dpNew, created = ProfilePicture.objects.get_or_create(
+        dpNew, created = ProfilePicture.objects.update_or_create(
             image=image,
             x1=x1, x2=x2,
             y1=y1, y2=y2,
             orientation=orientation,
         )
+        return dpNew
 
     def create_docs(self, obj, objNew):
 
@@ -82,13 +84,11 @@ class Command(BaseCommand):
             objNew.documents = documents
             objNew.save()
 
-        print(documents.id)
-
         img = obj.addressproof
         document_type = Document.PHOTOID
         image = img.image
         orientation = img.orientation
-        _, created = Document.objects.get_or_create(
+        _, created = Document.objects.update_or_create(
             collection=documents,
             image=image,
             document_type=document_type,
@@ -101,7 +101,7 @@ class Command(BaseCommand):
         document_type = Document.AGEPROOF
         image = img.image
         orientation = img.orientation
-        _, created = Document.objects.get_or_create(
+        _, created = Document.objects.update_or_create(
             collection=documents,
             image=image,
             document_type=document_type,
@@ -118,7 +118,8 @@ class Command(BaseCommand):
         occupation = obj.occupation
         student = False
         pincode = '000000'
-        objNew, created = ClubOfficialsProfile.objects.get_or_create(
+        phone_number = obj.phone_number
+        objNew, created = ClubOfficialsProfile.objects.update_or_create(
             first_name=first_name,
             last_name=last_name,
             address=address,
@@ -127,10 +128,20 @@ class Command(BaseCommand):
             student=student,
             pincode=pincode,
             role=role,
-            club=clubNew
+            club=clubNew,
         )
+
         if created:
             print("Created club %s for %s" % (role, clubNew.name))
+
+        if objNew.phone_number is None:
+            phnm, created = PhoneNumber.objects.update_or_create(
+                number=phone_number)
+            if created:
+                objNew.phone_number = phnm
+                objNew.save()
+                print("Phone number created for club %s for %s" %
+                      (role, clubNew.name))
 
         dp = obj.profilepicture
         dpNew = self.create_dp(dp)
@@ -172,7 +183,8 @@ class Command(BaseCommand):
             weight = obj.Player.weight
             prefered_foot = obj.Player.prefered_foot
             favorite_position = obj.Player.favorite_position
-            objNew, created = PlayerProfile.objects.get_or_create(
+            phone_number = obj.phone_number
+            objNew, created = PlayerProfile.objects.update_or_create(
                 first_name=first_name,
                 last_name=last_name,
                 address=address,
@@ -187,8 +199,17 @@ class Command(BaseCommand):
                 club=clubNew)
 
             if created:
-                print("Created Player %s %s of %s" %
-                      (first_name, last_name, clubNew.name))
+                print("Created Player %s of %s" %
+                      (objNew, clubNew.name))
+
+            if objNew.phone_number is None:
+                phnm, created = PhoneNumber.objects.update_or_create(
+                    number=phone_number)
+                if created:
+                    objNew.phone_number = phnm
+                    objNew.save()
+                print("Phone number created for Player %s of %s" %
+                      (objNew, clubNew.name))
 
             dp = obj.profilepicture
             dpNew = self.create_dp(dp)
@@ -200,7 +221,7 @@ class Command(BaseCommand):
 
         # Create Grounds
         for grnd1 in Grnds1.objects.all():
-            obj, created = Grnds2.objects.get_or_create(
+            obj, created = Grnds2.objects.update_or_create(
                 name=grnd1.name
             )
             if created:

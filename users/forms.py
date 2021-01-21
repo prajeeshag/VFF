@@ -13,11 +13,6 @@ from allauth.account.forms import (
 from captcha.fields import ReCaptchaField
 
 
-class AuthenticationForm(AuthenticationFormCore):
-    username = UsernameField(label=_('Username or Email'),
-                             widget=forms.TextInput(attrs={'autofocus': True}))
-
-
 class SignupForm(SignupFormAllAuth):
     captcha = ReCaptchaField()
     field_order = ['email', 'password1', 'password2', 'captcha']
