@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'django_archive',
     'public',
     'captcha',
+    'core',
 ]
 
 
