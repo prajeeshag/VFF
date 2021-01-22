@@ -57,21 +57,24 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'django.contrib.staticfiles',
     'django.forms',
+    'maintenance_mode',
     'sorl.thumbnail',
     'crispy_forms',
     'bootstrap4',
     'hijack',
     'compat',
     'django_unused_media',
-    'users.apps.UsersConfig',
-    'registration.apps.RegistrationConfig',
     'django_cleanup.apps.CleanupConfig',
     'widget_tweaks',
-    'myapp',
     'extra_views',
     'django_archive',
-    'public',
     'captcha',
+
+    # Local
+    'users.apps.UsersConfig',
+    'registration.apps.RegistrationConfig',
+    'myapp',
+    'public',
     'core',
 ]
 
@@ -85,6 +88,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "maintenance_mode.middleware.MaintenanceModeMiddleware",
 ]
 
 ROOT_URLCONF = "VFFreg.urls"
@@ -104,6 +108,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.media",
                 'django.template.context_processors.i18n',
+                'maintenance_mode.context_processors.maintenance_mode',
             ],
         },
     },

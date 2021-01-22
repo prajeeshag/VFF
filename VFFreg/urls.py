@@ -25,6 +25,7 @@ from allauth.account.views import login
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('hijack/', include('hijack.urls', namespace='hijack')),
+    path('maintenance/', include('maintenance_mode.urls')),
 ]
 
 urlpatterns += i18n_patterns(
