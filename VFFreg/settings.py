@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     'myapp',
     'public',
     'core',
+    'phone_verification',
 ]
 
 
@@ -223,7 +224,15 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 # recaptcha settings
 RECAPTCHA_DOMAIN = 'www.recaptcha.net'
 SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error', ]
-RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
-RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
+if not DEBUG:
+    RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
+    RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
 
 LOCALE_PATHS = (location('locale'), )
+
+
+# FAST2SMS
+FAST2SMS_API_KEY = config('FAST2SMS_API_KEY', default='')
+FAST2SMS_SENDER_ID = config('FAST2SMS_SENDER_ID', default='')
+FAST2SMS_VARIABLES = config('FAST2SMS_VARIABLES', default='')
+FAST2SMS_TEMPLATE_ID = config('FAST2SMS_TEMPLATE_ID', default='')
