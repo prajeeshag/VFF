@@ -58,5 +58,15 @@
 {% endblock %}
 
 {% block scripts_extra %}
-	<script src=" {% static 'assets/demo/datatables-demo.js' %} "></script>
+	<script>
+$(document).ready(function() {
+	$('#fixtureTable').DataTable({
+		"paging": false,
+		"ordering": false,
+		"order":[],
+		"pageLength": 100,
+		"lengthMenu": [ 100,  ]
+	});
+});
+	</script>
 {% endblock %}

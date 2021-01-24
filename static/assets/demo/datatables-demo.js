@@ -11,12 +11,3 @@ $(document).ready(function() {
     });
 });
 
-$(document).ready(function() {
-	$('#fixtureTable').DataTable({
-		"paging": false,
-		"ordering": false,
-		"order":[],
-		"pageLength": 100,
-		"lengthMenu": [ 100,  ]
-	});
-});
