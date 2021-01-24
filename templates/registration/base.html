@@ -25,9 +25,9 @@
 		{% include 'registration/sidenav.html' %}
 		<div id="layoutSidenav_content">
 			<main>
-				{% if user.club %}
-					{% if not user.club.clubdetails.abbr %}
-						{% include 'registration/abbr_modal.html' %}
+				{% if user.is_club %}
+					{% if not user.clubprofile.abbr %}
+						{% include 'users/partials/abbr_modal.html' %}
 					{% endif %}
 				{% endif %}
 				{% block content_main %} {% endblock %}

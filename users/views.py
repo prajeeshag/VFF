@@ -134,3 +134,9 @@ class ClubOfficialsProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
                 obj.club.user != self.request.user):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
+
+
+class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
+    model = ClubDetails
+    form_class = abbrForm
+    template_name = 'users/abbr_form.html'

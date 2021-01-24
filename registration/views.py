@@ -459,15 +459,6 @@ class dpEditListView(LoginRequiredMixin, ModelFormSetView):
         return kwargs
 
 
-class abbrUpdateView(LoginRequiredMixin, UpdateView):
-    model = ClubDetails
-    form_class = abbrForm
-    template_name = 'registration/abbr_form.html'
-
-    def get_success_url(self):
-        return reverse('home')
-
-
 class groundUpdateView(LoginRequiredMixin, ModelFormSetView):
     model = Grounds
     fields = ['name', ]
