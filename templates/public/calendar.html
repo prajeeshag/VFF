@@ -37,11 +37,25 @@
 							<td>{{ match.date|date:"D d M" }}</td>
 							<td>{{ match.date|date:"P" }}</td>
 							<td>
-								<a data-toggle="tooltip" data-placement="top" title="" 
-										 data-original-title="{{ match.home }}" href={{ match.home.get_absolute_url }}>
+								{% if user.is_anonymous %}
+								<a href="#!" tabindex="0" data-trigger="focus" title="" data-container="body" data-toggle="popover" data-placement="top" data-content="{{ match.home.address }}" data-original-title="{{ match.home.name }}">
 									{{ match.home.abbr|upper }}
 								</a>
+								{% else %}
+								<a data-toggle="tooltip" data-placement="top" title="" data-original-title="{{ match.home }}" href={{ match.home.get_absolute_url }}>
+									{{ match.home.abbr|upper }}
+								</a>
+								{% endif %}
 								<br>vs<br>
+								{% if user.is_anonymous %}
+								<a href="#!" tabindex="0" data-trigger="focus" title="" data-container="body" data-toggle="popover" data-placement="top" data-content="{{ match.away.address }}" data-original-title="{{ match.away.name }}">
+									{{ match.away.abbr|upper }}
+								</a>
+								{% else %}
+								<a data-toggle="tooltip" data-placement="top" title="" data-original-title="{{ match.away }}" href={{ match.away.get_absolute_url }}>
+									{{ match.away.abbr|upper }}
+								</a>
+								{% endif %}
 								<a data-toggle="tooltip" data-placement="top" title="" 
 										 data-original-title="{{ match.away }}" href={{ match.away.get_absolute_url }}>
 									{{ match.away.abbr|upper }}
