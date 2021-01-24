@@ -17,20 +17,20 @@ class Fixture(models.Model):
 
 class Matches(models.Model):
     num = models.PositiveIntegerField(
-        _('Match Number'), validators=[MinValueValidator(1), ])
+        _('Match Number'), validators=[MinValueValidator(1), ],
+        default=1)
     home = models.ForeignKey(
-        Club, on_delete=models.CASCADE, related_name='home_matches')
+        Club, on_delete=models.PROTECT, related_name='home_matches')
     away = models.ForeignKey(
-        Club, on_delete=models.CASCADE, related_name='away_matches')
+        Club, on_delete=models.PROTECT, related_name='away_matches')
     date = models.DateTimeField(_('Date'))
     ground = models.ForeignKey(
-        Grounds, on_delete=models.SET_NULL, null=True, related_name='matches')
-    season = models.ForeignKey(
-        Fixture, on_delete=models.SET_NULL, null=True, related_name='matches')
+        Grounds, on_delete=models.PROTECT, null=True, related_name='matches')
+    fixture = models.ForeignKey(
+        Fixture, on_delete=models.PROTECT, null=True, related_name='matches')
 
     class Meta:
-        unique_together = [['season', 'num'], [
-            'season', 'home', 'away', 'date']]
+        unique_together = ['fixture', 'home', 'away', 'num']
         ordering = ['date']
 
     def __str__(self):
