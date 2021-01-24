@@ -230,6 +230,8 @@ RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
 
 LOCALE_PATHS = (location('locale'), )
 
+MAINTENANCE_MODE_IGNORE_SUPERUSER = True
+
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
