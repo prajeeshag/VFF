@@ -35,3 +35,9 @@ class Matches(models.Model):
 
     def __str__(self):
         return "{} x {}".format(self.home, self.away)
+
+    def get_day_nY(self):
+        return self.date.strftime("%b. %d %a")
+
+    def get_time(self):
+        return self.date.strftime('%H:%M %p')

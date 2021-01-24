@@ -1,0 +1,64 @@
+{% extends 'public/base.html' %}
+{% load static %}
+{% load thumbnail %}
+{% load my_tags %}
+
+{% block body %} class="bg-light" {% endblock %}
+
+{% block content %}
+
+	{% with "Fixture for VFL 2021" as title %}
+		{% include "snippets/header-simplified.html" with title=title %}
+	{% endwith %}
+
+<div class="container">
+	<div class="mb-4">
+		<div class="card-body">
+			<div class="datatable">
+				<table class="table table-responsive-md table-bordered table-hover hover table-striped table-light bg-light" id="dataTable" width="100%" cellspacing="0">
+					<thead>
+						<tr>
+							<th>Date</th>
+							<th>Time</th>
+							<th>Match</th>
+							<th>Ground</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<th>Date</th>
+							<th>Time</th>
+							<th>Match</th>
+							<th>Ground</th>
+						</tr>
+					</tfoot>
+					<tbody>
+						{% for match in fixture.matches.all %}
+						<tr>
+							<td>{{ match.date|date:"D d M" }}</td>
+							<td>{{ match.date|date:"P" }}</td>
+							<td>
+								<a data-toggle="tooltip" data-placement="top" title="" 
+										 data-original-title="{{ match.home }}" href={{ match.home.get_absolute_url }}>
+									{{ match.home.abbr|upper }}
+								</a>
+								<br>vs<br>
+								<a data-toggle="tooltip" data-placement="top" title="" 
+										 data-original-title="{{ match.away }}" href={{ match.away.get_absolute_url }}>
+									{{ match.away.abbr|upper }}
+								</a>
+							</td>
+							<td>{{ match.ground.name }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+	<script src=" {% static 'assets/demo/datatables-demo.js' %} "></script>
+{% endblock %}

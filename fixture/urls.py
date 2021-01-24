@@ -8,5 +8,7 @@ app_name = 'fixture'
 router = routers.DefaultRouter()
 router.register(r'fixtureinput', views.FixtureInputApi)
 
-urlpatterns = []
-urlpatterns += [path('', include(router.urls))]
+# API
+urlpatterns = [
+    path('api/', include(router.urls)),
+]
