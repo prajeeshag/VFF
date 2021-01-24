@@ -29,7 +29,7 @@ urlpatterns = [
 ]
 
 urlpatterns += i18n_patterns(
-    path('', include('registration.urls')),
+#    path('', include('registration.urls')),
     path('accounts/', include('allauth.urls')),
     path('', include('public.urls')),
     path('login/', login, name='login'),

@@ -23,7 +23,7 @@ from . import models
 class ClubList(LoginRequiredMixin, breadcrumbMixin, TemplateView):
     template_name = 'users/club_list.html'
     login_url = reverse_lazy('login')
-    breadcrumbs = [('Club List', None), ]
+    breadcrumbs = [('Clubs', None), ]
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -36,7 +36,7 @@ class ClubMembersList(LoginRequiredMixin, breadcrumbMixin, DetailView):
     template_name = 'users/club_members_list.html'
     login_url = reverse_lazy('login')
     breadcrumbs = [
-        ('Club List', 'ClubList'),
+        ('Clubs', 'users:clublist'),
         ('List of Members', None),
     ]
 
@@ -45,12 +45,12 @@ class ClubDetails(LoginRequiredMixin, breadcrumbMixin, DetailView):
     template_name = 'users/club_details.html'
     login_url = reverse_lazy('login')
     model = models.ClubProfile
-    breadcrumbs = [('Club List', 'ClubList'), ]
+    breadcrumbs = [('Clubs', 'users:clublist'), ]
 
     def get_breadcrumbs(self):
         bc = super().get_breadcrumbs()
         bc.append(self.make_breadcrumbs(
-            viewname='ClubDetail', obj=self.object))
+            viewname='users:clubdetails', obj=self.object))
         return bc
 
     def get_context_data(self, **kwargs):
@@ -70,7 +70,7 @@ class ClubOfficialsProfile(LoginRequiredMixin, breadcrumbMixin, DetailView):
     def get_breadcrumbs(self):
         bc = super().get_breadcrumbs()
         bc.append(self.make_breadcrumbs(
-            viewname='ClubDetail', obj=self.object.club))
+            viewname='users:clubdetails', obj=self.object.club))
         bc.append(self.make_breadcrumbs(name=self.object.role))
         return bc
 
@@ -87,7 +87,7 @@ class PlayersProfile(LoginRequiredMixin, breadcrumbMixin, DetailView):
     def get_breadcrumbs(self):
         bc = super().get_breadcrumbs()
         bc.append(self.make_breadcrumbs(
-            viewname='ClubDetail', obj=self.object.club))
+            viewname='users:clubdetails', obj=self.object.club))
         return bc
 
 

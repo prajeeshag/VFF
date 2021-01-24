@@ -223,13 +223,16 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 # recaptcha settings
+
 RECAPTCHA_DOMAIN = 'www.recaptcha.net'
-SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error', ]
-RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
-RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
+
+if DEBUG:
+    SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error', ]
+else:
+    RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
+    RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
 
 LOCALE_PATHS = (location('locale'), )
-
 MAINTENANCE_MODE_IGNORE_SUPERUSER = True
 
 REST_FRAMEWORK = {

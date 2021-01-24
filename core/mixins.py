@@ -23,10 +23,8 @@ class breadcrumbMixin:
         return ctx
 
     def get_breadcrumbs(self):
-        breadcrumbs = [self.make_breadcrumbs(name='Home', viewname='home')]
+        breadcrumbs = []
         for bc in self.breadcrumbs:
-            if bc[0] == 'Home':
-                continue
             breadcrumbs.append(self.make_breadcrumbs(
                 name=bc[0], viewname=bc[1]))
         return breadcrumbs
