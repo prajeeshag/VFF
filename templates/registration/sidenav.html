@@ -11,16 +11,10 @@
 					My Club
 				</a>
 				{% endif %}
-				<a class="nav-link" href=" {% url 'ClubList' %} ">
+				<a class="nav-link" href=" {% url 'users:clublist' %} ">
 					<div class="nav-link-icon"><i data-feather="globe"></i></div>
 					All Clubs
 				</a>
-				{% if user.is_staff %}
-				<a class="nav-link" href=" {% url 'officials_list_view' %} ">
-					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
-					List of People
-				</a>
-				{% endif %}
 			</div>
 		</div>
 		<!-- Sidenav Footer-->

@@ -45,7 +45,10 @@
 		</div>
 
 		{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" href="urlUpdate"><i data-feather='edit'></i></a>
+			<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" 
+				data-original-title="Edit Info" href="{% url 'users:updateplayersprofile' object.pk %}">
+				<i data-feather='edit'></i>
+			</a>
 		{% endif %}
 
 	</div>

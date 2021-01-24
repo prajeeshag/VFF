@@ -9,11 +9,11 @@
 			</div>
 		{% endthumbnail %}
 	{% if player.club.user == user or user.is_superuser %}
-		<div class="text-center">
-			<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo"  href="{% url 'dp_edit' dp.pk %}">
-				<i data-feather='camera'></i>
-			</a>
-		</div>
+		{% comment %}<div class="text-center">{% endcomment %}
+			{% comment %}<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo"  href="{% url 'dp_edit' dp.pk %}">{% endcomment %}
+				{% comment %}<i data-feather='camera'></i>{% endcomment %}
+			{% comment %}</a>{% endcomment %}
+		{% comment %}</div>{% endcomment %}
 	{% endif %}
 	{% endwith %}
 	<hr/>
@@ -27,7 +27,7 @@
 
 		{% if player.club.user == user or user.is_superuser %}
 		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" 
-			href="{% url 'users:updateplayersprofile' player.pk %}" class="btn btn-primary btn-icon">
+			href="{% url 'users:updateplayersprofile' object.pk %}" class="btn btn-primary btn-icon">
 			<i data-feather="edit"></i>
 		</a>
 		{% endif %}

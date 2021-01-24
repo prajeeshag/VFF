@@ -41,11 +41,11 @@
 			{% endif %}
 		</div>
 		{% if user == object.user and jerseypictures|length < 3 %}
-		<div class="col-2">
-			<p class="mb-0 mt-5 text-right">
-			<a href="{% url 'AddJersey' %}"><i class="fa fa-plus"></i></a>
-			</p>
-		</div>
+		{% comment %}<div class="col-2">{% endcomment %}
+			{% comment %}<p class="mb-0 mt-5 text-right">{% endcomment %}
+			{% comment %}<a href="{% url 'users:addjersey' %}"><i class="fa fa-plus"></i></a>{% endcomment %}
+			{% comment %}</p>{% endcomment %}
+		{% comment %}</div>{% endcomment %}
 		{% endif %}
 		</div>
 		<hr class="mt-2 mb-4" />
@@ -60,8 +60,8 @@
 					</div>
 					{% if user == object.user %}
 					<div class="card-body">
-						<a class="btn btn-link" href="{% url 'UpdateJersey' jersey.pk %}"><i class="fa fa-edit"></i> edit </a>
-						<a class="btn btn-link" href="{% url 'DeleteJersey' jersey.pk %}"><i class="fa fa-trash"></i> delete </a>
+						{% comment %}<a class="btn btn-link" href="{% url 'UpdateJersey' jersey.pk %}"><i class="fa fa-edit"></i> edit </a>{% endcomment %}
+						{% comment %}<a class="btn btn-link" href="{% url 'DeleteJersey' jersey.pk %}"><i class="fa fa-trash"></i> delete </a>{% endcomment %}
 					</div>
 					{% endif %}
 					{% endthumbnail %}
@@ -79,17 +79,17 @@
 			<h3 class="mb-0 mt-5">Club Officials</h3>
 		</div>
 		{% if user == object.user %}
-			<div class="col-12">
-			{% if not user.club.president %}
-				<a class="mr-2" href="{% url 'AddOfficials' 'President' %}"><i class="fa fa-plus"></i> President </a>
-			{% endif %}
-			{% if not user.club.secretary %}
-				<a class="mr-2" href="{% url 'AddOfficials' 'Secretary' %}"><i class="fa fa-plus"></i> Secretary </a>
-			{% endif %}
-			{% if not user.club.manager %}
-				<a class="mr-2" href="{% url 'AddOfficials' 'Manager' %}"><i class="fa fa-plus"></i> Manager </a>
-			{% endif %}
-			</div>
+			{% comment %}<div class="col-12">{% endcomment %}
+			{% comment %}{% if not user.club.president %}{% endcomment %}
+				{% comment %}<a class="mr-2" href="{% url 'AddOfficials' 'President' %}"><i class="fa fa-plus"></i> President </a>{% endcomment %}
+			{% comment %}{% endif %}{% endcomment %}
+			{% comment %}{% if not user.club.secretary %}{% endcomment %}
+				{% comment %}<a class="mr-2" href="{% url 'AddOfficials' 'Secretary' %}"><i class="fa fa-plus"></i> Secretary </a>{% endcomment %}
+			{% comment %}{% endif %}{% endcomment %}
+			{% comment %}{% if not user.club.manager %}{% endcomment %}
+				{% comment %}<a class="mr-2" href="{% url 'AddOfficials' 'Manager' %}"><i class="fa fa-plus"></i> Manager </a>{% endcomment %}
+			{% comment %}{% endif %}{% endcomment %}
+			{% comment %}</div>{% endcomment %}
 		{% endif %}
 		</div>
 		<hr class="mt-2 mb-4" />

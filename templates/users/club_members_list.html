@@ -33,7 +33,7 @@
 					<tbody>
 						{% for member in object.officials.all %}
 						<tr>
-							<td><a href="{% url 'OfficialsProfileView' member.pk %}">{{ member }}</a></td>
+							<td><a href="{% url 'users:clubofficialsprofile' member.pk %}">{{ member }}</a></td>
 							<td>{{ member.role }}</td>
 							<td>{{ member.phone_number }}</td>
 							<td>{{ member.get_age }}</td>
@@ -41,7 +41,7 @@
 						{% endfor %}
 						{% for member in object.players.all %}
 						<tr>
-							<td><a href="{% url 'OfficialsProfileView' member.pk %}">{{ member }}</a></td>
+							<td><a href="{% url 'users:playersprofile' member.pk %}">{{ member }}</a></td>
 							<td>Player</td>
 							<td>{{ member.phone_number }}</td>
 							<td>{{ member.get_age }}</td>
