@@ -137,6 +137,6 @@ class ClubOfficialsProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
 
 
 class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
-    model = ClubDetails
-    form_class = abbrForm
+    model = models.ClubProfile
+    fields = ['abbr',]
     template_name = 'users/abbr_form.html'

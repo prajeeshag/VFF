@@ -10,7 +10,10 @@ class RedirectToPreviousMixin:
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return self.request.session['previous_page']
+        url = self.request.session.get('previous_page',None)
+        if url is None:
+            url = request.META.get('HTTP_REFERER', self.default_redirect)
+        return url
 
 
 class breadcrumbMixin:
