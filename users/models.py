@@ -79,6 +79,7 @@ class ClubProfile(models.Model):
         Grounds, null=True,
         related_name='club',
         on_delete=models.SET_NULL)
+    registered = models.BooleanField(_('Registered'), default=False)
 
     def __str__(self):
         return "%s" % (self.name)

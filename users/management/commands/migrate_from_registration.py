@@ -27,6 +27,7 @@ class Command(BaseCommand):
         home_ground_name = user.club.clubdetails.home_ground.name
         home_ground = Grnds2.objects.get(name=home_ground_name)
         club_pincode = '000000'
+        registered = True
         obj, created = ClubProfile.objects.update_or_create(
             user=user,
             name=club_name,
@@ -34,7 +35,8 @@ class Command(BaseCommand):
             pincode=club_pincode,
             year_of_formation=year_of_formation,
             abbr=club_abbr,
-            home_ground=home_ground)
+            home_ground=home_ground,
+            registered=registered)
 
         if created:
             print("Copied clubProfile for : %s" % (club_name,))

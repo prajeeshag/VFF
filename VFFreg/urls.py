@@ -33,7 +33,8 @@ urlpatterns += i18n_patterns(
     path('accounts/', include('allauth.urls')),
     path('', include('public.urls')),
     path('login/', login, name='login'),
-    path('users/', include('users.urls'))
+    path('users/', include('users.urls')),
+    path('fixture/', include('fixture.urls'))
 )
 
 

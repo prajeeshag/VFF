@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'extra_views',
     'django_archive',
     'captcha',
+    'rest_framework',
 
     # Local
     'users.apps.UsersConfig',
@@ -76,6 +77,7 @@ INSTALLED_APPS = [
     'myapp',
     'public',
     'core',
+    'fixture',
 ]
 
 
@@ -227,3 +229,11 @@ RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
 RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
 
 LOCALE_PATHS = (location('locale'), )
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}

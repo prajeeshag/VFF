@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
 from . import views
 
@@ -6,18 +7,26 @@ app_name = 'users'
 
 urlpatterns = [
     path('home/', views.ClubList.as_view(), name='home'),
+
     path('clublist/', views.ClubList.as_view(), name='clublist'),
+
     path('clubmemberslist/<int:pk>/',
          views.ClubMembersList.as_view(), name='clubmemberslist'),
+
     path('clubdetails/<int:pk>/', views.ClubDetails.as_view(), name='clubdetails'),
+
     path('clubofficials/<int:pk>/', views.ClubOfficialsProfile.as_view(),
          name='clubofficialsprofile'),
+
     path('players/<int:pk>/', views.PlayersProfile.as_view(),
          name='playersprofile'),
+
     path('updateclubprofile/<int:pk>/',
          views.UpdateClubProfile.as_view(), name='updateclubprofile'),
+
     path('playersprofileupdate/<int:pk>/',
          views.PlayersProfileUpdate.as_view(), name='updateplayersprofile'),
+
     path('clubofficialsprofileupdate/<int:pk>/',
          views.ClubOfficialsProfileUpdate.as_view(), name='updateclubofficialsprofile'),
 ]
