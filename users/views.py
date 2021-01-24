@@ -41,7 +41,7 @@ class ClubMembersList(LoginRequiredMixin, breadcrumbMixin, DetailView):
     ]
 
 
-class ClubDetails(LoginRequiredMixin, breadcrumbMixin, DetailView):
+class ClubDetails(breadcrumbMixin, DetailView):
     template_name = 'users/club_details.html'
     login_url = reverse_lazy('login')
     model = models.ClubProfile
