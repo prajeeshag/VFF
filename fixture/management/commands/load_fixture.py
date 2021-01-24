@@ -30,7 +30,6 @@ class Command(BaseCommand):
         print(fixture)
         if reset:
             fixture.matches.all().delete()
-
         num = 1
         tz = pytz.timezone("Asia/Calcutta")
         for it in dat:
@@ -38,10 +37,8 @@ class Command(BaseCommand):
             away = Club.objects.get(pk=it['away'])
             home = Club.objects.get(pk=it['home'])
             ground = home.home_ground
-            print(away, home, ground)
-            break
-            obj = Matches.objects.update_or_create(
+            obj, created = Matches.objects.update_or_create(
                 num=num, home=home,
                 away=away, date=date,
                 ground=ground, fixture=fixture)
-            print(obj)
+            print(obj, created)
