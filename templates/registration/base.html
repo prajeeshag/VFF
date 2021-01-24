@@ -19,11 +19,18 @@
 {% endblock %}
 
 	{% block content %}
-		{% include 'registration/topbar.html' %}
+		{% if not user.is_anonymous %}
+			{% include 'registration/topbar.html' %}
+		{% endif %}
 
-	<div id="layoutSidenav">
-		{% include 'registration/sidenav.html' %}
+		{% if not user.is_anonymous %}
+		<div id="layoutSidenav">
+			{% include 'registration/sidenav.html' %}
 		<div id="layoutSidenav_content">
+		{% else %}
+		<div class="container-md">
+		<div>
+		{% endif %}
 			<main>
 				{% if user.is_club %}
 					{% if not user.clubprofile.abbr %}
