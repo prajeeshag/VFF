@@ -7,4 +7,4 @@ from users.models import ClubProfile, Grounds
 class FixtureInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClubProfile
-        fields = ['pk', 'home_ground', 'abbr']
+        fields = ['pk', 'home_ground', 'abbr', ]
