@@ -236,3 +236,4 @@ FAST2SMS_API_KEY = config('FAST2SMS_API_KEY', default='')
 FAST2SMS_SENDER_ID = config('FAST2SMS_SENDER_ID', default='')
 FAST2SMS_VARIABLES = config('FAST2SMS_VARIABLES', default='')
 FAST2SMS_TEMPLATE_ID = config('FAST2SMS_TEMPLATE_ID', default='')
+PHONE_VERIFICATION_BACKEND = 'phone_verification.backends.test'
