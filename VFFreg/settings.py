@@ -52,9 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
     'django.contrib.staticfiles',
     'django.forms',
     'maintenance_mode',
@@ -72,6 +69,7 @@ INSTALLED_APPS = [
 
     # Local
     'users.apps.UsersConfig',
+    'account',
     'registration.apps.RegistrationConfig',
     'myapp',
     'public',
@@ -208,7 +206,7 @@ HIJACK_USE_BOOTSTRAP = True
 AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = (
     "users.backends.AuthBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    # "allauth.account.auth_backends.AuthenticationBackend",
 )
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'

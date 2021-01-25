@@ -19,7 +19,6 @@ from django.conf.urls.i18n import i18n_patterns
 
 from django.conf import settings
 from django.conf.urls.static import static
-from allauth.account.views import login
 
 
 urlpatterns = [
@@ -30,9 +29,8 @@ urlpatterns = [
 
 urlpatterns += i18n_patterns(
     path('', include('registration.urls')),
-    path('accounts/', include('allauth.urls')),
     path('', include('public.urls')),
-    path('login/', login, name='login'),
+    path('', include('account.urls')),
     path('users/', include('users.urls')),
     path('verify_phone/', include('phone_verification.urls')),
 )

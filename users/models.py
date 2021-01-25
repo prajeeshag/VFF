@@ -24,7 +24,6 @@ class User(AbstractUser):
         (CLUBOFFICIAL, _('Club Secretary/President/Manager')),
         (OTHER, _('OTHER')),
     ]
-    email = models.EmailField(_('Email'), unique=True, blank=False)
     user_type = models.CharField(_('User type'), max_length=50,
                                  choices=ACCOUNT_TYPE_CHOICES,
                                  default=OTHER)
@@ -293,7 +292,8 @@ class Profile(models.Model):
     profilepicture = models.OneToOneField(
         ProfilePicture, on_delete=models.SET_NULL, null=True)
     phone_number = models.OneToOneField(
-        PhoneNumber, on_delete=models.SET_NULL, null=True)
+        PhoneNumber, on_delete=models.PROTECT, null=True)
+    email = models.EmailField(_('Email'), unique=True, blank=True, null=True)
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
