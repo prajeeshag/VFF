@@ -13,9 +13,13 @@
 	<!-- Sidenav Toggle Button-->
 	<button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 mr-lg-2" id="sidebarToggle">
 		{% with dp=user.get_profilepicture %}
-			{% thumbnail dp.image "50x50" upscale=False cropbox=dp.cropbox as im %}
-				<img class="img-fluid" src="{{ im.url }}" />
-			{% endthumbnail %}
+			{% if dp.image %}
+				{% thumbnail dp.image "50x50" upscale=False cropbox=dp.cropbox as im %}
+					<img class="img-fluid" src="{{ im.url }}" />
+				{% endthumbnail %}
+			{% else %}
+				<img class="img-fluid" src="{% static 'assets/img/illustrations/profiles/profile-1.jpeg' %}">
+			{% endif %}
 		{% endwith %}
 	</button>
 	<!-- Navbar Items-->
