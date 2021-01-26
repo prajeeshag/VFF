@@ -114,7 +114,7 @@ class test(BaseBackend):
 
     @classmethod
     def validate_security_code(cls, number, security_code):
-        if security_code == 'verify':
+        if security_code == 'verify' or security_code == '12345':
             return cls.SECURITY_CODE_VERIFIED
         if security_code == 'timeout':
             return cls.SECURITY_CODE_NOTFOUND

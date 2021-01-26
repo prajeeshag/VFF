@@ -8,6 +8,8 @@ app_name = 'users'
 urlpatterns = [
     path('home/', views.Home.as_view(), name='home'),
 
+    path('sendoffer/<int:pk>', views.CreateClubSigninOffer, name='signinoffer'),
+
     path('clublist/', views.ClubList.as_view(), name='clublist'),
 
     path('clubmemberslist/<int:pk>/',

@@ -7,6 +7,7 @@ from django.conf import settings
 
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinLengthValidator
+from django.core.exceptions import ValidationError
 
 from core.validators import validate_Indian_pincode, validate_phone_number
 from core.utils import get_image_upload_path
@@ -418,3 +419,83 @@ class PlayerProfile(Profile):
 
     def get_absolute_url(self):
         return reverse('users:playersprofile', kwargs={'pk': self.pk})
+
+
+class PlayerCount(models.Model):
+
+    MAX_NUM_PLAYERS = 30
+
+    club = models.OneToOneField(
+        ClubProfile,
+        on_delete=models.CASCADE,
+        related_name='playercount'
+    )
+
+    count = models.PositiveIntegerField(default=0)
+
+    class MaximumLimitReached(Exception):
+        pass
+
+    def queryset(self):
+        return self.__class__.objects.filter(id=self.id)
+
+    def increment(self, n=1):
+        with transaction.atomic():
+            obj = self.queryset().select_for_update().get()
+            obj.count += n
+            if obj.count > self.MAX_NUM_PLAYERS:
+                raise self.MaximumLimitReached()
+            if obj.count < 0:
+                obj.count = 0
+            obj.save()
+
+
+class ClubSignings(models.Model):
+    club = models.ForeignKey(
+        ClubProfile,
+        on_delete=models.CASCADE,
+        related_name='cluboffers')
+    player = models.ForeignKey(
+        PlayerProfile,
+        on_delete=models.CASCADE,
+        related_name='cluboffers')
+    accepted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['club', 'player']
+
+    class MaximumLimitReached(Exception):
+        pass
+
+    class PlayerCountNotFound(Exception):
+        pass
+
+    class AcceptedOfferExist(Exception):
+        pass
+
+    def accept(self):
+        accepted_offers = self.player.cluboffers.filter(accepted=True)
+        if accepted_offers:
+            raise AcceptedOfferExist()
+
+        playercount = getattr(self.club, 'playercount', None)
+        if not playercount:
+            raise PlayerCountNotFound()
+
+        try:
+            playercount.increment()
+        except playercount.MaximumLimitReached:
+            raise self.MaximumLimitReached()
+        self.accepted = True
+        self.save()
+
+    def release(self):
+        if not self.accepted:
+            return
+        playercount = getattr(self.club, 'playercount', None)
+        if not playercount:
+            raise PlayerCountNotFound()
+        playercount.increment(-1)
+        self.accepted = False
+        self.save()

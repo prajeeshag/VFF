@@ -8,10 +8,13 @@ from django.template import loader
 from django.utils.safestring import mark_safe
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
@@ -151,3 +154,37 @@ class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
     model = models.ClubProfile
     fields = ['abbr', ]
     template_name = 'users/abbr_form.html'
+
+
+@require_http_methods(['POST'])
+@login_required
+def CreateClubSigninOffer(request, pk):
+    user = get_user_model()
+    try:
+        player = user.objects.get(pk=pk)
+    except:
+        messages.add_message(
+            request, messages.WARNING,
+            _("Couldn't create siginin offer."))
+        return HttpResponseRedirect(request.path_info)
+
+    club = getattr(request.user, 'clubprofile', None)
+    if not club:
+        messages.add_message(
+            request, messages.WARNING,
+            _("You are not authorised to create a sigin offer."))
+        return HttpResponseRedirect(request.path_info)
+
+    signin, created = models.ClubSignings.objects.get_or_create(
+        club=club, player=player)
+
+    if not created:
+        messages.add_message(
+            request, messages.INFO,
+            _("You have already sent an offer to this player"))
+    else:
+        messages.add_message(
+            request, messages.SUCCESS,
+            _("Succefully created an offer for this player"))
+
+    return HttpResponseRedirect(request.path_info)

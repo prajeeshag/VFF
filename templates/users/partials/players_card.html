@@ -1,6 +1,5 @@
 
 {% load thumbnail %}
-
 <div class="card w-auto ">
 	{% with player.profilepicture as dp %}
 		{% thumbnail dp.image "300x300" upscale=False cropbox=dp.cropbox as im %}
@@ -8,28 +7,18 @@
 				<img class="card-img-top rounded-circle" src="{{ im.url }}" alt="Card image cap">
 			</div>
 		{% endthumbnail %}
-	{% if player.club.user == user or user.is_superuser %}
-		{% comment %}<div class="text-center">{% endcomment %}
-			{% comment %}<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo"  href="{% url 'dp_edit' dp.pk %}">{% endcomment %}
-				{% comment %}<i data-feather='camera'></i>{% endcomment %}
-			{% comment %}</a>{% endcomment %}
-		{% comment %}</div>{% endcomment %}
-	{% endif %}
 	{% endwith %}
 	<hr/>
-	<div class="card-body text-center">
+	<a class="card-body text-center" href={{ player.get_absolute_url }}>
 		<p class="card-title h5">{{ player }}</p>
-		<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ player.phone_number }}</p>
+		<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ player.get_phone_number }}</p>
 		<p class="card-text font-weight-bolder">Age: <strong>{{ player.get_age }}</strong></p>
 		<p class="card-text font-weight-bolder">Foot: <strong>{{ player.prefered_foot }}</strong></p>
 		<p class="card-text font-weight-bolder">Position: <strong>{{ player.favorite_position }}</strong></p>
-		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="View Profile" href={{ player.get_absolute_url }} class="btn btn-secondary btn-icon"><i data-feather="eye"></i></a>
-
-		{% if player.club.user == user or user.is_superuser %}
-		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" 
-			href="{% url 'users:updateplayersprofile' object.pk %}" class="btn btn-primary btn-icon">
-			<i data-feather="edit"></i>
-		</a>
-		{% endif %}
-	</div>
+	</a>
+	<hr/>
+	<form method="POST" action="{% url 'signinoffer' player.pk %}">
+		{% csrf_token %}
+		<input class="btn btn-sm btn-primary" type="submit">
+	</form>
 </div>
