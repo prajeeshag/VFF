@@ -1,11 +1,12 @@
+
 from django.utils.decorators import method_decorator
+from django.utils.translation import ugettext_lazy as _
+
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
+
 from django.urls import reverse_lazy, reverse
-from django import forms
-from django.template import loader
-from django.utils.safestring import mark_safe
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseForbidden, HttpResponseRedirect
@@ -159,21 +160,23 @@ class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
 @require_http_methods(['POST'])
 @login_required
 def CreateClubSigninOffer(request, pk):
-    user = get_user_model()
+
+    url = request.META.get('HTTP_REFERER', "/")
+
     try:
-        player = user.objects.get(pk=pk)
+        player = models.PlayerProfile.objects.get(pk=pk)
     except:
         messages.add_message(
             request, messages.WARNING,
             _("Couldn't create siginin offer."))
-        return HttpResponseRedirect(request.path_info)
+        return HttpResponseRedirect(url)
 
     club = getattr(request.user, 'clubprofile', None)
     if not club:
         messages.add_message(
             request, messages.WARNING,
             _("You are not authorised to create a sigin offer."))
-        return HttpResponseRedirect(request.path_info)
+        return HttpResponseRedirect(url)
 
     signin, created = models.ClubSignings.objects.get_or_create(
         club=club, player=player)
@@ -187,4 +190,4 @@ def CreateClubSigninOffer(request, pk):
             request, messages.SUCCESS,
             _("Succefully created an offer for this player"))
 
-    return HttpResponseRedirect(request.path_info)
+    return HttpResponseRedirect(url)

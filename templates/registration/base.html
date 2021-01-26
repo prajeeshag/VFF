@@ -24,19 +24,15 @@
 		{% endif %}
 
 		{% if not user.is_anonymous %}
-		<div id="layoutSidenav">
-			{% include 'registration/sidenav.html' %}
-		<div id="layoutSidenav_content">
+			<div id="layoutSidenav">
+				{% include 'registration/sidenav.html' %}
+			<div id="layoutSidenav_content">
 		{% else %}
-		<div class="container-md">
-		<div>
+			<div class="container-md">
+				{% include 'snippets/messages.html' %}
+			<div>
 		{% endif %}
 			<main>
-				{% if user.is_club %}
-					{% if not user.clubprofile.abbr %}
-						{% include 'users/partials/abbr_modal.html' %}
-					{% endif %}
-				{% endif %}
 				{% block content_main %} {% endblock %}
 			</main>
 

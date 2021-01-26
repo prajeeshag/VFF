@@ -17,8 +17,8 @@
 		<p class="card-text font-weight-bolder">Position: <strong>{{ player.favorite_position }}</strong></p>
 	</a>
 	<hr/>
-	<form method="POST" action="{% url 'signinoffer' player.pk %}">
+	<form method="POST" action="{% url 'users:signinoffer' player.pk %}">
 		{% csrf_token %}
-		<input class="btn btn-sm btn-primary" type="submit">
+		<input class="btn btn-sm btn-primary" type="submit" value="Send offer">
 	</form>
 </div>
