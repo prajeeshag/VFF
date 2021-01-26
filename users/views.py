@@ -27,11 +27,15 @@ class Home(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_club():
             return redirect(reverse('users:clublist'))
+        if request.user.get_profile():
+            profile = request.user.get_profile()
+            return redirect(profile.get_absolute_url())
         return super().dispatch(request, *args, **kwargs)
 
     def get_template_names(self):
         template = super().get_template_names()
-        if not self.request.user.get_profile():
+
+        if not self.request.user.is_staff and not self.request.user.get_profile():
             return ['page_underconstruction.html']
         return template
 

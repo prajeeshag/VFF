@@ -6,9 +6,15 @@
 
 {% block content_main %}
 
+{% if object.club %}
 {% with "Player of club "|addstr:object.club as subtitle %}
 	{% include "users/partials/players_profile.html" with object=object title=object subtitle=subtitle  %}
 {% endwith %}
+{% else %}
+{% with "Currently associated with any club" as subtitle %}
+	{% include "users/partials/players_profile.html" with object=object title=object subtitle=subtitle  %}
+{% endwith %}
+{% endif %}
 
 {% endblock %}
 

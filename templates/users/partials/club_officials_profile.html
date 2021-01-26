@@ -1,8 +1,6 @@
-
 {% load thumbnail %}
 {% load static %}
 {% load my_tags %}
-
 
 {% include "snippets/header-light.html" with title=title subtitle=subtitle  %}
 <div class="container">
@@ -30,18 +28,19 @@
 			{% include 'registration/text_field.html' with name='Birthday' value=object.dob %}
 		{% endif %}
 		{% include 'registration/text_field.html' with name='Occupation' value=object.occupation %}
-		{% include 'registration/text_field.html' with name='Prefered foot' value=object.prefered_foot %}
-		{% include 'registration/text_field.html' with name='Favorite position' value=object.favorite_position %}
-		{% include 'registration/text_field.html' with name='Height' value=object.get_height %}
-		{% include 'registration/text_field.html' with name='Weight' value=object.get_weight %}
+
 		<div class="col-md-12 p-1">
 			<h6 class="text-black-50">Address</h6>
 			<h5 >{{object.address}}</h5>
 		</div>
-		{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" href="urlUpdate"><i data-feather='edit'></i></a>
+
+		{% if object.user == user or user.is_staff %}
+		<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" 
+			data-original-title="Edit Info" href="{% url 'users:updateclubofficialsprofile' object.pk %}">
+			<i data-feather='edit'></i>
+		</a>
 		{% endif %}
+
 	</div>
 </div>
-
 

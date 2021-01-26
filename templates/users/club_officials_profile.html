@@ -6,51 +6,16 @@
 
 {% block content_main %}
 
-{% with object.club|stringformat:"s" as club %}
-{% with object.role|add:" of club "|add:club as subtitle %}
-{% include "snippets/header-light.html" with title=object subtitle=subtitle  %}
-{% endwith %}
-{% endwith %}
 
-
-<div class="container">
-	<div class="mb-4 text-center">
-		{% with object.profilepicture as dp %}
-			{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}
-				<div class="p-2 m-auto" style="max-width: 300px;">
-					<img class="rounded-circle" src="{{ im.url }}" alt="Card image cap">
-				</div>
-			{% endthumbnail %}
-			{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-secondary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo" href="urlUpdate"><i data-feather='camera'></i></a>
-			{% endif %}
-		{% endwith %}
-	</div>
-	<hr/>
-	<div class="row mx-3">
-
-		{% with object.get_age|addstr:" Years" as value %}
-			{% include 'registration/text_field.html' with name='Age' value=value %}
-		{% endwith %}
-		{% include 'registration/text_field.html' with name='Phone' value=object.phone_number %}
-		{% include 'registration/text_field.html' with name='Email' value=object.email %}
-		{% comment %}{% include 'registration/text_field.html' with name='Birthday' value=object.date_of_birth %}{% endcomment %}
-		{% include 'registration/text_field.html' with name='Occupation' value=object.occupation %}
-
-		<div class="col-md-12 p-1">
-			<h6 class="text-black-50">Address</h6>
-			<h5 >{{object.address}}</h5>
-		</div>
-
-		{% if object.club.user == user or user.is_staff %}
-		<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" 
-			data-original-title="Edit Info" href="{% url 'users:updateclubofficialsprofile' object.pk %}">
-			<i data-feather='edit'></i>
-		</a>
-		{% endif %}
-
-	</div>
-</div>
+{% if object.club %}
+	{% with object.role|addstr:" of club "|addstr:object.club as subtitle %}
+		{% include 'users/partials/club_officials_profile.html' with object=object title=object subtitle=subtitle %}
+	{% endwith %}
+{% else %}
+	{% with "Not associated with any club now" as subtitle %}
+		{% include 'users/partials/club_officials_profile.html' with object=object title=object subtitle=subtitle %}
+	{% endwith %}
+{% endif %}
 
 {% endblock %}
 

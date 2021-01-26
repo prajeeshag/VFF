@@ -347,6 +347,16 @@ class Profile(models.Model):
             return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
         return None
 
+    def get_phone_number(self):
+        phone_number = ''
+        if self.user:
+            if self.user.phone_number:
+                phone_number = self.user.phone_number
+        if not phone_number:
+            phone_number = self.phone_number
+
+        return phone_number
+
 
 class ClubOfficialsProfile(Profile):
     PRESIDENT = 'President'

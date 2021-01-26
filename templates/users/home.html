@@ -5,14 +5,7 @@
 {% load my_tags %}
 
 {% block content_main %}
-{% with object=user.get_profile %}
-	{% if object.club %}
-		{% with "Player of club "|addstr:object.club as subtitle %}
-			{% include "users/partials/players_profile.html" with object=object title=object subtitle=subtitle  %}
-		{% endwith %}
-		{% else %}
-			{% include "users/partials/players_profile.html" with object=object title=object subtitle="Not associated with any club currently"  %}
-	{% endif %}
+
 {% endwith %}
 
 {% endblock %}
