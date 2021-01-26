@@ -59,7 +59,6 @@ class BaseBackend:
             # response = requests.request("GET", url)
             # data = response.json()
         raise NotImplementedError()
-        return cls.get_key_expiration(number)
 
     @classmethod
     def get_or_create_security_code(cls, number):
@@ -70,7 +69,6 @@ class BaseBackend:
         :param number: Phone number of recipient
         :return security_code: string of sha security_code
         """
-        NOTFOUND = 'not_found'
         key = cls.cache_key(number)
         security_code = cache.get(key, cls.KEY_NOTFOUND)
         created = False
@@ -159,8 +157,6 @@ class fast2smsBackend(BaseBackend):
             url = cls.get_url(number, code)
             response = requests.request("GET", url)
             data = response.json()
-            print(data)
-        return cls.get_key_expiration(number)
 
 
 def get_backend():
