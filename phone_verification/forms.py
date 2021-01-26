@@ -48,6 +48,7 @@ class PhoneVerificationMixin:
                 del self.fields['otp']
                 raise e
             backend = get_backend()
+            backend.send_verification_code(phone_number)
             del self.fields['phone_number']
             self.request.session[self.key] = {'number': phone_number}
         else:

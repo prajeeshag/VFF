@@ -159,6 +159,7 @@ class fast2smsBackend(BaseBackend):
             url = cls.get_url(number, code)
             response = requests.request("GET", url)
             data = response.json()
+            print(data)
         return cls.get_key_expiration(number)
 
 
