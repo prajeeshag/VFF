@@ -1,5 +1,5 @@
 
-from django.shortcuts import render, reverse
+from django.shortcuts import render, reverse, redirect
 from django.utils.translation import ugettext_lazy as _
 
 from django.contrib.auth.views import LoginView as LoginViewCore
@@ -16,6 +16,7 @@ from users.models import PhoneNumber, PlayerProfile, User
 
 class LoginView(LoginViewCore):
     template_name = 'account/login.html'
+    redirect_authenticated_user = True
 
 
 class SignupView(SessionWizardView):
@@ -67,4 +68,4 @@ class SignupView(SessionWizardView):
             self.request, messages.INFO,
             _('Account created, login to continue..'))
 
-        return reverse('login')
+        return redirect('login')

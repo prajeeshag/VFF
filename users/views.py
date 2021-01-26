@@ -15,15 +15,30 @@ from django.contrib.auth.tokens import default_token_generator
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
-from core.mixins import breadcrumbMixin, RedirectToPreviousMixin
+from core.mixins import RedirectToPreviousMixin
 
 from . import models
 
 
-class ClubList(LoginRequiredMixin, breadcrumbMixin, TemplateView):
+class Home(LoginRequiredMixin, TemplateView):
+    template_name = 'users/home.html'
+    login_url = reverse_lazy('login')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_club():
+            return redirect(reverse('users:clublist'))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_template_names(self):
+        template = super().get_template_names()
+        if not self.request.user.get_profile():
+            return ['page_underconstruction.html']
+        return template
+
+
+class ClubList(LoginRequiredMixin, TemplateView):
     template_name = 'users/club_list.html'
     login_url = reverse_lazy('login')
-    breadcrumbs = [('Club List', None), ]
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -31,34 +46,23 @@ class ClubList(LoginRequiredMixin, breadcrumbMixin, TemplateView):
         return ctx
 
 
-class ClubMembersList(LoginRequiredMixin, breadcrumbMixin, DetailView):
+class ClubMembersList(LoginRequiredMixin, DetailView):
     model = models.ClubProfile
     template_name = 'users/club_members_list.html'
     login_url = reverse_lazy('login')
-    breadcrumbs = [
-        ('Club List', 'ClubList'),
-        ('List of Members', None),
-    ]
 
 
-class ClubDetails(LoginRequiredMixin, breadcrumbMixin, DetailView):
+class ClubDetails(LoginRequiredMixin, DetailView):
     template_name = 'users/club_details.html'
     login_url = reverse_lazy('login')
     model = models.ClubProfile
-    breadcrumbs = [('Club List', 'ClubList'), ]
-
-    def get_breadcrumbs(self):
-        bc = super().get_breadcrumbs()
-        bc.append(self.make_breadcrumbs(
-            viewname='ClubDetail', obj=self.object))
-        return bc
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         return ctx
 
 
-class ClubOfficialsProfile(LoginRequiredMixin, breadcrumbMixin, DetailView):
+class ClubOfficialsProfile(LoginRequiredMixin, DetailView):
     template_name = 'users/club_officials_profile.html'
     login_url = reverse_lazy('login')
     model = models.ClubOfficialsProfile
@@ -67,15 +71,8 @@ class ClubOfficialsProfile(LoginRequiredMixin, breadcrumbMixin, DetailView):
         ctx = super().get_context_data(**kwargs)
         return ctx
 
-    def get_breadcrumbs(self):
-        bc = super().get_breadcrumbs()
-        bc.append(self.make_breadcrumbs(
-            viewname='ClubDetail', obj=self.object.club))
-        bc.append(self.make_breadcrumbs(name=self.object.role))
-        return bc
 
-
-class PlayersProfile(LoginRequiredMixin, breadcrumbMixin, DetailView):
+class PlayersProfile(LoginRequiredMixin, DetailView):
     template_name = 'users/players_profile.html'
     login_url = reverse_lazy('login')
     model = models.PlayerProfile
@@ -83,12 +80,6 @@ class PlayersProfile(LoginRequiredMixin, breadcrumbMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         return ctx
-
-    def get_breadcrumbs(self):
-        bc = super().get_breadcrumbs()
-        bc.append(self.make_breadcrumbs(
-            viewname='ClubDetail', obj=self.object.club))
-        return bc
 
 
 class UpdateClubProfile(LoginRequiredMixin, SuccessMessageMixin,
@@ -111,6 +102,22 @@ class PlayersProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
     model = models.PlayerProfile
     fields = ['first_name', 'last_name',
               'dob', 'address', 'phone_number']
+    template_name = 'users/players_profile_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if (not self.request.user.is_staff and
+                obj.club.user != self.request.user):
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+
+class PlayersProfileCreate(LoginRequiredMixin, SuccessMessageMixin,
+                           RedirectToPreviousMixin, CreateView):
+
+    model = models.PlayerProfile
+    fields = ['first_name', 'last_name',
+              'dob', 'address', ]
     template_name = 'users/players_profile_form.html'
 
     def dispatch(self, request, *args, **kwargs):

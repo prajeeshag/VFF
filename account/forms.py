@@ -21,7 +21,6 @@ class SignupStep1(PhoneVerificationMixin, forms.ModelForm):
     def clean_phone_number(self):
         data = self.phone_number_clean()
         phone_number = data
-        print('phone_number', data)
         if phone_number:
             try:
                 obj = PhoneNumber.objects.get(number=phone_number)

@@ -63,6 +63,27 @@ class User(AbstractUser):
     def is_clubofficial(self):
         return self.user_type == self.CLUBOFFICIAL
 
+    def get_profile(self):
+        if self.user_type == self.CLUBOFFICIAL:
+            return getattr(self, 'clubofficialsprofile', None)
+        if self.user_type == self.PLAYER:
+            return getattr(self, 'playerprofile', None)
+        return None
+
+    def get_profilepicture(self):
+        profile = self.get_profile()
+        dp = None
+        if profile:
+            dp = profile.profilepicture
+        return dp
+
+    def get_club(self):
+        club = None
+        profile = self.get_profile()
+        if profile:
+            club = profile.club
+        return club
+
 
 class Grounds(models.Model):
     """ Home grounds of club """

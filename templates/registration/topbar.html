@@ -1,11 +1,12 @@
 {% load static %}
 {% load hijack_tags %}
+{% load thumbnail %}
 <nav class="topnav navbar navbar-expand shadow justify-content-between justify-content-sm-start navbar-light bg-white" id="sidenavAccordion">
 	<!-- Navbar Brand-->
 	<!-- * * Tip * * You can use text or an image for your navbar brand.-->
 	<!-- * * * * * * When using an image, we recommend the SVG format.-->
 	<!-- * * * * * * Dimensions: Maximum height: 32px, maximum width: 240px-->
-	<a class="navbar-brand" href=" {% url 'home' %} ">VFL</a>
+	<a class="navbar-brand" href=" {% url 'users:home' %} ">VFL</a>
 	<!-- Sidenav Toggle Button-->
 	<button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 mr-lg-2" id="sidebarToggle"><i data-feather="menu"></i></button>
 	<!-- Navbar Items-->
@@ -18,19 +19,18 @@
 	{% endif %}
 
 	<ul class="navbar-nav align-items-center ml-auto">
-		<!-- Navbar Search Dropdown-->
-		<!-- * * Note: * * Visible only below the md breakpoint-->
-		<!-- Alerts Dropdown-->
-		<!-- Messages Dropdown-->
-		<!-- User Dropdown-->
 		<li class="nav-item dropdown no-caret mr-3 mr-lg-0 dropdown-user">
-			<a class="btn btn-icon btn-transparent-dark dropdown-toggle" id="navbarDropdownUserImage" href=" {% static 'javascript:void(0);' %} " role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img class="img-fluid" src=" {% static 'assets/img/illustrations/profiles/profile-1.jpeg' %} " /></a>
+			{% with dp=user.get_profilepicture %}
+			{% thumbnail dp.image "50x50" upscale=False cropbox=dp.cropbox as im %}
+			<a class="btn btn-icon btn-transparent-dark dropdown-toggle" id="navbarDropdownUserImage" href=" {% static 'javascript:void(0);' %} " role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<img class="img-fluid" src="{{ im.url }}" />
+			</a>
 			<div class="dropdown-menu dropdown-menu-right border-0 shadow animated--fade-in-up" aria-labelledby="navbarDropdownUserImage">
 				<h6 class="dropdown-header d-flex align-items-center">
-					<img class="dropdown-user-img" src=" {% static 'assets/img/illustrations/profiles/profile-1.jpeg' %} " />
+					<img class="dropdown-user-img" src=" {{ im.url }} " />
 					<div class="dropdown-user-details">
 						<div class="dropdown-user-details-name">{{ user }}</div>
-						<div class="dropdown-user-details-email">{{ user.email }}</div>
+						{% comment %}<div class="dropdown-user-details-email">{{ user.phone_number }}</div>{% endcomment %}
 					</div>
 				</h6>
 				<div class="dropdown-divider"></div>
@@ -43,6 +43,8 @@
 					Logout
 				</a>
 			</div>
+			{% endthumbnail %}
+			{% endwith %}
 		</li>
 	</ul>
 </nav>

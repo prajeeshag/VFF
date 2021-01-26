@@ -5,22 +5,23 @@
 			<div class="nav accordion" id="accordionSidenav">
 				<!-- Sidenav Menu Heading (Account)-->
 				<!-- * * Note: * * Visible only on and above the sm breakpoint-->
-				{% if user.club %}
-				<a class="nav-link" href=" {% url 'ClubDetail' user.club.pk %} ">
+				{% if user.get_profile %}
+				<a class="nav-link" href="{{ user.get_profile.get_absolute_url }} ">
+					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+					My Profile
+				</a>
+				{% endif %}
+
+				{% if user.get_club %}
+				<a class="nav-link" href="{{ user.get_club.get_absolute_url }}">
 					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
 					My Club
 				</a>
 				{% endif %}
-				<a class="nav-link" href=" {% url 'ClubList' %} ">
+				<a class="nav-link" href=" {% url 'users:clublist' %} ">
 					<div class="nav-link-icon"><i data-feather="globe"></i></div>
 					All Clubs
 				</a>
-				{% if user.is_staff %}
-				<a class="nav-link" href=" {% url 'officials_list_view' %} ">
-					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
-					List of People
-				</a>
-				{% endif %}
 			</div>
 		</div>
 		<!-- Sidenav Footer-->

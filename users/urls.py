@@ -5,7 +5,7 @@ from . import views
 app_name = 'users'
 
 urlpatterns = [
-    path('home/', views.ClubList.as_view(), name='home'),
+    path('home/', views.Home.as_view(), name='home'),
     path('clublist/', views.ClubList.as_view(), name='clublist'),
     path('clubmemberslist/<int:pk>/',
          views.ClubMembersList.as_view(), name='clubmemberslist'),
