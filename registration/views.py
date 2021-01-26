@@ -15,8 +15,6 @@ from django.contrib.auth.tokens import default_token_generator
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
-from allauth.account.decorators import verified_email_required
-
 
 from .forms import (
     SignUpFormClub, OfficialsCreationForm, PlayerCreationForm,

@@ -52,9 +52,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
     'django.contrib.staticfiles',
     'django.forms',
     'maintenance_mode',
@@ -70,14 +67,17 @@ INSTALLED_APPS = [
     'django_archive',
     'captcha',
     'rest_framework',
+    'formtools',
 
     # Local
     'users.apps.UsersConfig',
+    'account',
     'registration.apps.RegistrationConfig',
     'myapp',
     'public',
     'core',
     'fixture',
+    'phone_verification',
 ]
 
 
@@ -209,7 +209,7 @@ HIJACK_USE_BOOTSTRAP = True
 AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = (
     "users.backends.AuthBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
+    # "allauth.account.auth_backends.AuthenticationBackend",
 )
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'
@@ -229,10 +229,11 @@ RECAPTCHA_DOMAIN = 'www.recaptcha.net'
 if DEBUG:
     SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error', ]
 else:
-    RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
-    RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
+RECAPTCHA_PUBLIC_KEY = config('RECAPTCHA_PUBLIC_KEY', default='')
+RECAPTCHA_PRIVATE_KEY = config('RECAPTCHA_PRIVATE_KEY', default='')
 
 LOCALE_PATHS = (location('locale'), )
+
 MAINTENANCE_MODE_IGNORE_SUPERUSER = True
 
 REST_FRAMEWORK = {
@@ -242,3 +243,10 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+
+# FAST2SMS
+FAST2SMS_API_KEY = config('FAST2SMS_API_KEY', default='')
+FAST2SMS_SENDER_ID = config('FAST2SMS_SENDER_ID', default='')
+FAST2SMS_VARIABLES = config('FAST2SMS_VARIABLES', default='')
+FAST2SMS_TEMPLATE_ID = config('FAST2SMS_TEMPLATE_ID', default='')
+PHONE_VERIFICATION_BACKEND = 'phone_verification.backends.test'

@@ -7,52 +7,8 @@
 {% block content_main %}
 
 {% with "Player of club "|addstr:object.club as subtitle %}
-	{% include "snippets/header-light.html" with title=object subtitle=subtitle  %}
+	{% include "users/partials/players_profile.html" with object=object title=object subtitle=subtitle  %}
 {% endwith %}
-
-
-<div class="container">
-	<div class="mb-4 text-center">
-		{% with object.profilepicture as dp %}
-			{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}
-				<div class="p-2 m-auto" style="max-width: 300px;">
-					<img class="rounded-circle" src="{{ im.url }}" alt="Card image cap">
-				</div>
-			{% endthumbnail %}
-			{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-secondary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo" href="urlUpdate"><i data-feather='camera'></i></a>
-			{% endif %}
-		{% endwith %}
-	</div>
-	<hr/>
-	<div class="row mx-3">
-
-		{% with object.get_age|addstr:" Years" as value %}
-			{% include 'registration/text_field.html' with name='Age' value=value %}
-		{% endwith %}
-		{% include 'registration/text_field.html' with name='Phone' value=object.phone_number %}
-		{% include 'registration/text_field.html' with name='Email' value=object.email %}
-		{% comment %}{% include 'registration/text_field.html' with name='Birthday' value=object.dob %}{% endcomment %}
-		{% include 'registration/text_field.html' with name='Occupation' value=object.occupation %}
-		{% include 'registration/text_field.html' with name='Prefered foot' value=object.prefered_foot %}
-		{% include 'registration/text_field.html' with name='Favorite position' value=object.favorite_position %}
-		{% include 'registration/text_field.html' with name='Height' value=object.get_height %}
-		{% include 'registration/text_field.html' with name='Weight' value=object.get_weight %}
-
-		<div class="col-md-12 p-1">
-			<h6 class="text-black-50">Address</h6>
-			<h5 >{{object.address}}</h5>
-		</div>
-
-		{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" 
-				data-original-title="Edit Info" href="{% url 'users:updateplayersprofile' object.pk %}">
-				<i data-feather='edit'></i>
-			</a>
-		{% endif %}
-
-	</div>
-</div>
 
 {% endblock %}
 

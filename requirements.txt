@@ -13,7 +13,6 @@ decorator==4.4.2
 defusedxml==0.6.0
 djangify==1.0.0
 Django==3.1.1
-django-allauth==0.44.0
 django-archive==0.2.0
 django-bootstrap-datepicker-plus==3.0.5
 django-bootstrap4==2.3.1
@@ -23,6 +22,7 @@ django-crispy-forms==1.10.0
 django-email-verification==0.0.7
 django-exiffield==3.0.0
 django-extra-views==0.13.0
+django-formtools==2.2
 django-hijack==2.1.10
 django-loginas==0.3.9
 django-maintenance-mode==0.15.1

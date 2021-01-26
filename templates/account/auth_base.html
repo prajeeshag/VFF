@@ -3,13 +3,19 @@
 
 {% load static %}
 {% load i18n %}
-{% load account socialaccount %}
 {% load widget_tweaks %}
 
-{% get_providers as socialaccount_providers %}
 
 {% block content %}
 
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+		<li{% if message.tags %} class="alert alert-{{ message.tags }}" {% else %} class="alert alert-info" {% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+ 
 <div id="layoutAuthentication">
 	{% block content_main %} {% endblock %}
 	{% block footer %}

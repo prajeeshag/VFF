@@ -15,7 +15,8 @@ class AuthBackend(ModelBackend):
             # below line gives query set,you can change the queryset as per your requirement
             user = UserModel.objects.filter(
                 Q(username__iexact=username) |
-                Q(email__iexact=username)
+                Q(email__iexact=username) |
+                Q(phone_number__number=username)
             ).distinct()
         except UserModel.DoesNotExist:
             UserModel().set_password(password)

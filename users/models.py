@@ -12,6 +12,24 @@ from core.validators import validate_Indian_pincode, validate_phone_number
 from core.utils import get_image_upload_path
 
 
+class PhoneNumber(models.Model):
+    number = models.CharField(_('Phone number'), max_length=10,
+                              validators=[validate_phone_number, ],
+                              unique=True, blank=False)
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.number
+
+
+class Email(models.Model):
+    email = models.EmailField(_('Email'), unique=True, blank=False)
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.email
+
+
 class User(AbstractUser):
     CLUB = 'CLUB'
     PLAYER = 'PLAYER'
@@ -20,14 +38,18 @@ class User(AbstractUser):
 
     ACCOUNT_TYPE_CHOICES = [
         (CLUB, _('Club Account')),
-        (PLAYER, _('Player Account')),
+        (PLAYER, _('Player')),
         (CLUBOFFICIAL, _('Club Secretary/President/Manager')),
         (OTHER, _('OTHER')),
     ]
-    email = models.EmailField(_('Email'), unique=True, blank=False)
     user_type = models.CharField(_('User type'), max_length=50,
                                  choices=ACCOUNT_TYPE_CHOICES,
                                  default=OTHER)
+
+    phone_number = models.OneToOneField(
+        PhoneNumber, on_delete=models.PROTECT, null=True)
+
+    email = models.EmailField(_('Email'), unique=True, blank=True, null=True)
 
     class Meta:
         db_table = 'auth_user'
@@ -41,15 +63,26 @@ class User(AbstractUser):
     def is_clubofficial(self):
         return self.user_type == self.CLUBOFFICIAL
 
+    def get_profile(self):
+        if self.user_type == self.CLUBOFFICIAL:
+            return getattr(self, 'clubofficialsprofile', None)
+        if self.user_type == self.PLAYER:
+            return getattr(self, 'playerprofile', None)
+        return None
 
-class PhoneNumber(models.Model):
-    number = models.CharField(_('Phone number'), max_length=10,
-                              validators=[validate_phone_number, ],
-                              unique=True, blank=False)
-    verified = models.BooleanField(default=False)
+    def get_profilepicture(self):
+        profile = self.get_profile()
+        dp = None
+        if profile:
+            dp = profile.profilepicture
+        return dp
 
-    def __str__(self):
-        return("%s" % (self.number,))
+    def get_club(self):
+        club = None
+        profile = self.get_profile()
+        if profile:
+            club = profile.club
+        return club
 
 
 class Grounds(models.Model):

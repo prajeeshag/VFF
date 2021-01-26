@@ -2,7 +2,6 @@
 
 {% load static %}
 {% load i18n %}
-{% load account socialaccount %}
 {% load widget_tweaks %}
 {% load hijack_tags %}
 
@@ -31,7 +30,16 @@
 	{% endif %}
 
 	{% block styles_extra %} {% endblock %}
-
+	<style>
+		.errorlist {
+	    border: 2px red solid;
+		}
+		a.card-body,
+		a.card-body:hover {
+  	color: #212529;
+  	text-decoration: none;
+		}
+	</style>
 	</head>
 
 	

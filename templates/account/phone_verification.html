@@ -13,25 +13,27 @@
 		<div class="container">
 			<div class="row justify-content-center">
 				<div class="col-xl-5 col-lg-6 col-md-8 col-sm-11">
+					<!-- Social forgot password form-->
 					<div class="card my-5">
 						<div class="card-body p-5 text-center">
 							<div class="h2 font-weight-light mb-0">VFL</div>
-							<div class="h3 font-weight-light mb-0">Password Recovery</div>
+							<div class="h3 font-weight-light mb-0">Phone number verification</div>
 						</div>
 						<hr class="my-0" />
 						<div class="card-body p-5">
-							<div class="text-center small text-muted mb-4">Enter your email address below and we will send you a link to reset your password.</div>
+							<div class="text-center small text-muted mb-4">Enter your phone number</div>
 							<!-- Forgot password form-->
-							<form method="POST" action="{% url 'account_reset_password' %}">
+							<form method="POST">
 								{% include 'snippets/form_common.html' %}
 								{% for field in form.visible_fields %}
 								<div class="form-group">
+									{{ field.errors }}
 									{{ field | add_label_class:"text-gray-600 small" }}
 									{% render_field field class="form-control form-control-solid" %}
 								</div>
 								{% endfor %}
 								<div class="form-group mb-0">
-									<button class="btn btn-primary" type="submit">Reset Password</button>
+									<button class="btn btn-primary" type="submit">Submit</button>
 								</div>
 							</form>
 						</div>

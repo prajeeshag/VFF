@@ -26,7 +26,7 @@
 			  {% endif %}
 			</div>
 		</div>
-		<div class="card-body">
+		<a class="card-body" href={{ club.get_absolute_url }}>
 			{% if club.abbr %}
 				<p class="card-title text-grey h4">{{ club.name|upper }}</p>
 			{% endif %}
@@ -34,22 +34,6 @@
 			<p class="card-title text-grey h6"> <strong>Total Players: </strong> {{club.total_players}}</p>
 			<p class="card-title text-grey h6"> <strong>U19 Players: </strong> {{club.num_under19_players}}</p>
 			<p class="card-title text-grey h6"> <strong>U21 Players: </strong> {{club.num_under21_players}}</p>
-			<div class="text-center mb-2">
-				<a data-toggle="tooltip" data-placement="top" title="" data-original-title="View Club Profile" 
-					href={{ club.get_absolute_url }} class="btn btn-icon btn-secondary">
-					<i data-feather="eye"></i>
-				</a>
-				{% if user.is_staff %}
-				<a class="btn btn-link" href="{% url 'users:clubmemberslist' club.pk %}"><i data-feather="list"></i></a>
-				{% endif %}
-			</div>
-			{% if club.user == user and not club.abbr %}
-			<div class="text-center">
-				<button class="btn btn-warning btn-sm" type="button" data-toggle="modal" data-target="#id_abbr_modal">
-					Update Abbreviation
-				</button>	
-			</div>
-			{% endif %}
-		</div>
+		</a>
 	</div>
 </div>

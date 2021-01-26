@@ -3,10 +3,8 @@
 
 {% load static %}
 {% load i18n %}
-{% load account socialaccount %}
 {% load widget_tweaks %}
 
-{% get_providers as socialaccount_providers %}
 
 {% block content_main %}
 <div id="layoutAuthentication_content">
@@ -16,36 +14,42 @@
 				<div class="col-xl-8 col-lg-9">
 					<!-- Social registration form-->
 					<div class="card my-5">
-						{% get_providers as socialaccount_providers %}
 						<div class="card-body p-5 text-center">
 							<div class="h2 font-weight-light mb-3">VFL</div>
 							<div class="h3 font-weight-light mb-3">Create an Account</div>
-							{% if socialaccount_providers %}
-							<div class="small text-muted mb-2">Sign in using...</div>
-							<!-- Social registration links-->
-							{% include "socialaccount/snippets/provider_list.html" with process="login" %}
-							{% endif %}
 						</div>
 						<hr class="my-0" />
 						<div class="card-body p-5">
-							{% if socialaccount_providers %}
-							<div class="text-center small text-muted mb-4">...or enter your information below.</div>
-							{% endif %}
-							<!-- Login form-->
-							<form method="POST" action="{% url 'account_signup' %}">
-								{% include "snippets/form_common.html" %}
+							<form method="POST" action="">
+								{% if wizard.steps.step1 == 1 %}
+									<h5> Verify your phone number </h5>
+								{% endif %}
+								{{ wizard.management_form }}
+									{% if wizard.form.forms %}
+										{{ wizard.form.management_form  }}
+											{% for form in wizard.form.forms %}
+												{% include "snippets/form_common.html" with form=form %}
+												{% for field in form.visible_fields %}
+													<div class="form-group">
+														{{ field.errors }}
+														{{ field | add_label_class:"text-gray-600 small" }}
+														{% render_field field class="form-control form-control-solid" %}
+													</div>
+												{% endfor %}
+											{% endfor %}
+									{% else %}
+										{% include "snippets/form_common.html" with form=wizard.form %}
+										{% for field in wizard.form.visible_fields %}
+											<div class="form-group">
+												{{ field.errors }}
+												{{ field | add_label_class:"text-gray-600 small" }}
+												{% render_field field class="form-control form-control-solid" %}
+											</div>
+										{% endfor %}
+									{% endif %}
 
-								{% for field in form.visible_fields %}
-								<div class="form-group">
-									{{ field | add_label_class:"text-gray-600 small" }}
-									{% render_field field class="form-control form-control-solid" %}
-								</div>
-								{% endfor %}
-
-								<!-- Form Group (form submission)-->
 								<div class="form-group d-flex align-items-center justify-content-between">
-									<div class="form-group"><a class="small" href=" {% url 'account_reset_password' %} ">Forgot your password?</a></div>
-									<button class="btn btn-primary" type="submit">Create Account</button>
+									<button class="btn btn-primary" type="submit">Submit</button>
 								</div>
 							</form>
 						</div>
@@ -63,3 +67,4 @@
 	</main>
 </div>
 {% endblock %}
+
