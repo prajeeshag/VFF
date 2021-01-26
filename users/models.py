@@ -420,6 +420,16 @@ class PlayerProfile(Profile):
     def get_absolute_url(self):
         return reverse('users:playersprofile', kwargs={'pk': self.pk})
 
+    def get_offer(self, club):
+        offer = self.cluboffers.filter(club=club).first()
+        return offer
+
+    def get_club(self):
+        offer = self.cluboffers.filter(accepted=True).first()
+        if offer:
+            return offer.club
+        return None
+
 
 class PlayerCount(models.Model):
 
@@ -477,11 +487,11 @@ class ClubSignings(models.Model):
     def accept(self):
         accepted_offers = self.player.cluboffers.filter(accepted=True)
         if accepted_offers:
-            raise AcceptedOfferExist()
+            raise self.AcceptedOfferExist()
 
         playercount = getattr(self.club, 'playercount', None)
         if not playercount:
-            raise PlayerCountNotFound()
+            raise self.PlayerCountNotFound()
 
         try:
             playercount.increment()
