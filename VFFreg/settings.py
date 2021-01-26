@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'extra_views',
     'django_archive',
     'captcha',
+    'formtools',
 
     # Local
     'users.apps.UsersConfig',

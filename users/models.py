@@ -12,6 +12,24 @@ from core.validators import validate_Indian_pincode, validate_phone_number
 from core.utils import get_image_upload_path
 
 
+class PhoneNumber(models.Model):
+    number = models.CharField(_('Phone number'), max_length=10,
+                              validators=[validate_phone_number, ],
+                              unique=True, blank=False)
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.number
+
+
+class Email(models.Model):
+    email = models.EmailField(_('Email'), unique=True, blank=False)
+    verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.email
+
+
 class User(AbstractUser):
     CLUB = 'CLUB'
     PLAYER = 'PLAYER'
@@ -20,13 +38,18 @@ class User(AbstractUser):
 
     ACCOUNT_TYPE_CHOICES = [
         (CLUB, _('Club Account')),
-        (PLAYER, _('Player Account')),
+        (PLAYER, _('Player')),
         (CLUBOFFICIAL, _('Club Secretary/President/Manager')),
         (OTHER, _('OTHER')),
     ]
     user_type = models.CharField(_('User type'), max_length=50,
                                  choices=ACCOUNT_TYPE_CHOICES,
                                  default=OTHER)
+
+    phone_number = models.OneToOneField(
+        PhoneNumber, on_delete=models.PROTECT, null=True)
+
+    email = models.EmailField(_('Email'), unique=True, blank=True, null=True)
 
     class Meta:
         db_table = 'auth_user'
@@ -39,16 +62,6 @@ class User(AbstractUser):
 
     def is_clubofficial(self):
         return self.user_type == self.CLUBOFFICIAL
-
-
-class PhoneNumber(models.Model):
-    number = models.CharField(_('Phone number'), max_length=10,
-                              validators=[validate_phone_number, ],
-                              unique=True, blank=False)
-    verified = models.BooleanField(default=False)
-
-    def __str__(self):
-        return("%s" % (self.number,))
 
 
 class Grounds(models.Model):
@@ -292,8 +305,7 @@ class Profile(models.Model):
     profilepicture = models.OneToOneField(
         ProfilePicture, on_delete=models.SET_NULL, null=True)
     phone_number = models.OneToOneField(
-        PhoneNumber, on_delete=models.PROTECT, null=True)
-    email = models.EmailField(_('Email'), unique=True, blank=True, null=True)
+        PhoneNumber, on_delete=models.SET_NULL, null=True)
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
