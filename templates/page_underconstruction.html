@@ -7,6 +7,9 @@
 <div>
     <p>&mdash; The VFL Team</p>
 </div>
+{% if not user.is_anonymous %}
+	<a href="{% url 'account_logout' %}"> Logout </a>
+{% endif %}
 </article>
 </div>
 {% endblock %}

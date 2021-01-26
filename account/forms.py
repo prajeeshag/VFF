@@ -5,11 +5,18 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
 from phone_verification.forms import PhoneVerificationMixin
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
 from users.models import PhoneNumber
+
+
+class LoginForm(AuthenticationForm):
+    username = UsernameField(
+        label=_('Username or Phone number'),
+        widget=forms.TextInput(attrs={'autofocus': True})
+    )
 
 
 class SignupStep1(PhoneVerificationMixin, forms.ModelForm):

@@ -17,6 +17,7 @@ from users.models import PhoneNumber, PlayerProfile, User
 class LoginView(LoginViewCore):
     template_name = 'account/login.html'
     redirect_authenticated_user = True
+    authentication_form = forms.LoginForm
 
 
 class SignupView(SessionWizardView):
