@@ -1,0 +1,75 @@
+
+{% extends 'account/auth_base.html' %}	
+
+{% load static %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+
+{% block content_main %}
+<div id="layoutAuthentication_content">
+	<main>
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-xl-8 col-lg-9">
+					<!-- Social registration form-->
+					<div class="card my-5">
+						<div class="card-body p-5 text-center">
+							<div class="h2 font-weight-light mb-3">VFL</div>
+							<div class="h3 font-weight-light mb-3">{% translate 'Create Profile' %}</div>
+						</div>
+						<hr class="my-0" />
+						<div class="card-body p-5">
+							<form method="POST" action="" enctype="multipart/form-data">
+								{{ wizard.management_form }}
+										<h5> {{ wizard.form.title }} </h5>
+										{% include "snippets/form_common.html" with form=wizard.form %}
+										{% for field in wizard.form.visible_fields %}
+											<div class="form-group">
+												{{ field.errors }}
+												{{ field | add_label_class:"text-gray-600 small" }}
+												{% render_field field class="form-control form-control-solid" %}
+											</div>
+										{% endfor %}
+										<div class="form-group d-flex align-items-center justify-content-between">
+											<button class="btn btn-primary" type="submit" name="submit">Submit</button>
+										</div>
+							</form>
+						</div>
+						<hr class="my-0" />
+						<div class="card-body px-5 py-4">
+							<div class="small text-center">
+								<a href=" {% url 'account_logout' %} ">Logout</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</div>
+{% endblock %}
+
+	{% block styles_extra %}
+	  <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" crossorigin="anonymous" />
+	{% endblock %}
+	
+	{% block scripts_extra %}
+	  <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js" crossorigin="anonymous"></script>
+		<script>
+		$(function () {
+		    $('#id_0-dob').daterangepicker(
+		        {
+		            singleDatePicker: true,
+		            showDropdowns: true,
+		            minYear: 1950,
+		            maxYear: parseInt(moment().format("YYYY"), 10),
+								locale: {
+								      format: 'YYYY-MM-DD'
+								}
+		        }
+		    );
+		});
+		</script>
+	{% endblock %}
