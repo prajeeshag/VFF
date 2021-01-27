@@ -4,7 +4,7 @@
 	{% with player.profilepicture as dp %}
 		{% thumbnail dp.image "300x300" upscale=False cropbox=dp.cropbox as im %}
 			<div class="p-2 m-auto text-center" style="max-width: 300px;">
-				<img class="card-img-top rounded-circle" src="{{ im.url }}" alt="Card image cap">
+				<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
 			</div>
 		{% endthumbnail %}
 	{% endwith %}
