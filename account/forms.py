@@ -123,7 +123,7 @@ class SignupStep2(OtpForm):
 class SignupStep3(UserCreationForm):
     User = get_user_model()
     user_type = forms.ChoiceField(
-        choices=User.ACCOUNT_TYPE_CHOICES[1:3],
+        choices=User.ACCOUNT_TYPE_CHOICES[1:4],
         label=_('Account type'))
     field_order = ['user_type', 'username', 'password1', 'password2']
 
