@@ -11,7 +11,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, User
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
-from users.models import PhoneNumber
+from users.models import PhoneNumber, PlayerProfile, ProfilePicture, Document
 from core.validators import validate_phone_number
 from phone_verification.backends import get_backend
 
@@ -21,6 +21,39 @@ class LoginForm(AuthenticationForm):
         label=_('Username or Phone number'),
         widget=forms.TextInput(attrs={'autofocus': True})
     )
+
+
+class PlayerProfileForm(forms.ModelForm):
+    title = _('Create Profile')
+
+    class Meta:
+        model = PlayerProfile
+        exclude = ('club', 'phone_number',
+                   'profilepicture', 'documents', 'user')
+
+
+class ProfilePictureForm(forms.ModelForm):
+    title = _('Upload a profile picture')
+
+    class Meta:
+        model = ProfilePicture
+        fields = ['image', ]
+
+
+class DocumentForm1(forms.ModelForm):
+    title = _('Upload Photo ID proof')
+
+    class Meta:
+        model = Document
+        fields = ['image', ]
+
+
+class DocumentForm2(forms.ModelForm):
+    title = _('Upload a Age proof')
+
+    class Meta:
+        model = Document
+        fields = ['image', ]
 
 
 class SignupStep1(PhoneVerificationMixin, forms.ModelForm):

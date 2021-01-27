@@ -11,4 +11,6 @@ urlpatterns = [
          name='account_reset_password'),
     path('login/', views.LoginView.as_view(), name='account_change_password'),
     path('logout/', LogoutView.as_view(), name='account_logout'),
+    path('cplayerprofile/', views.CreatePlayerProfile.as_view(),
+         name='create_player_profile')
 ]

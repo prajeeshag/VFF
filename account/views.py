@@ -1,25 +1,70 @@
 
-from django.shortcuts import render, reverse, redirect
+import os
+
+from django.shortcuts import render, redirect
+from django.urls import reverse_lazy, reverse
 from django.utils.translation import ugettext_lazy as _
 
 from django.contrib.auth.views import LoginView as LoginViewCore
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from django.contrib import messages
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+from django.conf import settings
 
 from formtools.wizard.views import SessionWizardView
 
-
 from . import forms
-from users.models import PhoneNumber, PlayerProfile, User
+from users.models import (PhoneNumber, PlayerProfile, User,
+                          ProfilePicture, Document, Documents)
 
 
 class LoginView(LoginViewCore):
     template_name = 'account/login.html'
     redirect_authenticated_user = True
     authentication_form = forms.LoginForm
+
+
+class CreatePlayerProfile(SessionWizardView):
+    template_name = 'account/create_profile.html'
+    file_storage = FileSystemStorage(
+        location=os.path.join(settings.MEDIA_ROOT, 'tmp'))
+
+    form_list = [
+        forms.PlayerProfileForm,
+        forms.ProfilePictureForm,
+        forms.DocumentForm1,
+        forms.DocumentForm2,
+    ]
+
+    def done(self, form_list, **kwargs):
+        forms = [form for form in form_list]  # get all forms
+        user = self.request.user
+        profile = forms[0].save(commit=False)
+        profile.user = user
+
+        dp = forms[1].save()
+        profile.profilepicture = dp
+
+        collection = Documents.objects.create()
+        profile.documents = collection
+
+        idproof = forms[2].save(commit=False)
+        idproof.document_type = Document.PHOTOID
+        idproof.collection = collection
+        idproof.save()
+
+        ageproof = forms[3].save(commit=False)
+        ageproof.document_type = Document.AGEPROOF
+        ageproof.collection = collection
+        ageproof.save()
+
+        profile.save()
+        return redirect('users:home')
 
 
 class PasswordResetView(SessionWizardView):

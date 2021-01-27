@@ -20,8 +20,11 @@ from django.contrib import messages
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
 from core.mixins import RedirectToPreviousMixin
+from formtools.wizard.views import SessionWizardView
 
 from . import models
+from . import forms
+from django.contrib.auth.decorators import user_passes_test
 
 
 class Home(LoginRequiredMixin, TemplateView):
@@ -29,15 +32,14 @@ class Home(LoginRequiredMixin, TemplateView):
     login_url = reverse_lazy('login')
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_club():
+        user = request.user
+        if user.is_club():
             return redirect(reverse('users:clublist'))
-        return super().dispatch(request, *args, **kwargs)
 
-    def get_template_names(self):
-        template = super().get_template_names()
-        if not self.request.user.is_staff and not self.request.user.get_profile():
-            return ['page_underconstruction.html']
-        return template
+        if user.is_player() and not hasattr(user, 'playerprofile'):
+            return redirect(reverse('create_player_profile'))
+
+        return super().dispatch(request, *args, **kwargs)
 
 
 class FreePlayersList(LoginRequiredMixin, TemplateView):
@@ -130,22 +132,6 @@ class PlayersProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
     model = models.PlayerProfile
     fields = ['first_name', 'last_name',
               'dob', 'address', 'phone_number']
-    template_name = 'users/players_profile_form.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if (not self.request.user.is_staff and
-                obj.club.user != self.request.user):
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
-
-
-class PlayersProfileCreate(LoginRequiredMixin, SuccessMessageMixin,
-                           RedirectToPreviousMixin, CreateView):
-
-    model = models.PlayerProfile
-    fields = ['first_name', 'last_name',
-              'dob', 'address', ]
     template_name = 'users/players_profile_form.html'
 
     def dispatch(self, request, *args, **kwargs):

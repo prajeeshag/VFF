@@ -1,4 +1,9 @@
+
 import datetime
+from io import BytesIO
+import posixpath
+from PIL import Image as Img
+from PIL import ExifTags
 
 from django.shortcuts import reverse
 from django.db import models, transaction
@@ -178,10 +183,6 @@ class ClubProfile(models.Model):
         return [s.player for s in q]
 
 
-class PlayerInfo(models.Model):
-    pass
-
-
 class AbstractImage(models.Model):
 
     __original_image = None
@@ -335,7 +336,7 @@ class Profile(models.Model):
     address = models.TextField(_('Address'), max_length=200, blank=False)
     pincode = models.CharField(_("Pincode"), max_length=10, validators=[
                                validate_Indian_pincode, ], blank=False)
-    student = models.BooleanField(_("Student"), default=False)
+    student = models.BooleanField(_("Are you a Student"), default=False)
     occupation = models.CharField(_('Occupation'), max_length=100, blank=True)
 
     profilepicture = models.OneToOneField(
