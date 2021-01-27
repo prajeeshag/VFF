@@ -18,10 +18,12 @@
 			{% endif %}
 		{% endwith %}
 	</div>
+	{% if user == object.user %}
 	<div class="d-flex justify-content-between">
 		<a class="btn btn-link" href="{% url 'users:updateplayersprofile' %}">edit info</a>
 		<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit profile picture</a>
 	</div>
+	{% endif %}
 	<hr/>
 	<div class="row mx-3">
 		{% with object.get_age|addstr:" Years" as value %}
