@@ -178,6 +178,10 @@ class ClubProfile(models.Model):
         return [s.player for s in q]
 
 
+class PlayerInfo(models.Model):
+    pass
+
+
 class AbstractImage(models.Model):
 
     __original_image = None
@@ -333,8 +337,10 @@ class Profile(models.Model):
                                validate_Indian_pincode, ], blank=False)
     student = models.BooleanField(_("Student"), default=False)
     occupation = models.CharField(_('Occupation'), max_length=100, blank=True)
+
     profilepicture = models.OneToOneField(
         ProfilePicture, on_delete=models.SET_NULL, null=True)
+
     phone_number = models.OneToOneField(
         PhoneNumber, on_delete=models.SET_NULL, null=True)
 
