@@ -6,7 +6,7 @@
 
 {% block content_main %}
 
-{% with "Profile photo of "|addstr:form.instance.user as title %}
+{% with "Profile photo" as title %}
 {% include "snippets/header-light.html" with title=title icon='edit' %}
 {% endwith %}
 

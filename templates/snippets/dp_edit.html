@@ -1,4 +1,5 @@
 {% load thumbnail %}
+{% load i18n %}
 
 <div class="dpedit text-center">
 	<form method="post" id="id_form" class="d-inline-block">
@@ -11,13 +12,13 @@
 		{{ form }}
 	</form>
 	<div class="col-12 text-center">
-		<button onclick="document.getElementById('id_form').submit()" data-toggle="tooltip" data-placement="top" title="" data-original-title="Upload" class="btn btn-primary btn-icon"> 
-			<i data-feather="upload"></i>
+		<button onclick="document.getElementById('id_form').submit()" data-toggle="tooltip" data-placement="top" title="" data-original-title="Upload" class="btn btn-primary"> 
+			Done
 		</button>
-		<form class="d-inline" method="post" action={{ form.instance.get_upload_url }} enctype="multipart/form-data">
+		<form class="d-inline" method="post" action={% url 'users:dpupload' %} enctype="multipart/form-data">
 			{% csrf_token %}
-			<label class="btn btn-outline-primary btn-icon mb-0">
-				<i data-feather="camera"></i>
+			<label class="btn btn-outline-primary mb-0">
+				{% translate 'Upload New' %}
 				<input type="file" name="image" style="position:fixed;bottom:100%;right:100%;">
 			</label>
 		</form>

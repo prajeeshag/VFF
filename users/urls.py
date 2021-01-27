@@ -6,42 +6,32 @@ from . import views
 app_name = 'users'
 
 urlpatterns = [
+    path('changepassword/', views.PasswordChange.as_view(), name='change_password'),
     path('home/', views.Home.as_view(), name='home'),
-
     path('unsignedplayers/', views.FreePlayersList.as_view(), name='unsignedplayers'),
-
     path('sendoffer/<int:pk>', views.CreateClubSigninOffer, name='signinoffer'),
-
     path('regectoffer/<int:pk>', views.RegectClubSigninOffer,
          name='regectsigninoffer'),
-
     path('acceptoffer/<int:pk>', views.AcceptClubSigninOffer,
          name='acceptsigninoffer'),
-
     path('canceloffer/<int:pk>', views.CancelClubSigninOffer,
          name='cancelsigninoffer'),
-
     path('clublist/', views.ClubList.as_view(), name='clublist'),
-
     path('clubmemberslist/<int:pk>/',
          views.ClubMembersList.as_view(), name='clubmemberslist'),
-
     path('clubdetails/<int:pk>/', views.ClubDetails.as_view(), name='clubdetails'),
-
     path('clubofficials/<int:pk>/', views.ClubOfficialsProfile.as_view(),
          name='clubofficialsprofile'),
+    path('players/<int:pk>/', views.PlayersProfile.as_view(), name='playersprofile'),
 
-    path('players/<int:pk>/', views.PlayersProfile.as_view(),
-         name='playersprofile'),
-
-    path('updateclubprofile/<int:pk>/',
-         views.UpdateClubProfile.as_view(), name='updateclubprofile'),
-
-    path('playersprofileupdate/<int:pk>/',
-         views.PlayersProfileUpdate.as_view(), name='updateplayersprofile'),
-
-    path('clubofficialsprofileupdate/<int:pk>/',
-         views.ClubOfficialsProfileUpdate.as_view(), name='updateclubofficialsprofile'),
+    path('updateclub/', views.UpdateClubProfile.as_view(),
+         name='updateclubprofile'),
+    path('playerpdate/', views.UpdatePlayerProfile.as_view(),
+         name='updateplayersprofile'),
+    path('cluboffileupdate/<int:pk>/', views.ClubOfficialsProfileUpdate.as_view(),
+         name='updateclubofficialsprofile'),
+    path('dpedit/', views.dpEditView.as_view(), name='dpedit'),
+    path('dpupload/', views.dpUploadView.as_view(), name='dpupload'),
 ]
 
 # urlpatterns = [

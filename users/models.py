@@ -52,10 +52,10 @@ class User(AbstractUser):
                                  choices=ACCOUNT_TYPE_CHOICES,
                                  default=OTHER)
 
+    email = models.EmailField(default="noemail")
+
     phone_number = models.OneToOneField(
         PhoneNumber, on_delete=models.PROTECT, null=True)
-
-    email = models.EmailField(_('Email'), unique=True, blank=True, null=True)
 
     class Meta:
         db_table = 'auth_user'
@@ -88,6 +88,9 @@ class User(AbstractUser):
         profile = self.get_profile()
         if profile:
             club = profile.get_club()
+        if not club:
+            return getattr(self, 'clubprofile', None)
+
         return club
 
 
@@ -272,13 +275,7 @@ class AbstractImage(models.Model):
 class ProfilePicture(AbstractImage):
 
     def __str__(self):
-        return "Profile picture of %s" % (self.user)
-
-    def get_absolute_url(self):
-        return reverse('dp_edit', kwargs={'pk': self.pk})
-
-    def get_upload_url(self):
-        return reverse('dp_upload', kwargs={'pk': self.pk})
+        return "Profile picture"
 
 
 class Documents(models.Model):

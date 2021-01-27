@@ -9,13 +9,15 @@ from django.views.generic.detail import DetailView
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth.views import PasswordChangeView
+
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib.auth.tokens import default_token_generator
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
@@ -121,25 +123,12 @@ class UpdateClubProfile(LoginRequiredMixin, SuccessMessageMixin,
     success_message = 'Club details has been updated'
 
     def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if not self.request.user.is_superuser and obj.user != self.request.user:
+        if not request.user.is_club:
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
-
-class PlayersProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
-                           RedirectToPreviousMixin, UpdateView):
-    model = models.PlayerProfile
-    fields = ['first_name', 'last_name',
-              'dob', 'address', 'phone_number']
-    template_name = 'users/players_profile_form.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if (not self.request.user.is_staff and
-                obj.club.user != self.request.user):
-            return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+    def get_object(self):
+        return self.request.user.get_club()
 
 
 class ClubOfficialsProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
@@ -231,8 +220,62 @@ def CancelClubSigninOffer(request, pk):
     return HttpResponseRedirect(url)
 
 
-@require_http_methods(['POST'])
-@login_required
+class PasswordChange(SuccessMessageMixin,
+                     LoginRequiredMixin,
+                     PasswordChangeView):
+    template_name = 'users/base_form.html'
+    success_message = 'Password Changed...'
+    success_url = reverse_lazy('users:home')
+    extra_context = {'title': "Change Password"}
+
+
+class UpdatePlayerProfile(SuccessMessageMixin,
+                          LoginRequiredMixin,
+                          UpdateView):
+    model = models.PlayerProfile
+    fields = ['first_name', 'last_name', 'dob',
+              'address', 'pincode', 'student',
+              'occupation', 'prefered_foot',
+              'favorite_position', 'height',
+              'weight']
+    template_name = 'users/base_form.html'
+    login_url = reverse_lazy('login')
+    success_message = 'Profile updated'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_player():
+            return HttpResponseForbidden()
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self):
+        return self.request.user.get_profile()
+
+
+class dpUploadView(LoginRequiredMixin, UpdateView):
+    model = models.ProfilePicture
+    form_class = forms.dpUploadForm
+    template_name = 'users/dp_upload.html'
+
+    def get_success_url(self):
+        return  reverse('users:dpedit')
+
+    def get_object(self):
+        return self.request.user.get_profilepicture()
+
+
+class dpEditView(LoginRequiredMixin, UpdateView):
+    form_class = forms.dpEditForm
+    template_name = 'users/dp_edit.html'
+
+    def get_object(self):
+        return self.request.user.get_profilepicture()
+
+    def get_success_url(self):
+        return self.request.user.get_profile().get_absolute_url()
+
+
+@ require_http_methods(['POST'])
+@ login_required
 def AcceptClubSigninOffer(request, pk):
     url = request.META.get('HTTP_REFERER', "/")
 
@@ -276,8 +319,8 @@ def AcceptClubSigninOffer(request, pk):
     return HttpResponseRedirect(url)
 
 
-@require_http_methods(['POST'])
-@login_required
+@ require_http_methods(['POST'])
+@ login_required
 def RegectClubSigninOffer(request, pk):
     url = request.META.get('HTTP_REFERER', "/")
 

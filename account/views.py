@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from django.contrib.auth.views import LoginView as LoginViewCore
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib import messages
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -83,12 +83,6 @@ class PasswordResetView(SessionWizardView):
             kwargs['phone_number'] = data.get('phone_number')
         return kwargs
 
-    # def get(self, request, *args, **kwargs):
-        # try:
-        # return self.render(self.get_form())
-        # except KeyError:
-        # return super().get(request, *args, **kwargs)
-
     def done(self, form_list, **kwargs):
         UserModel = get_user_model()
         forms = [form for form in form_list]  # get all forms
@@ -110,24 +104,33 @@ class SignupView(SessionWizardView):
     form_list = [
         forms.SignupStep1,
         forms.SignupStep2,
+        forms.SignupStep3,
     ]
 
     def get_form_kwargs(self, step=None):
         kwargs = super().get_form_kwargs(step)
-        if step == '0':
+        if step == '1':
             kwargs['request'] = self.request
+            data = self.get_cleaned_data_for_step('0')
+            kwargs['phone_number'] = data.get('phone_number')
         return kwargs
 
     def done(self, form_list, **kwargs):
         forms = [form for form in form_list]  # get all forms
         # get phone_number from first form
         # phone_number = forms[0].cleaned_data.get('phone_number')
-        phone_number = forms[0].save()
+        number = forms[0].cleaned_data.get('phone_number')
+        phone_number, created = PhoneNumber.objects.get_or_create(
+            number=number)
+        phone_number.verified = True
+        phone_number.save()
 
-        user = forms[1].save(commit=False)
-        user_type = forms[1].cleaned_data.get('user_type')
+        user = forms[2].save(commit=False)
+        user_type = forms[2].cleaned_data.get('user_type')
+        password = forms[2].cleaned_data.get('password1')
+        username = forms[2].cleaned_data.get('username')
+
         user.user_type = user_type
-        user.email = None
 
         profile = None
         # check if phone_number is associated with a  profile already, link the user to the profile
@@ -150,8 +153,11 @@ class SignupView(SessionWizardView):
             user.phone_number = phone_number
             user.save()
 
+        user = authenticate(username=username, password=password)
+        login(self.request, user)
+
         messages.add_message(
             self.request, messages.INFO,
-            _('Account created, login to continue..'))
+            _('Account created....'))
 
         return redirect('login')
