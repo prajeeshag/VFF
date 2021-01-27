@@ -82,7 +82,7 @@ class User(AbstractUser):
         club = None
         profile = self.get_profile()
         if profile:
-            club = profile.club
+            club = profile.get_club()
         return club
 
 

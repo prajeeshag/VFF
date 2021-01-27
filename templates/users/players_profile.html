@@ -6,8 +6,8 @@
 
 {% block content_main %}
 
-{% if object.club %}
-{% with "Player of club "|addstr:object.club as subtitle %}
+{% if object.get_club %}
+{% with "Player of club "|addstr:object.get_club as subtitle %}
 	{% include "users/partials/players_profile.html" with object=object title=object subtitle=subtitle  %}
 {% endwith %}
 {% else %}
