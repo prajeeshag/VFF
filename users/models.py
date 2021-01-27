@@ -169,6 +169,14 @@ class ClubProfile(models.Model):
     def num_under21_players(self):
         return self.num_undern_players(21)-self.num_under19_players()
 
+    def get_players(self):
+        q = self.clubsignings.filter(accepted=True).prefetch_related('player')
+        return [s.player for s in q]
+
+    def get_invited_players(self):
+        q = self.clubsignings.filter(accepted=False).prefetch_related('player')
+        return [s.player for s in q]
+
 
 class AbstractImage(models.Model):
 
@@ -421,11 +429,11 @@ class PlayerProfile(Profile):
         return reverse('users:playersprofile', kwargs={'pk': self.pk})
 
     def get_offer(self, club):
-        offer = self.cluboffers.filter(club=club).first()
+        offer = self.clubsignings.filter(club=club).first()
         return offer
 
     def get_club(self):
-        offer = self.cluboffers.filter(accepted=True).first()
+        offer = self.clubsignings.filter(accepted=True).first()
         if offer:
             return offer.club
         return None
@@ -464,11 +472,11 @@ class ClubSignings(models.Model):
     club = models.ForeignKey(
         ClubProfile,
         on_delete=models.CASCADE,
-        related_name='cluboffers')
+        related_name='clubsignings')
     player = models.ForeignKey(
         PlayerProfile,
         on_delete=models.CASCADE,
-        related_name='cluboffers')
+        related_name='clubsignings')
     accepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -485,7 +493,7 @@ class ClubSignings(models.Model):
         pass
 
     def accept(self):
-        accepted_offers = self.player.cluboffers.filter(accepted=True)
+        accepted_offers = self.player.clubsignings.filter(accepted=True)
         if accepted_offers:
             raise self.AcceptedOfferExist()
 

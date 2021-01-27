@@ -5,6 +5,18 @@
 {% load my_tags %}
 
 {% block content_main %}
-
+{% include "snippets/header-simplified.html" with title='Welcome..' %}
+	<div class="container-md">
+		{% include 'snippets/messages.html' %}
+		
+		{% if user.get_profile.clubsignings.all %}	
+		<div class="p-3">
+			<h4> Offers from clubs </h4>
+			<hr class="mt-2 mb-4" />
+				{% include 'users/partials/clubsignings_offers.html' %}
+			<hr class="mt-2 mb-4" />
+		</div>
+		{% endif %}
+	</div>
 {% endblock %}
 

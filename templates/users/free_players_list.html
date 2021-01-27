@@ -1,0 +1,27 @@
+
+{% extends 'registration/base.html' %}
+
+{% load thumbnail %}
+
+{% block content_main %}
+
+{% include "snippets/header-simplified.html" with title='Unsigned Players' %}
+
+<div class="container">
+	{% include 'snippets/messages.html' %}
+
+	<div class="mb-4">
+		<h3 class="mb-0 mt-5">Unsigned Players</h3>
+		<hr class="mt-2 mb-4" />
+		<div class="row">
+			{% for official in free_players %}
+				<div class="col-md-4 mb-3">
+					{% include "users/partials/players_card.html" with player=official %}
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+
+</div>
+{% endblock %}
+

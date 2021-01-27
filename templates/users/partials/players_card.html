@@ -16,9 +16,23 @@
 		<p class="card-text font-weight-bolder">Foot: <strong>{{ player.prefered_foot }}</strong></p>
 		<p class="card-text font-weight-bolder">Position: <strong>{{ player.favorite_position }}</strong></p>
 	</a>
-	<hr/>
-	<form method="POST" action="{% url 'users:signinoffer' player.pk %}">
-		{% csrf_token %}
-		<input class="btn btn-sm btn-primary" type="submit" value="Send offer">
-	</form>
+
+		{% if user.clubprofile %}
+			<div class="card-footer text-center">
+				{% if not player in myplayers %}
+					{% if player in myoffers %}
+						<form method="POST" action="{% url 'users:cancelsigninoffer' player.pk %}">
+								{% csrf_token %}
+								<input class="btn btn-sm btn-warning" type="submit" value="Cancel offer">
+						</form>
+					{% else %}
+						<form method="POST" action="{% url 'users:signinoffer' player.pk %}">
+								{% csrf_token %}
+								<input class="btn btn-sm btn-primary" type="submit" value="Send offer">
+						</form>
+					{% endif %}
+				{% endif %}
+			</div>
+		{% endif %}
+
 </div>

@@ -11,7 +11,7 @@
 	{% include "users/partials/players_profile.html" with object=object title=object subtitle=subtitle  %}
 {% endwith %}
 {% else %}
-{% with "Currently associated with any club" as subtitle %}
+{% with "Currently not signed in with any club" as subtitle %}
 	{% include "users/partials/players_profile.html" with object=object title=object subtitle=subtitle  %}
 {% endwith %}
 {% endif %}

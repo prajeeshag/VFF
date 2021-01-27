@@ -31,17 +31,33 @@ class Home(LoginRequiredMixin, TemplateView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_club():
             return redirect(reverse('users:clublist'))
-        if request.user.get_profile():
-            profile = request.user.get_profile()
-            return redirect(profile.get_absolute_url())
         return super().dispatch(request, *args, **kwargs)
 
     def get_template_names(self):
         template = super().get_template_names()
-
         if not self.request.user.is_staff and not self.request.user.get_profile():
             return ['page_underconstruction.html']
         return template
+
+
+class FreePlayersList(LoginRequiredMixin, TemplateView):
+    template_name = 'users/free_players_list.html'
+    login_url = reverse_lazy('login')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # very bad, need improvement
+        allplayers = models.PlayerProfile.objects.all()
+        free_players = []
+        for player in allplayers:
+            if not player.get_club():
+                free_players.append(player)
+        ctx['free_players'] = free_players
+        user = self.request.user
+        if hasattr(user, 'clubprofile'):
+            ctx['myoffers'] = user.clubprofile.get_invited_players()
+            ctx['myplayers'] = user.clubprofile.get_players()
+        return ctx
 
 
 class ClubList(LoginRequiredMixin, TemplateView):
@@ -67,6 +83,10 @@ class ClubDetails(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        user = self.request.user
+        if hasattr(user, 'clubprofile'):
+            ctx['myoffers'] = user.clubprofile.get_invited_players()
+            ctx['myplayers'] = user.clubprofile.get_players()
         return ctx
 
 
@@ -168,14 +188,14 @@ def CreateClubSigninOffer(request, pk):
     except:
         messages.add_message(
             request, messages.WARNING,
-            _("Couldn't create siginin offer."))
+            _("Couldn't create signing offer."))
         return HttpResponseRedirect(url)
 
     club = getattr(request.user, 'clubprofile', None)
     if not club:
         messages.add_message(
             request, messages.WARNING,
-            _("You are not authorised to create a sigin offer."))
+            _("You are not authorised to create a signing offer."))
         return HttpResponseRedirect(url)
 
     signin, created = models.ClubSignings.objects.get_or_create(
@@ -184,10 +204,121 @@ def CreateClubSigninOffer(request, pk):
     if not created:
         messages.add_message(
             request, messages.INFO,
-            _("You have already sent an offer to this player"))
+            "Your have already sent an offer to {}".format(player))
     else:
         messages.add_message(
             request, messages.SUCCESS,
-            _("Succefully created an offer for this player"))
+            "Created an offer for {}".format(player))
+
+    return HttpResponseRedirect(url)
+
+
+@require_http_methods(['POST'])
+@login_required
+def CancelClubSigninOffer(request, pk):
+    url = request.META.get('HTTP_REFERER', "/")
+    try:
+        player = models.PlayerProfile.objects.get(pk=pk)
+    except:
+        messages.add_message(
+            request, messages.WARNING,
+            _("Couldn't cancel signing offer."))
+        return HttpResponseRedirect(url)
+
+    club = getattr(request.user, 'clubprofile', None)
+    if not club:
+        messages.add_message(
+            request, messages.WARNING,
+            _("You are not authorised to cancel a signing offer."))
+        return HttpResponseRedirect(url)
+
+    signin, created = models.ClubSignings.objects.get_or_create(
+        club=club, player=player)
+
+    if signin.accepted:
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot cancel an accepted offer")
+    else:
+        signin.delete()
+
+    return HttpResponseRedirect(url)
+
+
+@require_http_methods(['POST'])
+@login_required
+def AcceptClubSigninOffer(request, pk):
+    url = request.META.get('HTTP_REFERER', "/")
+
+    try:
+        signin = models.ClubSignings.objects.get(pk=pk)
+    except models.ClubSignings.DoesNotExist:
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot not accept signin offer, signin offer not found")
+        return HttpResponseRedirect(url)
+
+    if signin.player != request.user.get_profile():
+        messages.add_message(
+            request, messages.WARNING,
+            "You are not authorised to accept this  offer")
+        return HttpResponseRedirect(url)
+
+    if signin.accepted:
+        messages.add_message(
+            request, messages.WARNING,
+            "Already accepted this offer")
+        return HttpResponseRedirect(url)
+
+    try:
+        signin.accept()
+    except signin.MaximumLimitReached:
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot accept this offer, the club reached maximum limit of players")
+        return HttpResponseRedirect(url)
+    except signin.AcceptedOfferExist:
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot accept this offer, you already joined a club.")
+        return HttpResponseRedirect(url)
+
+    messages.add_message(
+        request, messages.WARNING,
+        "Congratulations!!, you are now a player of {}".format(signin.club))
+
+    return HttpResponseRedirect(url)
+
+
+@require_http_methods(['POST'])
+@login_required
+def RegectClubSigninOffer(request, pk):
+    url = request.META.get('HTTP_REFERER', "/")
+
+    try:
+        signin = models.ClubSignings.objects.get(pk=pk)
+    except models.ClubSignings.DoesNotExist:
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot not regect signin offer, signin offer not found")
+        return HttpResponseRedirect(url)
+
+    if signin.player != request.user.get_profile():
+        messages.add_message(
+            request, messages.WARNING,
+            "You are not authorised to regect this  offer")
+        return HttpResponseRedirect(url)
+
+    if signin.accepted:
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot reject accepted offer")
+        return HttpResponseRedirect(url)
+
+    signin.delete()
+
+    messages.add_message(
+        request, messages.WARNING,
+        "You regected an offer from {}".format(signin.club))
 
     return HttpResponseRedirect(url)

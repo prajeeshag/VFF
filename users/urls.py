@@ -8,7 +8,18 @@ app_name = 'users'
 urlpatterns = [
     path('home/', views.Home.as_view(), name='home'),
 
+    path('unsignedplayers/', views.FreePlayersList.as_view(), name='unsignedplayers'),
+
     path('sendoffer/<int:pk>', views.CreateClubSigninOffer, name='signinoffer'),
+
+    path('regectoffer/<int:pk>', views.RegectClubSigninOffer,
+         name='regectsigninoffer'),
+
+    path('acceptoffer/<int:pk>', views.AcceptClubSigninOffer,
+         name='acceptsigninoffer'),
+
+    path('canceloffer/<int:pk>', views.CancelClubSigninOffer,
+         name='cancelsigninoffer'),
 
     path('clublist/', views.ClubList.as_view(), name='clublist'),
 
