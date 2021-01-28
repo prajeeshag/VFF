@@ -34,7 +34,7 @@ class Home(LoginRequiredMixin, TemplateView):
     template_name = 'users/home.html'
     login_url = reverse_lazy('login')
 
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         user = request.user
         if user.is_club():
             return redirect(reverse('users:clublist'))
@@ -42,7 +42,7 @@ class Home(LoginRequiredMixin, TemplateView):
         if user.is_player() and not hasattr(user, 'playerprofile'):
             return redirect(reverse('create_player_profile'))
 
-        return super().dispatch(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
 
 class UsersList(LoginRequiredMixin, ListView):
@@ -50,10 +50,10 @@ class UsersList(LoginRequiredMixin, ListView):
     login_url = reverse_lazy('login')
     template_name = 'users/users_list.html'
 
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         if not request.user.is_staff:
             return HttpResponseForbidden()
-        return super().dispatch(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
 
 class FreePlayersList(LoginRequiredMixin, TemplateView):
