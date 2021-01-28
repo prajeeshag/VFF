@@ -1,0 +1,122 @@
+
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+
+{% block content_main %}
+
+{% include "snippets/header-simplified.html" with title=object %}
+
+<div class="container">
+
+	<div class="mb-4">
+		<div class="row">
+		<div class="col-10">
+			<h3 class="mb-0 mt-5">General Information</h3>
+		</div>
+		{% if user == object.user %}
+		<div class="col-2">
+			<p class="mb-0 mt-5 text-right">
+			<a href="{% url 'UpdateClubDetails' object.clubdetails.pk %}"><i data-feather="edit"></i></a>
+			</p>
+		</div>
+		{% endif %}
+		</div>
+		<hr class="mt-2 mb-4" />
+		<h4 class="card-title text-secondary"> <strong>{{ object.clubdetails.abbr|default:"" }}</strong></h4>
+		<p class="card-title text-secondary h6">Address: <strong> {{object.clubdetails.address}}</strong></p>
+		<p class="card-title text-secondary h6">Contact number: <strong> {{object.clubdetails.contact_number}}</strong></p>
+		<p class="card-title text-secondary h6">Year of Formation: <strong> {{object.clubdetails.date_of_formation}}</strong></p>
+		<p class="card-title text-secondary h6">Total Players : <strong> {{object.total_players}}</strong></p>
+		<p class="card-title text-secondary h6">U19 Players : <strong> {{object.num_under19_players}}</strong></p>
+		<p class="card-title text-secondary h6">U21 Players : <strong> {{object.num_under21_players}}</strong></p>
+	</div>
+
+	<div class="mb-4">
+		<div class="row">
+		<div class="col-10">
+			<h3 class="mb-0 mt-5">Jersey</h3>
+			{% if user == object.user and jerseypictures|length < 3 %}
+			<small> Add upto 3 Jerseys </small>
+			{% endif %}
+		</div>
+		{% if user == object.user and jerseypictures|length < 3 %}
+		<div class="col-2">
+			<p class="mb-0 mt-5 text-right">
+			<a href="{% url 'AddJersey' %}"><i class="fa fa-plus"></i></a>
+			</p>
+		</div>
+		{% endif %}
+		</div>
+		<hr class="mt-2 mb-4" />
+		<div class="row">
+			{% if jerseypictures|length > 0 %}
+			{% for jersey in jerseypictures %}
+			<div class="col-md-4 mb-4">
+				<div class="card w-auto">
+					{% thumbnail jersey.image "300x300" as im %}
+					<div class="p-2 m-auto" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+					{% if user == object.user %}
+					<div class="card-body">
+						<a class="btn btn-link" href="{% url 'UpdateJersey' jersey.pk %}"><i class="fa fa-edit"></i> edit </a>
+						<a class="btn btn-link" href="{% url 'DeleteJersey' jersey.pk %}"><i class="fa fa-trash"></i> delete </a>
+					</div>
+					{% endif %}
+					{% endthumbnail %}
+				</div>
+			</div>
+			{% endfor %}
+			{% endif %}
+		</div>
+	</div>
+
+
+	<div class="mb-4">
+		<div class="row">
+		<div class="col-12">
+			<h3 class="mb-0 mt-5">Club Officials</h3>
+		</div>
+		{% if user == object.user %}
+		<div class="col-12">
+		{% if not user.club.president %}
+			<a class="mr-2" href="{% url 'AddOfficials' 'President' %}"><i class="fa fa-plus"></i> President </a>
+		{% endif %}
+		{% if not user.club.secretary %}
+			<a class="mr-2" href="{% url 'AddOfficials' 'Secretary' %}"><i class="fa fa-plus"></i> Secretary </a>
+		{% endif %}
+		{% if not user.club.manager %}
+			<a class="mr-2" href="{% url 'AddOfficials' 'Manager' %}"><i class="fa fa-plus"></i> Manager </a>
+		{% endif %}
+		</div>
+		{% endif %}
+		</div>
+		<hr class="mt-2 mb-4" />
+		<div class="row">
+			{% for official in officials %}
+			<div class="col-md-4 mb-3">
+				{% if forloop.count == 1 %}
+				{% include "dashboard/officials_card.html" with official=official  showtooltip=True %}
+				{% else %}
+				{% include "dashboard/officials_card.html" with official=official %}
+				{% endif %}
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+
+	<div class="mb-4">
+		<h3 class="mb-0 mt-5">Players</h3>
+		<hr class="mt-2 mb-4" />
+		<div class="row">
+			{% for official in players %}
+			<div class="col-md-4 mb-3">
+				{% include "dashboard/officials_card.html" with official=official %}
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+</div>
+{% endblock %}
+

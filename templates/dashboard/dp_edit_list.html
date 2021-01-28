@@ -1,0 +1,43 @@
+
+{% extends 'dashboard/base.html' %}
+{% load my_tags %}
+{% load static %}
+{% load thumbnail %}
+
+{% block content_main %}
+
+{% include "snippets/header-light.html" with title="Edit DP" icon='edit' %}
+<div class="container">
+	<form method="post" enctype="multipart/form-data">
+		{{ formset.management_form }}
+		{{ formset.non_form_errors  }}
+		<div class="row">
+		{% for form in formset  %}
+		<div class="col-md-4 dpedit mb-4">
+			<h4> {{ form.instance }} </h4>
+			{% include 'snippets/form_common.html' with form=form %}
+			{{ form.id }}
+			{% thumbnail form.instance.image "300x300" upscale=False as im %}
+			<div class="p-2 m-auto" style="max-width: 300px;">
+				<img src="{{ im.url }}" alt="Card image cap">
+			</div>
+			{% endthumbnail %}
+		</div>
+		{% endfor %}
+		<div class="col-12 text-center">
+		<button type="submit" class="btn btn-primary mb-2 dpeditSubmitButton"> <i data-feather="upload"></i> &nbsp; Submit </button>
+		</div>
+		</div>
+	</form>
+</div>
+{% endblock %}
+
+{% block styles_extra %}
+		<link href=" {% static 'Jcrop/jcrop.css' %} " rel="stylesheet" />
+{% endblock %}
+
+{% block scripts_extra %}
+	<script src="{% static 'Jcrop/jcrop.js' %}"></script>
+	<script src="{% static 'js/dpedit.js' %}"></script>		
+{% endblock %}
+

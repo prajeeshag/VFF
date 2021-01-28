@@ -1,0 +1,34 @@
+{% load static %}
+{% load hijack_tags %}
+{% load thumbnail %}
+<nav class="topnav navbar navbar-expand shadow justify-content-between justify-content-sm-start navbar-light bg-white" id="sidenavAccordion">
+	<!-- Navbar Brand-->
+	<!-- * * Tip * * You can use text or an image for your navbar brand.-->
+	<!-- * * * * * * When using an image, we recommend the SVG format.-->
+	<!-- * * * * * * Dimensions: Maximum height: 32px, maximum width: 240px-->
+	<a class="navbar-brand" href=" {% url 'dash:home' %} ">
+		VFL
+		{% comment %}<img src="{% static 'img/logo1.jpeg' %}"  alt="">{% endcomment %}
+	</a>
+	<!-- Sidenav Toggle Button-->
+	<button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 mr-lg-2" id="sidebarToggle">
+		{% with dp=user.get_profilepicture %}
+			{% if dp.image %}
+				{% thumbnail dp.image "50x50" upscale=False cropbox=dp.cropbox as im %}
+					<img class="img-fluid" src="{{ im.url }}" />
+				{% endthumbnail %}
+			{% else %}
+				<img class="img-fluid" src="{% static 'assets/img/illustrations/profiles/profile-1.jpeg' %}">
+			{% endif %}
+		{% endwith %}
+	</button>
+	<!-- Navbar Items-->
+
+	{% if request|is_hijacked %}
+	<form action="/hijack/release-hijack/" method="POST">
+		{% csrf_token %}
+		<button class="btn btn-danger btn-icon"> <i data-feather="log-out"></i> </button>
+	</form>
+	{% endif %}
+
+</nav>

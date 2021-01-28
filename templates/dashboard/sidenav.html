@@ -1,0 +1,62 @@
+{% load static %}
+<div id="layoutSidenav_nav">
+	<nav class="sidenav shadow-right sidenav-light">
+		<div class="sidenav-menu">
+			<div class="nav accordion" id="accordionSidenav">
+				<!-- Sidenav Menu Heading (Account)-->
+				<!-- * * Note: * * Visible only on and above the sm breakpoint-->
+				<a class="nav-link" href="{% url 'dash:home' %} ">
+					<div class="nav-link-icon"><i data-feather="home"></i></div>
+					Home	
+				</a>
+				{% if user.get_profile %}
+				<a class="nav-link" href="{{ user.get_profile.get_absolute_url }} ">
+					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+					My Profile
+				</a>
+				{% endif %}
+
+				{% if user.get_club %}
+					<a class="nav-link" href="{{ user.get_club.get_absolute_url }}">
+						<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+						My Club &nbsp; 
+						<small>({{ user.get_club }})</small>
+					</a>
+					<a class="nav-link" href="{% url 'users:clubmemberslist' user.get_club.pk %}">
+						<div class="nav-link-icon"><i data-feather="users"></i></div>
+						My Club Members
+					</a>
+				{% endif %}
+				<a class="nav-link" href=" {% url 'users:clublist' %} ">
+					<div class="nav-link-icon"><i data-feather="globe"></i></div>
+					All Clubs
+				</a>
+				<a class="nav-link" href=" {% url 'users:unsignedplayers' %} ">
+					<div class="nav-link-icon"><i data-feather="users"></i></div>
+					Unsigned Players
+				</a>
+				{% if user.is_staff %}
+				<a class="nav-link" href="{% url 'users:list' %}">
+					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+					users list &nbsp; 
+				</a>
+				{% endif %}
+				<a class="nav-link" href=" {% url 'users:change_password' %} ">
+					<div class="nav-link-icon"><i data-feather="settings"></i></div>
+					Change password
+				</a>
+				<a class="nav-link" href=" {% url 'account_logout' %} ">
+					<div class="nav-link-icon"><i data-feather="log-out"></i></div>
+					Logout
+				</a>
+			</div>
+		</div>
+		<!-- Sidenav Footer-->
+		<div class="sidenav-footer">
+			<div class="sidenav-footer-content">
+				<div class="sidenav-footer-subtitle">Logged in as:</div>
+				<div class="sidenav-footer-title">{{ user }}</div>
+			</div>
+		</div>
+	</nav>
+</div>

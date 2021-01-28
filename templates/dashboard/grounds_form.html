@@ -1,0 +1,47 @@
+
+{% extends 'dashboard/base.html' %}
+{% load my_tags %}
+{% load static %}
+{% load thumbnail %}
+{% load widget_tweaks %}
+
+{% block content_main %}
+
+{% include "snippets/header-light.html" with title="Enter Grounds Details" icon='edit' %}
+<div class="container">
+	<form method="post" enctype="multipart/form-data">
+		{{ formset.management_form }}
+		{{ formset.non_form_errors  }}
+		<div class="row">
+			{% for form in formset  %}
+				<div class="col-md-4">
+					<h6> {{ forloop.counter }}: </h6>
+					<div class="col-12 text-center">
+						{% include 'snippets/form_common.html' with form=form %}
+						{{ form.id }}
+						{% for field in form.visible_fields %}
+							<div class="form-group">
+								{% comment %}{{ field | add_label_class:"small mb-1" }} {% endcomment %}
+								{% render_field field class="form-control form-control-solid" placeholder=field.label %}
+							</div>
+						{% endfor %}
+					</div>
+				</div>
+			{% endfor %}
+			<div class="col-12 text-center">
+				<button type="submit" class="btn btn-primary mb-2 dpeditSubmitButton"> 
+					<i data-feather="upload"></i> 
+					&nbsp; Submit 
+				</button>
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}
+
+{% block styles_extra %}
+{% endblock %}
+
+{% block scripts_extra %}
+{% endblock %}
+

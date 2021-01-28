@@ -1,0 +1,69 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+{% load widget_tweaks %}
+
+{% block content_main %}
+
+{% with object.club|stringformat:"s" as club %}
+{% with object.role|add:" of club "|add:club as subtitle %}
+{% include "snippets/header-light.html" with title=object subtitle=subtitle  %}
+{% endwith %}
+{% endwith %}
+
+
+<div class="container">
+
+	<div class="mb-4 text-center">
+		{% with object.profilepicture as dp %}
+		{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}
+		<div class="p-2 m-auto" style="max-width: 300px;">
+			<img class="rounded-circle" src="{{ im.url }}" alt="Card image cap">
+		</div>
+		{% endthumbnail %}
+		{% endwith %}
+		{% if object.club.user == user or user.is_staff %}
+		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo" href="{% url 'dp_edit' object.profilepicture.pk %}"><i data-feather='edit-3'></i></a>
+		{% endif %}
+	</div>
+	<hr/>
+	<div class="mx-3">
+	  <form method="post">
+		{% include 'snippets/form_common.html' %}
+		{% for field in form.visible_fields %}
+			<div class="form-group">
+				{{ field | add_label_class:"small mb-1" }} 
+				{% render_field field class="form-control" placeholder=field.label %}
+			</div>
+		{% endfor %}
+		<div class="text-center"> <button class="btn btn-primary" type="submit">Submit</button> </div>
+	  </form>
+	</div>
+</div>
+{% endblock %}
+
+{% block styles_extra %}
+  <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" crossorigin="anonymous" />
+{% endblock %}
+
+{% block scripts_extra %}
+  <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js" crossorigin="anonymous"></script>
+	<script>
+	$(function () {
+	    $('#id_date_of_birth').daterangepicker(
+	        {
+	            singleDatePicker: true,
+	            showDropdowns: true,
+	            minYear: 1950,
+	            maxYear: parseInt(moment().format("YYYY"), 10),
+							locale: {
+							      format: 'YYYY-MM-DD'
+							}
+	        }
+	    );
+	});
+	</script>
+{% endblock %}
