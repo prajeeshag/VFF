@@ -10,11 +10,6 @@
 				</div>
 			{% endthumbnail %}
 			{% if official.club.user == user or user.is_superuser %}
-				{% comment %}<div class="text-center">{% endcomment %}
-					{% comment %}<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo"  href="{% url 'dp_edit' dp.pk %}">{% endcomment %}
-						{% comment %}<i data-feather='camera'></i>{% endcomment %}
-					{% comment %}</a>{% endcomment %}
-				{% comment %}</div>{% endcomment %}
 			{% endif %}
 		{% endif %}
 	{% endwith %}
@@ -24,7 +19,7 @@
 		<p class="card-title h5">{{ official }}</p>
 		<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ official.phone_number }}</p>
 		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="View Profile" href={{ official.get_absolute_url }} class="btn btn-secondary btn-icon"><i data-feather="eye"></i></a>
-		{% if official.club.user == user or user.is_superuser %}
+		{% if official.club.user == user %}
 			<a data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" 
 				href="{% url 'users:updateclubofficialsprofile' official.pk %}" class="btn btn-primary btn-icon">
 				<i data-feather="edit"></i>

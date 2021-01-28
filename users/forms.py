@@ -7,6 +7,14 @@ from . import models
 from myapp.widgets import ImageInput
 
 
+class UpdateClubForm(forms.ModelForm):
+    title = 'Edit Club Profile'
+
+    class Meta:
+        model = models.ClubProfile
+        fields = ['name', 'address', 'pincode', 'year_of_formation', 'abbr']
+
+
 class dpUploadForm(forms.ModelForm):
     class Meta:
         model = models.ProfilePicture

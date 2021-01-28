@@ -117,9 +117,9 @@ class PlayersProfile(LoginRequiredMixin, DetailView):
 class UpdateClubProfile(LoginRequiredMixin, SuccessMessageMixin,
                         RedirectToPreviousMixin, UpdateView):
     model = models.ClubProfile
-    fields = ['address', 'pincode', 'year_of_formation', 'abbr']
+    form_class = forms.UpdateClubForm
     login_url = reverse_lazy('login')
-    template_name = 'users/club_profile_form.html'
+    template_name = 'users/base_form.html'
     success_message = 'Club details has been updated'
 
     def dispatch(self, request, *args, **kwargs):
@@ -257,7 +257,7 @@ class dpUploadView(LoginRequiredMixin, UpdateView):
     template_name = 'users/dp_upload.html'
 
     def get_success_url(self):
-        return  reverse('users:dpedit')
+        return reverse('users:dpedit')
 
     def get_object(self):
         return self.request.user.get_profilepicture()
