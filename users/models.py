@@ -11,7 +11,7 @@ from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
 from django.utils.translation import ugettext_lazy as _
-from django.core.validators import MinLengthValidator
+from django.core.validators import MinLengthValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
 
 from core.validators import validate_Indian_pincode, validate_phone_number
@@ -116,6 +116,8 @@ class ClubProfile(models.Model):
         _('Year of formation'), blank=True, null=True)
     abbr = models.CharField(_('Abbreviation'), max_length=4, validators=[
                             MinLengthValidator(3), ], blank=True, null=True, unique=True)
+    logo = models.FileField(upload_to="logo/club/", null=True, 
+                            validators=[FileExtensionValidator(['svg','png'])])
     home_ground = models.ForeignKey(
         Grounds, null=True,
         related_name='club',
