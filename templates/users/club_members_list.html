@@ -6,14 +6,14 @@
 {% block content_main %}
 
 {% with "members of "|addstr:object.name as title %}
-	{% include "snippets/header-simplified.html" with title=title %}
+	{% include "snippets/header-light.html" with title=title %}
 {% endwith %}
 
 <div class="container">
 	<div class="mb-4">
 		<div class="card-body">
 			<div class="datatable">
-				<table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+				<table class="table table-responsive-md table-bordered table-hover hover table-striped table-light bg-secondary-soft" id="dataTable" width="100%" cellspacing="0">
 					<thead>
 						<tr>
 							<th>Name</th>
@@ -35,7 +35,7 @@
 						<tr>
 							<td><a href="{% url 'users:clubofficialsprofile' member.pk %}">{{ member }}</a></td>
 							<td>{{ member.role }}</td>
-							<td>{{ member.phone_number }}</td>
+							<td>{{ member.get_phone_number }}</td>
 							<td>{{ member.get_age }}</td>
 						</tr>
 						{% endfor %}
@@ -43,7 +43,7 @@
 						<tr>
 							<td><a href="{% url 'users:playersprofile' member.pk %}">{{ member }}</a></td>
 							<td>Player</td>
-							<td>{{ member.phone_number }}</td>
+							<td>{{ member.get_phone_number }}</td>
 							<td>{{ member.get_age }}</td>
 						</tr>
 						{% endfor %}

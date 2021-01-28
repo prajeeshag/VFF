@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
+from django.views.generic.list import ListView
 
 from django.urls import reverse_lazy, reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -41,6 +42,17 @@ class Home(LoginRequiredMixin, TemplateView):
         if user.is_player() and not hasattr(user, 'playerprofile'):
             return redirect(reverse('create_player_profile'))
 
+        return super().dispatch(request, *args, **kwargs)
+
+
+class UsersList(LoginRequiredMixin, ListView):
+    model = get_user_model()
+    login_url = reverse_lazy('login')
+    template_name = 'users/users_list.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
 
 

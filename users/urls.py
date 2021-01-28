@@ -32,6 +32,7 @@ urlpatterns = [
          name='updateclubofficialsprofile'),
     path('dpedit/', views.dpEditView.as_view(), name='dpedit'),
     path('dpupload/', views.dpUploadView.as_view(), name='dpupload'),
+    path('userlist/', views.UsersList.as_view(), name='list'),
 ]
 
 # urlpatterns = [
