@@ -7,63 +7,12 @@
 
 {% block content %}
 
-	{% with "Fixture for VFL 2021" as title %}
-		{% include "snippets/header-simplified.html" with title=title %}
-	{% endwith %}
+{% with "Calendar for VFL 2021" as title %}
+	{% include "snippets/header-light.html" with title=title icon='calendar' %}
+{% endwith %}
 
 <div class="container-md">
-	<div class="mb-4">
-			<div class="table">
-				<table class="table table-responsive-md table-bordered table-hover hover table-striped table-light bg-light" id="fixtureTable" width="100%" cellspacing="0">
-					<thead>
-						<tr>
-							<th>Date</th>
-							<th>Time</th>
-							<th>Match</th>
-							<th>Ground</th>
-						</tr>
-					</thead>
-					<tfoot>
-						<tr>
-							<th>Date</th>
-							<th>Time</th>
-							<th>Match</th>
-							<th>Ground</th>
-						</tr>
-					</tfoot>
-					<tbody>
-						{% for match in fixture.matches.all %}
-						<tr>
-							<td>{{ match.date|date:"D d M" }}</td>
-							<td>{{ match.date|date:"P" }}</td>
-							<td>
-								{% if user.is_anonymous %}
-								<a href="#!" tabindex="0" data-trigger="focus" title="" data-container="body" data-toggle="popover" data-placement="top" data-content="{{ match.home.address }}" data-original-title="{{ match.home.name }}">
-									{{ match.home.abbr|upper }}
-								</a>
-								{% else %}
-								<a data-toggle="tooltip" data-placement="top" title="" data-original-title="{{ match.home }}" href={{ match.home.get_absolute_url }}>
-									{{ match.home.abbr|upper }}
-								</a>
-								{% endif %}
-								<br>vs<br>
-								{% if user.is_anonymous %}
-								<a href="#!" tabindex="0" data-trigger="focus" title="" data-container="body" data-toggle="popover" data-placement="top" data-content="{{ match.away.address }}" data-original-title="{{ match.away.name }}">
-									{{ match.away.abbr|upper }}
-								</a>
-								{% else %}
-								<a data-toggle="tooltip" data-placement="top" title="" data-original-title="{{ match.away }}" href={{ match.away.get_absolute_url }}>
-									{{ match.away.abbr|upper }}
-								</a>
-								{% endif %}
-							</td>
-							<td>{{ match.ground.name }}</td>
-						</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-			</div>
-	</div>
+		{% include 'fixture/partials/calendar.html' with matches=matches %}
 </div>
 {% endblock %}
 
@@ -71,11 +20,9 @@
 	<script>
 $(document).ready(function() {
 	$('#fixtureTable').DataTable({
-		"paging": false,
 		"ordering": false,
 		"order":[],
-		"pageLength": 100,
-		"lengthMenu": [ 100,  ]
+		"pageLength": 10,
 	});
 });
 	</script>

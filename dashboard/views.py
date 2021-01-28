@@ -44,5 +44,4 @@ class Home(LoginRequiredMixin, TemplateView):
             if not club:
                 profile = user.get_profile()
                 ctx['club_offers'] = profile.get_all_offers()
-
         return ctx

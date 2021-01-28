@@ -1,0 +1,13 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+
+{% block content_main %}
+{% include "snippets/header-light.html" with title='Calendar' %}
+	<div class="container-md">
+		{% include 'fixture/partials/calendar.html' %}
+	</div>
+{% endblock %}
+

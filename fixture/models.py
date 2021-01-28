@@ -47,6 +47,11 @@ class Matches(models.Model):
         return self.date.strftime('%H:%M %p')
 
     @classmethod
+    def get_upcoming_matches(cls):
+        date = dt.datetime.now()
+        return cls.objects.all().filter(date__gte=date)
+
+    @classmethod
     def get_matches_of_club(cls, club):
         return cls.objects.filter(Q(home=club) | Q(away=club))
 

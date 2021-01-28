@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic.base import TemplateView
 
-from fixture.models import Fixture
+from fixture.models import Matches
 
 
 class LandingPageView(TemplateView):
@@ -13,5 +13,5 @@ class Calendar(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['fixture'] = Fixture.objects.first()
+        ctx['matches'] = Matches.get_upcoming_matches()
         return ctx

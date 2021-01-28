@@ -2,12 +2,14 @@
 {% load i18n %}
 
 {% if upcoming_matches %}
-	<div class="p-3">
-	<h4> Your upcoming matches </h4>
+<div class="p-3 text-center">
+	<h4 class="text-primary"> Your next matches </h4>
 	<hr class="mt-2 mb-4" />
-    {% for match in upcoming_matches %}
+	{% with upcoming_matches|slice:":3" as matches %}
+    {% for match in matches %}
 			{% include 'fixture/partials/match_card.html' with match=match %}
     {% endfor %}
+	{% endwith %}
 </div>
 {% endif %}
 

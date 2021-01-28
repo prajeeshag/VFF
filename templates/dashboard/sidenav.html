@@ -35,6 +35,10 @@
 					<div class="nav-link-icon"><i data-feather="users"></i></div>
 					Unsigned Players
 				</a>
+				<a class="nav-link" href=" {% url '' %} ">
+					<div class="nav-link-icon"><i data-feather="users"></i></div>
+					Calendar
+				</a>
 				{% if user.is_staff %}
 				<a class="nav-link" href="{% url 'users:list' %}">
 					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
