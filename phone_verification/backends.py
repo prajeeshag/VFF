@@ -19,7 +19,7 @@ class BaseBackend:
     KEY_PREFIX = 'phone_verification_'
     KEY_NOTFOUND = 'not_found'
     DEFAULT_TOKEN_LENGTH = 6
-    DEFAULT_TIME_OUT = 180  # seconds
+    DEFAULT_TIME_OUT = 360  # seconds
 
     @classmethod
     def generate_security_code(cls):
