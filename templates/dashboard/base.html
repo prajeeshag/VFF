@@ -20,12 +20,12 @@
 
 	{% block content %}
 		{% if not user.is_anonymous %}
-			{% include 'registration/topbar.html' %}
+			{% include 'dashboard/topbar.html' %}
 		{% endif %}
 
 		{% if not user.is_anonymous %}
 			<div id="layoutSidenav">
-				{% include 'registration/sidenav.html' %}
+				{% include 'dashboard/sidenav.html' %}
 			<div id="layoutSidenav_content">
 		{% else %}
 			<div class="container-md">

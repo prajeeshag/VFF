@@ -1,19 +1,14 @@
-{% extends 'public/base.html' %}
-{% load static %}
+{% extends 'dashboard/base.html' %}
+
 {% load thumbnail %}
+{% load static %}
 {% load my_tags %}
 
-{% block body %} class="bg-light" {% endblock %}
-
-{% block content %}
-
-{% with "Calendar for VFL 2021" as title %}
-	{% include "snippets/header-light.html" with title=title icon='calendar' %}
-{% endwith %}
-
-<div class="container-md">
+{% block content_main %}
+{% include "snippets/header-light.html" with title='Calendar' %}
+	<div class="container-md">
 		{% include 'fixture/partials/calendar.html' with matches=matches %}
-</div>
+	</div>
 {% endblock %}
 
 {% block scripts_extra %}
@@ -27,3 +22,4 @@ $(document).ready(function() {
 });
 	</script>
 {% endblock %}
+

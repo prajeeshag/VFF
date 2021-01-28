@@ -22,14 +22,14 @@
 	<div class="row mx-3">
 
 		{% with object.get_age|addstr:" Years" as value %}
-			{% include 'registration/text_field.html' with name='Age' value=value %}
+			{% include 'dashboard/text_field.html' with name='Age' value=value %}
 		{% endwith %}
-		{% include 'registration/text_field.html' with name='Phone' value=object.get_phone_number %}
-		{% include 'registration/text_field.html' with name='Email' value=object.email %}
+		{% include 'dashboard/text_field.html' with name='Phone' value=object.get_phone_number %}
+		{% include 'dashboard/text_field.html' with name='Email' value=object.email %}
 		{% if object.user == user %}
-			{% include 'registration/text_field.html' with name='Birthday' value=object.dob %}
+			{% include 'dashboard/text_field.html' with name='Birthday' value=object.dob %}
 		{% endif %}
-		{% include 'registration/text_field.html' with name='Occupation' value=object.occupation %}
+		{% include 'dashboard/text_field.html' with name='Occupation' value=object.occupation %}
 
 		<div class="col-md-12 p-1">
 			<h6 class="text-black-50">Address</h6>

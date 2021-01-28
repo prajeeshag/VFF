@@ -1,5 +1,5 @@
 
-{% extends 'registration/base.html' %}
+{% extends 'dashboard/base.html' %}
 
 {% load thumbnail %}
 
@@ -97,9 +97,9 @@
 			{% for official in officials %}
 			<div class="col-md-4 mb-3">
 				{% if forloop.count == 1 %}
-				{% include "registration/officials_card.html" with official=official  showtooltip=True %}
+				{% include "dashboard/officials_card.html" with official=official  showtooltip=True %}
 				{% else %}
-				{% include "registration/officials_card.html" with official=official %}
+				{% include "dashboard/officials_card.html" with official=official %}
 				{% endif %}
 			</div>
 			{% endfor %}
@@ -112,7 +112,7 @@
 		<div class="row">
 			{% for official in players %}
 			<div class="col-md-4 mb-3">
-				{% include "registration/officials_card.html" with official=official %}
+				{% include "dashboard/officials_card.html" with official=official %}
 			</div>
 			{% endfor %}
 		</div>

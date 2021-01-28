@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'core',
     'fixture',
     'phone_verification',
+    'dashboard',
 ]
 
 
@@ -194,7 +195,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-LOGIN_REDIRECT_URL = "/users/home"
+LOGIN_REDIRECT_URL = "/dashboard/home"
 LOGOUT_REDIRECT_URL = "/"
 
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
@@ -240,12 +241,12 @@ LOCALE_PATHS = (location('locale'), )
 MAINTENANCE_MODE_IGNORE_SUPERUSER = True
 
 if not DEBUG:
-    CACHES = { 
-            'default': { 
-                'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-                'LOCATION': '127.0.0.1:11211', 
-                } 
-            }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': '127.0.0.1:11211',
+        }
+    }
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -262,4 +263,3 @@ FAST2SMS_VARIABLES = config('FAST2SMS_VARIABLES', default='')
 FAST2SMS_TEMPLATE_ID = config('FAST2SMS_TEMPLATE_ID', default='')
 PHONE_VERIFICATION_BACKEND = config('PHONE_VERIFICATION_BACKEND',
                                     default='phone_verification.backends.test')
-

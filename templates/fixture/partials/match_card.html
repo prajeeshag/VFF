@@ -1,0 +1,35 @@
+
+<div class="bg-success text-dark d-flex m-2 justify-content-between border border-dark" style="height: 80px;">
+	<div class="p-2 bg-yellow font-weight-bold col-3 d-flex">
+		{% if user.is_anonymous %}
+			<a href="#!" class="m-auto text-dark" tabindex="0" data-trigger="focus" title="" data-container="body" 
+			data-toggle="popover" data-placement="top" data-content="{{ match.home.address }}" 
+			data-original-title="{{ match.home.name }}">
+				{{ match.home.abbr|upper }}
+			</a>
+		{% else %}
+			<a class="m-auto text-dark" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
+		{% endif %}
+	</div>
+	<div class="d-flex flex-column"> 
+		<div class="m-auto text-center"> 
+			<small>{{ match.date|date:"D. d M" }}</small>
+			<small>{{ match.date|date:"P" }}</small>
+		</div>
+		<div class="m-auto text-center"> 
+			<small>{{ match.ground }}</small>
+		</div>
+	</div>
+	<div class="p-2 bg-orange font-weight-bold col-3 d-flex">
+		{% if user.is_anonymous %}
+			<a href="#!" class="m-auto text-dark" tabindex="0" data-trigger="focus" title="" data-container="body" 
+			data-toggle="popover" data-placement="top" data-content="{{ match.away.address }}" 
+			data-original-title="{{ match.away.name }}">
+				{{ match.away.abbr|upper }}
+			</a>
+		{% else %}
+			<a class="m-auto text-dark" href={{ match.away.get_absolute_url }}> {{ match.away.abbr|upper }} </a>
+		{% endif %}
+	</div>
+</div>
+

@@ -1,9 +1,11 @@
 
 {% load i18n %}
 
-{% with offers=user.get_profile.clubsignings.all %}
-{% if offers %}
-    {% for offer in offers %}
+{% if club_offers %}
+	<div class="p-3">
+	<h4> Offers from clubs </h4>
+	<hr class="mt-2 mb-4" />
+    {% for offer in club_offers %}
 			{% if not offer.accepted %}
 				<div class="alert alert-success">
 					<div class="mb-2">Offer to join club <a href="{{ offer.club.get_absolute_url }}">{{offer.club}}</a></div>
@@ -24,6 +26,6 @@
 				</div>
 		{% endif %}
     {% endfor %}
+</div>
 {% endif %}
-{% endwith %}
- 
+

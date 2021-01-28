@@ -1,0 +1,18 @@
+<div class="mb-4">
+		<div class="table">
+			<table class="table" id="fixtureTable" width="100%" cellspacing="0">
+				<thead>
+						<th></th>
+				</thead>
+				<tbody>
+					{% for match in matches %}
+					<tr>
+						<td>
+							{% include 'fixture/partials/match_card.html' with match=match %}
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+</div>
