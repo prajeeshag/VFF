@@ -1,0 +1,63 @@
+{% extends 'registration/base.html' %}
+
+{% load static %}
+{% load thumbnail %}
+{% load my_tags %}
+
+{% block content_main %}
+
+	<hr class="mb-4"/>
+	<h1>Users List</h1>
+	<hr/>
+<div class="container-md">
+	<div class="mb-4">
+		<div class="card-body">
+			<div class="datatable">
+				<table class="table table-responsive-md table-bordered table-hover hover table-striped bg-dark table-dark" id="userTable" width="100%" cellspacing="0">
+					<thead>
+						<tr>
+							<th>UserName</th>
+							<th>Phone</th>
+						</tr>
+					</thead>
+					<tfoot>
+						<tr>
+							<th>UserName</th>
+							<th>Phone</th>
+						</tr>
+					</tfoot>
+					<tbody>
+						{% for obj in object_list %}
+						<tr>
+							<td>
+							{% if user.is_superuser %}
+								<form action="/hijack/{{ obj.id }}/" method="post">
+									{% csrf_token %}
+									<button type="submit" class="btn btn-link text-danger">{{ obj.username }}</button>
+								</form>
+								{% else %}
+									{{ obj.username }}
+								{% endif %}
+							</td>
+							<td>{{ obj.phone_number }}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block scripts_extra %}
+	<script>
+$(document).ready(function() {
+	$('#userTable').DataTable({
+		"ordering": false,
+		"order":[],
+		"pageLength": 10,
+	});
+});
+	</script>
+{% endblock %}
+
