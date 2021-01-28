@@ -7,6 +7,15 @@ from . import models
 from myapp.widgets import ImageInput
 
 
+class UpdateClubOfficialsForm(forms.ModelForm):
+    title = 'Edit Club Officials Profile'
+
+    class Meta:
+        model = models.ClubOfficialsProfile
+        fields = ['first_name', 'last_name',
+                  'dob', 'address', 'phone_number']
+
+
 class UpdateClubForm(forms.ModelForm):
     title = 'Edit Club Profile'
 

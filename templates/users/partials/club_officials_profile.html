@@ -11,8 +11,10 @@
 					<img class="rounded-circle" src="{{ im.url }}" alt="Card image cap">
 				</div>
 			{% endthumbnail %}
-			{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-secondary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo" href="urlUpdate"><i data-feather='camera'></i></a>
+			{% if object.user == user %}
+				{% if object.user == user%}
+					<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
+				{% endif %}
 			{% endif %}
 		{% endwith %}
 	</div>

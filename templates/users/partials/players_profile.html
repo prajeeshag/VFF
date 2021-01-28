@@ -13,15 +13,14 @@
 					<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap">
 				</div>
 			{% endthumbnail %}
-			{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-secondary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Photo" href="urlUpdate"><i data-feather='camera'></i></a>
+			{% if object.user == user%}
+				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
 			{% endif %}
 		{% endwith %}
 	</div>
 	{% if user == object.user %}
 	<div class="d-flex justify-content-between">
-		<a class="btn btn-link" href="{% url 'users:updateplayersprofile' %}">edit info</a>
-		<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit profile picture</a>
+		{% comment %}<a class="btn btn-link" href="users:updateplayersprofile' %}">edit info</a>{% endcomment %}
 	</div>
 	{% endif %}
 	<hr/>
@@ -48,5 +47,4 @@
 		{% endif %}
 	</div>
 </div>
-
 

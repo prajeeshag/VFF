@@ -4,27 +4,22 @@
 <div class="card w-auto ">
 	{% with official.profilepicture as dp %}
 	  {% if dp %}
-			{% thumbnail dp.image "300x300" upscale=False cropbox=dp.cropbox as im %}
-				<div class="p-2 m-auto text-center" style="max-width: 300px;">
-					<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
-				</div>
-			{% endthumbnail %}
+			<a class="card-image" href={{ official.get_absolute_url }}>
+				{% thumbnail dp.image "300x300" upscale=False cropbox=dp.cropbox as im %}
+					<div class="p-2 m-auto text-center" style="max-width: 300px;">
+						<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+					</div>
+				{% endthumbnail %}
+			</a>
 			{% if official.club.user == user or user.is_superuser %}
 			{% endif %}
 		{% endif %}
 	{% endwith %}
 	<hr/>
-	<div class="card-body text-center">
+	<a class="card-body text-center" href={{ official.get_absolute_url }}>
 		<p class="card-title h6">{{ official.role }}</p>
 		<p class="card-title h5">{{ official }}</p>
 		<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ official.phone_number }}</p>
-		<a data-toggle="tooltip" data-placement="top" title="" data-original-title="View Profile" href={{ official.get_absolute_url }} class="btn btn-secondary btn-icon"><i data-feather="eye"></i></a>
-		{% if official.club.user == user %}
-			<a data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" 
-				href="{% url 'users:updateclubofficialsprofile' official.pk %}" class="btn btn-primary btn-icon">
-				<i data-feather="edit"></i>
-			</a>
-		{% endif %}
-	</div>
+	</a>
 </div>
 

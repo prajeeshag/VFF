@@ -134,9 +134,8 @@ class UpdateClubProfile(LoginRequiredMixin, SuccessMessageMixin,
 class ClubOfficialsProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
                                  RedirectToPreviousMixin, UpdateView):
     model = models.ClubOfficialsProfile
-    fields = ['first_name', 'last_name',
-              'dob', 'address', 'phone_number']
-    template_name = 'users/club_officials_profile_form.html'
+    form_class = forms.UpdateClubOfficialsForm
+    template_name = 'users/base_form.html'
 
     def dispatch(self, request, *args, **kwargs):
         obj = self.get_object()
