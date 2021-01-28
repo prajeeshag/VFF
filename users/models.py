@@ -391,6 +391,9 @@ class ClubOfficialsProfile(Profile):
     def get_absolute_url(self):
         return reverse('users:clubofficialsprofile', kwargs={'pk': self.pk})
 
+    def get_club(self):
+        return self.club
+
 
 class PlayerProfile(Profile):
     """ Players Profile """
