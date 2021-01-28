@@ -1,6 +1,16 @@
 
 {% load thumbnail %}
 <div class="card w-auto ">
+  {% if user.is_superuser %}	
+		<div class="card-header">
+			{% if player.user %}
+				<form action="/hijack/{{ player.user.id }}/" method="post">
+					{% csrf_token %}
+					<button type="submit" class="dropdown-item text-danger">Hijack</button>
+				</form>
+			{% endif %}
+		</div>
+	{% endif %}
 	<a class="card-image" href={{ player.get_absolute_url }}>
 	{% with player.profilepicture as dp %}
 		{% thumbnail dp.image "300x300" upscale=False cropbox=dp.cropbox as im %}
@@ -16,7 +26,7 @@
 		<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ player.get_phone_number }}</p>
 	</a>
 
-		{% if user.clubprofile %}
+		{% if user.is_club %}
 			<div class="card-footer text-center">
 				{% if not player in myplayers %}
 					{% if player in myoffers %}

@@ -2,6 +2,15 @@
 {% load thumbnail %}
 
 <div class="card w-auto ">
+  {% if user.is_superuser %}	
+		<div class="card-header">
+			{% if official.user %}
+				<form action="/hijack/{{ player.user.id }}/" method="post">
+					{% csrf_token %}
+					<button type="submit" class="dropdown-item text-danger">Hijack</button>
+				</form>
+			{% endif %}
+		</div>
 	{% with official.profilepicture as dp %}
 	  {% if dp %}
 			<a class="card-image" href={{ official.get_absolute_url }}>
