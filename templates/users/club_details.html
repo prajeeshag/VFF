@@ -14,10 +14,10 @@
 		<div class="col-10">
 			<h3 class="mb-0 mt-5">General Information</h3>
 		</div>
-		{% if user == object.user or user.is_superuser %}
+		{% if user == object.user %}
 			<div class="col-2">
 				<p class="mb-0 mt-5 text-right">
-				<a href="{% url 'users:updateclubprofile' object.pk %}"><i data-feather="edit"></i></a>
+				<a href="{% url 'users:updateclubprofile' %}"><i data-feather="edit"></i></a>
 				</p>
 			</div>
 		{% endif %}
