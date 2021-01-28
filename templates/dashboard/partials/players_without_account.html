@@ -1,0 +1,20 @@
+
+{% load i18n %}
+
+{% if players_no_account %}
+<h5 class="text-danger"> Your these {{ players_no_account|length }} players doesn't have account. </h5>
+<hr class="mb-2" />
+<div class="overflow-auto mb-4" style="height: 200px;" >
+<div class="p-3">
+    {% for player in players_no_account %}
+		<div class="d-flex justify-content-between mb-2 border border-bottom">
+			<a href="{{ player.get_absolute_url }}" class="p-3 m-auto"> {{ player }} </a>
+			<form class="my-auto" method="POST" action="{% url 'dash:delplayer' player.pk %}">
+				{% csrf_token %}
+				<input value="delete player" type="submit" class="btn btn-warning m-auto">
+			</form>
+		</div>
+    {% endfor %}
+</div>
+</div>
+{% endif %}

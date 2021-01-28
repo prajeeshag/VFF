@@ -116,8 +116,8 @@ class ClubProfile(models.Model):
         _('Year of formation'), blank=True, null=True)
     abbr = models.CharField(_('Abbreviation'), max_length=4, validators=[
                             MinLengthValidator(3), ], blank=True, null=True, unique=True)
-    logo = models.FileField(upload_to="logo/club/", null=True, 
-                            validators=[FileExtensionValidator(['svg','png'])])
+    logo = models.FileField(upload_to="logo/club/", null=True,
+                            validators=[FileExtensionValidator(['svg', 'png'])])
     home_ground = models.ForeignKey(
         Grounds, null=True,
         related_name='club',
@@ -152,7 +152,10 @@ class ClubProfile(models.Model):
         return officials[0]
 
     def total_players(self):
-        return self.players.all().count()
+        return self.clubsignings.filter(accepted=True).count()
+
+    def player_quota_left(self):
+        return PlayerCount.MAX_NUM_PLAYERS-self.total_players()
 
     def get_contact_number(self):
         if self.manager():
@@ -185,6 +188,12 @@ class ClubProfile(models.Model):
     def get_invited_players(self):
         q = self.clubsignings.filter(accepted=False).prefetch_related('player')
         return [s.player for s in q]
+
+    def release_player(self, player):
+        signings = self.clubsignings.filter(player=player).first()
+        if signings:
+            signings.release()
+            return True
 
 
 class AbstractImage(models.Model):

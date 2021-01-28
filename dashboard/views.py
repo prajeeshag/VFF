@@ -25,6 +25,7 @@ from core.mixins import RedirectToPreviousMixin
 from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
+from users.models import PlayerProfile
 
 LOGIN_URL = reverse_lazy('login')
 
@@ -37,7 +38,6 @@ class Home(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
         club = user.get_club()
-        print(user, club)
         if club:
             ctx['upcoming_matches'] = \
                 Matches.get_upcoming_matches_of_club(club)
@@ -47,7 +47,48 @@ class Home(LoginRequiredMixin, TemplateView):
                 profile = user.get_profile()
                 if profile:
                     ctx['club_offers'] = profile.get_all_offers()
+
+        if user.is_club():
+            signings = club.clubsignings.filter(
+                accepted=True).prefetch_related('player')
+            ctx['players_no_account'] = [
+                s.player for s in signings if not s.player.user]
+            ctx['player_quota'] = club.player_quota_left()
         return ctx
+
+
+@ require_http_methods(['POST'])
+@ login_required
+def del_player(request, pk):
+    url = request.META.get('HTTP_REFERER', "/")
+    try:
+        player = PlayerProfile.objects.get(pk=pk)
+    except PlayerProfile.DoesNotExist:
+        messages.add_message(
+            request, messages.WARNING,
+            _("Couldn't Delete the player"))
+        return HttpResponseRedirect(url)
+
+    if player.user:
+        messages.add_message(
+            request, messages.WARNING,
+            _("You can't delete this player"))
+        return HttpResponseRedirect(url)
+
+    club = request.user.get_club()
+    if club:
+        if club.release_player(player):
+            player.delete()
+        else:
+            messages.add_message(
+                request, messages.WARNING,
+                _("Couldn't release player"))
+            return HttpResponseRedirect(url)
+
+    messages.add_message(
+        request, messages.WARNING,
+        _("Deleted player"))
+    return HttpResponseRedirect(url)
 
 
 class Calendar(LoginRequiredMixin, TemplateView):
@@ -58,4 +99,3 @@ class Calendar(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.get_upcoming_matches()
         return ctx
-

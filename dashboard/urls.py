@@ -7,6 +7,7 @@ app_name = 'dash'
 
 urlpatterns = [
     path('home/', views.Home.as_view(), name='home'),
+    path('delplayer/<int:pk>/', views.del_player, name='delplayer'),
     path('calendar/', views.Calendar.as_view(), name='calendar'),
 ]
 

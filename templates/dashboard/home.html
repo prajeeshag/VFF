@@ -5,12 +5,15 @@
 {% load my_tags %}
 
 {% block content_main %}
-{% include "snippets/header-light.html" with title='Welcome..' %}
+<h2 class="p-3"> Home </h2>
+<hr/>
 	<div class="container-md">
-		{% include 'dashboard/partials/create_profile_msg.html' %}
 		{% include 'snippets/messages.html' %}
-		{% include 'dashboard/partials/clubsignings_offers.html' %}
+		{% include 'dashboard/partials/player_count_msg.html' %}
 		{% include 'dashboard/partials/upcoming_matches.html' %}
+		{% include 'dashboard/partials/players_without_account.html' %}
+		{% include 'dashboard/partials/create_profile_msg.html' %}
+		{% include 'dashboard/partials/clubsignings_offers.html' %}
 	</div>
 {% endblock %}
 
