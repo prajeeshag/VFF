@@ -195,7 +195,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-LOGIN_REDIRECT_URL = "/users/home"
+LOGIN_REDIRECT_URL = "/dashboard/home"
 LOGOUT_REDIRECT_URL = "/"
 
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"

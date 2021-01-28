@@ -90,7 +90,6 @@ class User(AbstractUser):
             club = profile.get_club()
         if not club:
             return getattr(self, 'clubprofile', None)
-
         return club
 
 

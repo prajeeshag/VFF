@@ -35,13 +35,14 @@ class Home(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
         club = user.get_club()
+        print(user, club)
         if club:
             ctx['upcoming_matches'] = \
                 Matches.get_upcoming_matches_of_club(club)
 
-        player = user.is_player
-        if player:
+        if user.is_player():
             if not club:
                 profile = user.get_profile()
                 ctx['club_offers'] = profile.get_all_offers()
 
+        return ctx

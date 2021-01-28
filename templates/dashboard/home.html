@@ -5,17 +5,11 @@
 {% load my_tags %}
 
 {% block content_main %}
-{% include "snippets/header-compact.html" with title='Welcome..' %}
+{% include "snippets/header-light.html" with title='Welcome..' %}
 	<div class="container-md">
 		{% include 'snippets/messages.html' %}
-
-		<div class="p-3">
-			<h4> Offers from clubs </h4>
-			<hr class="mt-2 mb-4" />
-				{% include 'dashboard/partials/clubsignings_offers.html' %}
-			<hr class="mt-2 mb-4" />
-		</div>
-
+		{% include 'dashboard/partials/clubsignings_offers.html' %}
+		{% include 'dashboard/partials/upcoming_matches.html' %}
 	</div>
 {% endblock %}
 
