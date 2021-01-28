@@ -1,9 +1,12 @@
+import datetime as dt
+
 from django.db import models
 from django.core.validators import MinValueValidator
 
 from django.utils.translation import ugettext_lazy as _
 
 from users.models import ClubProfile as Club, Grounds
+
 
 LEAGUE_NAME = 'VFL'
 
@@ -41,3 +44,21 @@ class Matches(models.Model):
 
     def get_time(self):
         return self.date.strftime('%H:%M %p')
+
+    @classmethod
+    def get_matches_of_club(cls, club):
+        return cls.objects.filter(Q(home=club) | Q(away=club))
+
+    @classmethod
+    def get_home_matches_of_club(cls, club):
+        return cls.objects.filter(Q(home=club))
+
+    @classmethod
+    def get_upcoming_matches_of_club(cls, club):
+        date = dt.datetime.now()
+        return cls.objects.filter(Q(home=club) | Q(away=club)).filter(date__gte=date)
+
+    @classmethod
+    def get_upcoming_home_matches_of_club(cls, club):
+        date = dt.datetime.now()
+        return cls.objects.filter(Q(home=club)).filter(date__gte=date)

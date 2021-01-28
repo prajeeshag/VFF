@@ -435,9 +435,14 @@ class PlayerProfile(Profile):
     def get_absolute_url(self):
         return reverse('users:playersprofile', kwargs={'pk': self.pk})
 
-    def get_offer(self, club):
+    def get_offer_from_club(self, club):
         offer = self.clubsignings.filter(club=club).first()
         return offer
+
+    def get_all_offers(self):
+        offers = self.clubsignings.filter(
+            accepted=False).order_by('-created_at')
+        return offers
 
     def get_club(self):
         offer = self.clubsignings.filter(accepted=True).first()
