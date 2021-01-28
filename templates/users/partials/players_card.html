@@ -28,8 +28,8 @@
 	</a>
 
 		{% if user.is_club %}
+			{% if not player in myplayers %}
 			<div class="card-footer text-center">
-				{% if not player in myplayers %}
 					{% if player in myoffers %}
 						<form method="POST" action="{% url 'users:cancelsigninoffer' player.pk %}">
 								{% csrf_token %}
@@ -41,8 +41,8 @@
 								<input class="btn btn-sm btn-primary" type="submit" value="Send offer">
 						</form>
 					{% endif %}
-				{% endif %}
 			</div>
+			{% endif %}
 		{% endif %}
 
 </div>
