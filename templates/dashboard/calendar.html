@@ -7,7 +7,19 @@
 {% block content_main %}
 {% include "snippets/header-light.html" with title='Calendar' %}
 	<div class="container-md">
-		{% include 'fixture/partials/calendar.html' %}
+		{% include 'fixture/partials/calendar.html' with matches=matches %}
 	</div>
+{% endblock %}
+
+{% block scripts_extra %}
+	<script>
+$(document).ready(function() {
+	$('#fixtureTable').DataTable({
+		"ordering": false,
+		"order":[],
+		"pageLength": 10,
+	});
+});
+	</script>
 {% endblock %}
 

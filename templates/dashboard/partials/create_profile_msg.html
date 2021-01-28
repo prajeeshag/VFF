@@ -1,7 +1,7 @@
 
 {% if user.is_player %}
-<div class="p-2 bg-danger text-dark">
-	<h4> Your don't have a profile. For clubs to see you, create a profile. </h4>
+<div class="p-2 bg-warning text-dark">
+	<h4> Your don't have a profile. Create a profile to join a club. </h4>
 	<a class="btn btn-success" href="{% url 'create_player_profile' %}"> Create Profile </a>
 </div>
 {% endif %}

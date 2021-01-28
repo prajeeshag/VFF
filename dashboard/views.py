@@ -26,10 +26,12 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 
+LOGIN_URL = reverse_lazy('login')
+
 
 class Home(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/home.html'
-    login_url = reverse_lazy('login')
+    login_url = LOGIN_URL
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -43,5 +45,17 @@ class Home(LoginRequiredMixin, TemplateView):
         if user.is_player():
             if not club:
                 profile = user.get_profile()
-                ctx['club_offers'] = profile.get_all_offers()
+                if profile:
+                    ctx['club_offers'] = profile.get_all_offers()
         return ctx
+
+
+class Calendar(LoginRequiredMixin, TemplateView):
+    template_name = 'dashboard/calendar.html'
+    login_url = LOGIN_URL
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['matches'] = Matches.get_upcoming_matches()
+        return ctx
+
