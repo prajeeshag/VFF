@@ -21,7 +21,8 @@ class UpdateClubForm(forms.ModelForm):
 
     class Meta:
         model = models.ClubProfile
-        fields = ['name', 'address', 'pincode', 'year_of_formation', 'abbr']
+        fields = ['name', 'logo', 'address',
+                  'pincode', 'year_of_formation', 'abbr']
 
 
 class dpUploadForm(forms.ModelForm):
