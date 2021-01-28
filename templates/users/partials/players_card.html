@@ -24,11 +24,12 @@
 	<a class="card-body text-center" href={{ player.get_absolute_url }}>
 		<p class="card-title h5">{{ player }}</p>
 		<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ player.get_phone_number }}</p>
+		<p class="card-text">{{ player.favorite_position }}</p>
 	</a>
 
 		{% if user.is_club %}
+			{% if not player in myplayers %}
 			<div class="card-footer text-center">
-				{% if not player in myplayers %}
 					{% if player in myoffers %}
 						<form method="POST" action="{% url 'users:cancelsigninoffer' player.pk %}">
 								{% csrf_token %}
@@ -40,8 +41,8 @@
 								<input class="btn btn-sm btn-primary" type="submit" value="Send offer">
 						</form>
 					{% endif %}
-				{% endif %}
 			</div>
+			{% endif %}
 		{% endif %}
 
 </div>
