@@ -8,14 +8,16 @@
 <link rel="icon" type="image/x-icon" href=" {% static 'assets/img/favicon.png' %} " />
 {% endblock %}
 
-{% block body %} class="bg-dark" {% endblock %}
+{% block body %} class="bg-gray-600 text-light" {% endblock %}
 
 {% block content %}
-	<div class="container mt-4">
-		<div class="bg-cyan">
-			<img src="{% static  'brochure/vfl-1.png' %}" class="img-fluid">
+	{% include 'public/partials/topbar.html' %}
+		<div id="layoutSidenav">
+			{% include 'public/partials/sidenav.html' %}
+			<div id="layoutSidenav_content">
+			{% block content_main %} {% endblock %}
+			</div>
 		</div>
-	</div>
 {% endblock %}
 
 {% block scripts %}
@@ -24,5 +26,6 @@
 	<script src=" {% static 'js/scripts.js' %} "></script>
 	<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
 	<script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
-	<script> feather.replace() </script>
+{% endblock %}
+{% block scripts_extra %}
 {% endblock %}

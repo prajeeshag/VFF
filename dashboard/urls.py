@@ -12,4 +12,5 @@ urlpatterns = [
     path('editplayer/<int:pk>', views.EditPlayer.as_view(), name='editplayer'),
     path('playernumber/<int:pk>', views.EditPhoneNumber, name='editphone'),
     path('editemail/', views.UpdateEmail, name='editemail'),
+    path('caroselC/', views.CreateCarouselItem.as_view, name='caroselC'),
 ]

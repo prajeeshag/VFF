@@ -5,7 +5,12 @@ from fixture.models import Matches
 
 
 class LandingPageView(TemplateView):
-    template_name = 'public/brochure.html'
+    template_name = 'public/landing_page.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['matches'] = Matches.get_upcoming_matches()[:10]
+        return ctx
 
 
 class Calendar(TemplateView):

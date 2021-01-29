@@ -1,30 +1,4 @@
 
-{% extends 'base.html' %}	
-
-{% load static %}
-{% load i18n %}
-{% load widget_tweaks %}
+{% extends 'public/base.html' %}	
 
 
-{% block content %}
-
-<div id="layoutAuthentication">
-	{% block content_main %} {% endblock %}
-	{% block footer %}
-	<div id="layoutAuthentication_footer">
-		<footer class="footer mt-auto footer-dark">
-			<div class="container-fluid">
-				<div class="row">
-					<div class="col-md-6 small">Copyright &copy; VFL 2021</div>
-					<div class="col-md-6 text-md-right small">
-						<a href=" {% static '#!' %} ">Privacy Policy</a>
-						&middot;
-						<a href=" {% static '#!' %} ">Terms &amp; Conditions</a>
-					</div>
-				</div>
-			</div>
-		</footer>
-	</div>
-	{% endblock %}
-</div>
-{% endblock %}

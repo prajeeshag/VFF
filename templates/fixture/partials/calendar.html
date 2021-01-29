@@ -1,8 +1,11 @@
+
+<div class="text-center text-light">{{ title|default:"Upcoming Matches" }}</div>
+<hr class="mt-1 mb-1"/>
 <div class="mb-4">
-		<div class="table">
-			<table class="table" id="fixtureTable" width="100%" cellspacing="0">
-				<thead>
-						<th></th>
+		<div class="overflow-auto" style="height: 200px;">
+			<table class="table table-borderless" id="fixtureTable" width="100%" cellspacing="0">
+				<thead class="d-none">
+					<th class="text-center text-light h4">{{ title|default:"Upcoming Matches" }}</th>
 				</thead>
 				<tbody>
 					{% for match in matches %}

@@ -30,6 +30,7 @@ from formtools.wizard.views import SessionWizardView
 from fixture.models import Matches
 from users.models import PlayerProfile, PhoneNumber
 from . import forms
+from .public.views import *
 
 LOGIN_URL = reverse_lazy('login')
 
