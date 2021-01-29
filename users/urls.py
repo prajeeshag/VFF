@@ -18,17 +18,20 @@ urlpatterns = [
     path('clublist/', views.ClubList.as_view(), name='clublist'),
     path('clubmemberslist/<int:pk>/',
          views.ClubMembersList.as_view(), name='clubmemberslist'),
+
     path('clubdetails/<int:pk>/', views.ClubDetails.as_view(), name='clubdetails'),
+
     path('clubofficials/<int:pk>/', views.ClubOfficialsProfile.as_view(),
          name='clubofficialsprofile'),
+
     path('players/<int:pk>/', views.PlayersProfile.as_view(), name='playersprofile'),
 
     path('updateclub/', views.UpdateClubProfile.as_view(),
          name='updateclubprofile'),
-    path('playerpdate/', views.UpdatePlayerProfile.as_view(),
-         name='updateplayersprofile'),
+
     path('cluboffileupdate/<int:pk>/', views.ClubOfficialsProfileUpdate.as_view(),
          name='updateclubofficialsprofile'),
+
     path('dpedit/', views.dpEditView.as_view(), name='dpedit'),
     path('dpupload/', views.dpUploadView.as_view(), name='dpupload'),
     path('userlist/', views.UsersList.as_view(), name='list'),

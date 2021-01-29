@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'captcha',
     'rest_framework',
     'formtools',
+    'guardian',
 
     # Local
     'users.apps.UsersConfig',
@@ -213,7 +214,7 @@ HIJACK_USE_BOOTSTRAP = True
 AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = (
     "users.backends.AuthBackend",
-    # "allauth.account.auth_backends.AuthenticationBackend",
+    'guardian.backends.ObjectPermissionBackend',
 )
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'

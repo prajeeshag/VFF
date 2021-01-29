@@ -17,6 +17,9 @@ from django.core.exceptions import ValidationError
 from core.validators import validate_Indian_pincode, validate_phone_number
 from core.utils import get_image_upload_path
 
+from guardian.models import UserObjectPermissionBase
+from guardian.models import GroupObjectPermissionBase
+
 
 class PhoneNumber(models.Model):
     number = models.CharField(_('Phone number'), max_length=10,
@@ -436,6 +439,11 @@ class PlayerProfile(Profile):
         Documents, on_delete=models.SET_NULL,
         null=True)
 
+    class Meta:
+        permissions = (
+            ('edit', 'Edit'),
+        )
+
     def get_height(self):
         return "{} cm".format(self.height)
 
@@ -459,6 +467,14 @@ class PlayerProfile(Profile):
         if offer:
             return offer.club
         return None
+
+
+class PlayerUserObjectPermission(UserObjectPermissionBase):
+    content_object = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)
+
+
+class PlayerGroupObjectPermission(GroupObjectPermissionBase):
+    content_object = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)
 
 
 class PlayerCount(models.Model):
