@@ -236,7 +236,7 @@ class PasswordChange(SuccessMessageMixin,
                      PasswordChangeView):
     template_name = 'users/base_form.html'
     success_message = 'Password Changed...'
-    success_url = reverse_lazy('users:home')
+    success_url = reverse_lazy('dash:home')
     extra_context = {'title': "Change Password"}
 
 
