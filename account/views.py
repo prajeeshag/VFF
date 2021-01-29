@@ -64,7 +64,7 @@ class CreatePlayerProfile(SessionWizardView):
         ageproof.save()
 
         profile.save()
-        return redirect('users:home')
+        return redirect('dash:home')
 
 
 class PasswordResetView(SessionWizardView):
