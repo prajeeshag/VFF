@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% if players_no_account %}
-<h6 class="text-danger"> Players without account! </h6>
+<h6 class="text-danger"> {{ players_no_account|length }} Players without account! </h6>
 <hr class="mb-2" />
 <div class="overflow-auto mb-4" style="height: 200px;" >
 <div>
