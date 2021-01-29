@@ -1,5 +1,5 @@
 from django.urls import path
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import LogoutView, PasswordResetConfirmView
 
 from . import views
 
@@ -11,5 +11,9 @@ urlpatterns = [
          name='account_reset_password'),
     path('logout/', LogoutView.as_view(), name='account_logout'),
     path('cplayerprofile/', views.CreatePlayerProfile.as_view(),
-         name='create_player_profile')
+         name='create_player_profile'),
+    path('passwdresetemail/', views.PasswordResetEmail.as_view(),
+         name='account_reset_password_email'),
+    path('passwdresetdone/', views.PasswordResetDoneView.as_view(),
+         name='password_reset_done'),
 ]

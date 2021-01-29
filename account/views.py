@@ -5,7 +5,11 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy, reverse
 from django.utils.translation import ugettext_lazy as _
 
-from django.contrib.auth.views import LoginView as LoginViewCore
+from django.contrib.auth.views import (
+    LoginView as LoginViewCore,
+    PasswordResetView as PasswordResetCore,
+    PasswordResetDoneView as PasswordResetDoneCore,
+)
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib import messages
@@ -65,6 +69,14 @@ class CreatePlayerProfile(SessionWizardView):
 
         profile.save()
         return redirect('dash:home')
+
+
+class PasswordResetEmail(PasswordResetCore):
+    template_name = 'account/password_reset_email.html'
+
+
+class PasswordResetDoneView(PasswordResetDoneCore):
+    template_name = 'account/password_reset_done.html'
 
 
 class PasswordResetView(SessionWizardView):
