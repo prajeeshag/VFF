@@ -9,6 +9,7 @@ from django.contrib.auth.views import (
     LoginView as LoginViewCore,
     PasswordResetView as PasswordResetCore,
     PasswordResetDoneView as PasswordResetDoneCore,
+    PasswordResetConfirmView as PasswordResetConfirmCore,
 )
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model, authenticate, login
@@ -69,6 +70,9 @@ class CreatePlayerProfile(SessionWizardView):
 
         profile.save()
         return redirect('dash:home')
+
+class PasswordResetConfirmView(PasswordResetConfirmCore):
+    template_name = 'account/password_reset_confirm.html'
 
 
 class PasswordResetEmail(PasswordResetCore):
