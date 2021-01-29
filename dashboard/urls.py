@@ -11,4 +11,5 @@ urlpatterns = [
     path('calendar/', views.Calendar.as_view(), name='calendar'),
     path('editplayer/<int:pk>', views.EditPlayer.as_view(), name='editplayer'),
     path('playernumber/<int:pk>', views.EditPhoneNumber, name='editphone'),
+    path('editemail/', views.UpdateEmail, name='editemail'),
 ]

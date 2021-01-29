@@ -59,6 +59,17 @@ class Home(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+class UpdateEmail(LoginRequiredMixin,
+                  RedirectToPreviousMixin,
+                  UpdateView):
+    model = get_user_model()
+    form_class = forms.EmailForm
+    template_name = 'dashboard/base_form.html'
+
+    def get_object(self):
+        return self.request.user
+
+
 @ require_http_methods(['POST'])
 @ login_required
 def EditPhoneNumber(request, pk):
