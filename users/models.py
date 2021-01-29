@@ -171,7 +171,7 @@ class ClubProfile(models.Model):
             return "{} (Secretary)".format(self.secretary().phone_number)
 
     def num_undern_players(self, n):
-        players = self.players.all()
+        players = self.get_players()
         num = 0
         for player in players:
             if player.get_age() <= n:
