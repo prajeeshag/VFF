@@ -227,9 +227,9 @@ EMAIL_PORT = config('EMAIL_PORT', default=523, cast=int)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-# recaptcha settings
-
-RECAPTCHA_DOMAIN = 'www.recaptcha.net'
+ADMINS = [
+    (config('ADMIN_NAME', default=''), config('ADMIN_EMAIL', default='')),
+]
 
 if DEBUG:
     SILENCED_SYSTEM_CHECKS = ['captcha.recaptcha_test_key_error', ]
