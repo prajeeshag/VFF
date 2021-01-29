@@ -1,6 +1,6 @@
 
-<div class="bg-success text-dark d-flex m-2 justify-content-between border border-dark" style="height: 80px;">
-	<div class="p-2 bg-yellow font-weight-bold col-3 d-flex">
+<div class="mb-1 bg-success text-dark d-flex justify-content-between border border-dark" style="height: 80px;">
+	<div class="bg-yellow font-weight-bold col-3 d-flex">
 		{% if user.is_anonymous %}
 			<a href="#!" class="m-auto text-dark" tabindex="0" data-trigger="focus" title="" data-container="body" 
 			data-toggle="popover" data-placement="top" data-content="{{ match.home.address }}" 
@@ -11,16 +11,16 @@
 			<a class="m-auto text-dark" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
 		{% endif %}
 	</div>
-	<div class="d-flex flex-column"> 
+	<div class="d-flex flex-column overflow-hidden"> 
 		<div class="m-auto text-center"> 
 			<small>{{ match.date|date:"D. d M" }}</small>
 			<small>{{ match.date|date:"P" }}</small>
 		</div>
 		<div class="m-auto text-center"> 
-			<small>{{ match.ground }}</small>
+			<p><small>{{ match.ground }}</small></p>
 		</div>
 	</div>
-	<div class="p-2 bg-orange font-weight-bold col-3 d-flex">
+	<div class="bg-orange font-weight-bold col-3 d-flex">
 		{% if user.is_anonymous %}
 			<a href="#!" class="m-auto text-dark" tabindex="0" data-trigger="focus" title="" data-container="body" 
 			data-toggle="popover" data-placement="top" data-content="{{ match.away.address }}" 

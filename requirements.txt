@@ -23,6 +23,7 @@ django-email-verification==0.0.7
 django-exiffield==3.0.0
 django-extra-views==0.13.0
 django-formtools==2.2
+django-guardian==2.3.0
 django-hijack==2.1.10
 django-loginas==0.3.9
 django-maintenance-mode==0.15.1

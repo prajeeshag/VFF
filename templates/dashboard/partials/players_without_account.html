@@ -2,18 +2,31 @@
 {% load i18n %}
 
 {% if players_no_account %}
-<h5 class="text-danger"> Your these {{ players_no_account|length }} players doesn't have account. </h5>
+<h6 class="text-danger"> Players without account! </h6>
 <hr class="mb-2" />
 <div class="overflow-auto mb-4" style="height: 200px;" >
-<div class="p-3">
+<div>
     {% for player in players_no_account %}
-		<div class="d-flex justify-content-between mb-2 border border-bottom">
-			<a href="{{ player.get_absolute_url }}" class="p-3 m-auto"> {{ player }} </a>
+		<div class="mb-2">
+			<a href="{{ player.get_absolute_url }}" class="h4 py-2 m-auto"> {{ player }} </a>
+			<form class="my-auto" method="POST" action="{% url 'dash:editphone' player.pk %}">
+				{% csrf_token %}
+				<div class="form-group">
+					<label for="id_phone_number"> Phone number: </label>
+					<input id='id_phone_number' name="phone_number" type="text" maxlength="10" minlength="10" 
+							class="form-control form-control-solid" value="{{ player.get_phone_number|default:'' }}">
+				</div>
+				<div class="form-group">
+					<input value="update phone number" type="submit" class="btn btn-primary btn-sm m-auto">
+				</div>
+			</form>
+				or 
 			<form class="my-auto" method="POST" action="{% url 'dash:delplayer' player.pk %}">
 				{% csrf_token %}
-				<input value="delete player" type="submit" class="btn btn-warning m-auto">
+				<input value="delete player" type="submit" class="btn btn-warning btn-sm m-auto">
 			</form>
 		</div>
+		<hr/>
     {% endfor %}
 </div>
 </div>

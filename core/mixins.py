@@ -9,8 +9,13 @@ class RedirectToPreviousMixin:
             'HTTP_REFERER', self.default_redirect)
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['back_url'] = self.request.session.get('previous_page', None)
+        return ctx
+
     def get_success_url(self):
-        url = self.request.session.get('previous_page',None)
+        url = self.request.session.get('previous_page', None)
         if url is None:
             url = request.META.get('HTTP_REFERER', self.default_redirect)
         return url
