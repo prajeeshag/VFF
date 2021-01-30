@@ -27,7 +27,6 @@ from .models import (
     ProfilePicture, AddressProof, AgeProof, Invitations, Grounds
 )
 
-from core.mixins import breadcrumbMixin
 
 
 class HomePageView(LoginRequiredMixin, TemplateView):
@@ -38,7 +37,7 @@ class HomePageView(LoginRequiredMixin, TemplateView):
         return redirect('ClubList')
 
 
-class OfficialsListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
+class OfficialsListView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/officials_list.html'
     login_url = reverse_lazy('login')
     breadcrumbs = [
@@ -61,7 +60,7 @@ class OfficialsListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
         return ctx
 
 
-class ClubListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
+class ClubListView(LoginRequiredMixin, TemplateView):
     template_name = 'registration/club_list.html'
     login_url = reverse_lazy('login')
     breadcrumbs = [('Club List', None), ]
@@ -72,7 +71,7 @@ class ClubListView(LoginRequiredMixin, breadcrumbMixin, TemplateView):
         return ctx
 
 
-class AddJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, CreateView):
+class AddJersey(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = JerseyPicture
     fields = ['image']
     login_url = reverse_lazy('login')
@@ -94,7 +93,7 @@ class AddJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, Create
         return bc
 
 
-class DeleteJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, DeleteView):
+class DeleteJersey(LoginRequiredMixin, SuccessMessageMixin, DeleteView):
     model = JerseyPicture
     login_url = reverse_lazy('login')
     template_name = 'registration/jersey_confirm_delete.html'
@@ -117,7 +116,7 @@ class DeleteJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, Del
         return bc
 
 
-class UpdateJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, UpdateView):
+class UpdateJersey(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = JerseyPicture
     fields = ['image']
     login_url = reverse_lazy('login')
@@ -141,7 +140,7 @@ class UpdateJersey(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, Upd
         return bc
 
 
-class AddOfficials(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, CreateView):
+class AddOfficials(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     login_url = reverse_lazy('login')
     form_class = OfficialsCreationForm
     template_name = 'registration/add_officials_form.html'
@@ -205,7 +204,7 @@ class AddOfficials(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, Cre
         return reverse('OfficialsProfileView', kwargs={'pk': self.object.pk})
 
 
-class UpdateClubDetails(LoginRequiredMixin, breadcrumbMixin, SuccessMessageMixin, UpdateView):
+class UpdateClubDetails(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = ClubDetails
     form_class = clubDetailsForm
     login_url = reverse_lazy('login')
@@ -352,7 +351,7 @@ class LinkPlayer(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return initial
 
 
-class OfficialsProfileView(LoginRequiredMixin, breadcrumbMixin, DetailView):
+class OfficialsProfileView(LoginRequiredMixin, DetailView):
     template_name = 'registration/officials_profile.html'
     login_url = reverse_lazy('login')
     model = Officials
@@ -369,7 +368,7 @@ class OfficialsProfileView(LoginRequiredMixin, breadcrumbMixin, DetailView):
         return bc
 
 
-class ClubDetailView(LoginRequiredMixin, breadcrumbMixin, DetailView):
+class ClubDetailView(LoginRequiredMixin, DetailView):
     template_name = 'registration/club_detail.html'
     login_url = reverse_lazy('login')
     model = Club

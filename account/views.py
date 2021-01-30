@@ -27,17 +27,21 @@ from . import forms
 from users.models import (PhoneNumber, PlayerProfile, User,
                           ProfilePicture, Document, Documents)
 
+from core.mixins import viewMixins
 
-class LoginView(LoginViewCore):
+
+class LoginView(viewMixins, LoginViewCore):
     template_name = 'account/login.html'
     redirect_authenticated_user = True
     authentication_form = forms.LoginForm
+    extra_context = {'title': 'Login'}
 
 
-class CreatePlayerProfile(SessionWizardView):
+class CreatePlayerProfile(viewMixins, SessionWizardView):
     template_name = 'account/create_profile.html'
     file_storage = FileSystemStorage(
         location=os.path.join(settings.MEDIA_ROOT, 'tmp'))
+    extra_context = {'title': 'Create Player Profile'}
 
     form_list = [
         forms.PlayerProfileForm,
@@ -72,25 +76,34 @@ class CreatePlayerProfile(SessionWizardView):
         return redirect('dash:home')
 
 
-class PasswordResetConfirmView(PasswordResetConfirmCore):
+class PasswordResetConfirmView(viewMixins, PasswordResetConfirmCore):
     template_name = 'account/password_reset_confirm.html'
 
 
-class PasswordResetEmail(PasswordResetCore):
+class PasswordResetEmail(viewMixins, PasswordResetCore):
     template_name = 'account/password_reset_email.html'
 
 
-class PasswordResetDoneView(PasswordResetDoneCore):
+class PasswordResetDoneView(viewMixins, PasswordResetDoneCore):
     template_name = 'account/password_reset_done.html'
 
 
-class PasswordResetView(SessionWizardView):
+class PasswordResetView(viewMixins, SessionWizardView):
     template_name = 'account/password_reset.html'
     form_list = [
         forms.PassWordResetStep1,
         forms.PassWordResetStep3,
         forms.PassWordResetStep2,
     ]
+
+    extra_context = {
+        'title': 'Password Reset',
+        'subtitles': [
+            'Enter your phone number',
+            'Enter the new password',
+            'Enter OTP'
+        ]
+    }
 
     def get_form_kwargs(self, step=None):
         kwargs = super().get_form_kwargs(step)
@@ -116,34 +129,42 @@ class PasswordResetView(SessionWizardView):
         return redirect('login')
 
 
-class SignupView(SessionWizardView):
+class SignupView(viewMixins, SessionWizardView):
     template_name = 'account/signup.html'
     form_list = [
-        forms.SignupStep3,
-        forms.SignupStep1,
-        forms.SignupStep2,
+        forms.SignupStep1,  # phone
+        forms.SignupStep3,  # username
+        forms.SignupStep2,  # otp
     ]
+    extra_context = {
+        'title': 'Create account',
+        'subtitles': [
+            'Enter your phone number',
+            'Enter username and password',
+            'Enter OTP recieved in your phone'
+        ]
+    }
 
     def get_form_kwargs(self, step=None):
         kwargs = super().get_form_kwargs(step)
         if step == '2':
             kwargs['request'] = self.request
-            data = self.get_cleaned_data_for_step('1')
+            data = self.get_cleaned_data_for_step('0')
             kwargs['phone_number'] = data.get('phone_number')
         return kwargs
 
     def done(self, form_list, **kwargs):
         forms = [form for form in form_list]  # get all forms
-        number = forms[1].cleaned_data.get('phone_number')
+        number = forms[0].cleaned_data.get('phone_number')
         phone_number, created = PhoneNumber.objects.get_or_create(
             number=number)
         phone_number.verified = True
         phone_number.save()
 
-        user = forms[0].save(commit=False)
-        user_type = forms[0].cleaned_data.get('user_type')
-        password = forms[0].cleaned_data.get('password1')
-        username = forms[0].cleaned_data.get('username')
+        user = forms[1].save(commit=False)
+        user_type = forms[1].cleaned_data.get('user_type')
+        password = forms[1].cleaned_data.get('password1')
+        username = forms[1].cleaned_data.get('username')
 
         user.user_type = user_type
 

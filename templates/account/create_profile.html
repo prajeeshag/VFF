@@ -39,7 +39,10 @@
 						<hr class="my-0" />
 						<div class="card-body px-5 py-4">
 							<div class="small text-center">
-								<a href=" {% url 'account_logout' %} ">Logout</a>
+								<a class="btn btn-link" href=" {% url 'account_logout' %} ">Logout</a>
+								{% if back_url %}
+									<a class="btn btn-link" href="{{ back_url }}">Cancel</a>
+								{% endif %}
 							</div>
 						</div>
 					</div>
