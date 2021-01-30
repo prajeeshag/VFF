@@ -24,7 +24,7 @@ from guardian.shortcuts import get_objects_for_user
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
-from core.mixins import RedirectToPreviousMixin, coreMixins
+from core.mixins import RedirectToPreviousMixin, viewMixins, formviewMixins
 from formtools.wizard.views import SessionWizardView
 
 from public.models import CarouselItem
@@ -35,9 +35,10 @@ urlpatterns = []
 
 
 class CarouselList(LoginRequiredMixin,
-                   coreMixins,
+                   viewMixins,
                    ListView):
     model = CarouselItem
+    context_object_name = 'carosels'
     template_name = 'dashboard/public/home.html'
     extra_context = {'title': 'Carousels Items'}
 
@@ -46,20 +47,20 @@ urlpatterns += [path('carosel/', CarouselList.as_view(), name='carosel'), ]
 
 
 class DeleteCarouselItem(LoginRequiredMixin,
-                         coreMixins,
+                         formviewMixins,
                          DeleteView):
     model = CarouselItem
     template_name = 'dashboard/base_form.html'
     extra_context = {'title': 'Delete Carousel Items'}
 
 
-urlpatterns += [path('caroselD/',
+urlpatterns += [path('deletecarosel/<int:pk>/',
                      DeleteCarouselItem.as_view(),
-                     name='caroselD'), ]
+                     name='deletecarosel'), ]
 
 
 class CreateCarouselItem(LoginRequiredMixin,
-                         coreMixins,
+                         formviewMixins,
                          CreateView):
     model = CarouselItem
     fields = '__all__'
@@ -70,3 +71,17 @@ class CreateCarouselItem(LoginRequiredMixin,
 urlpatterns += [path('createcarosel/',
                      CreateCarouselItem.as_view(),
                      name='createcarosel'), ]
+
+
+class EditCarouselItem(LoginRequiredMixin,
+                       formviewMixins,
+                       UpdateView):
+    model = CarouselItem
+    fields = '__all__'
+    template_name = 'dashboard/base_form.html'
+    extra_context = {'title': 'Edit Carousel Item'}
+
+
+urlpatterns += [path('editcarosel/<int:pk>/',
+                     EditCarouselItem.as_view(),
+                     name='editcarosel'), ]

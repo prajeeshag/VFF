@@ -5,8 +5,8 @@
 {% load my_tags %}
 
 {% block content_main %}
-<h3 class="p-3"> Public Site Content </h3>
-<hr/>
+	<h4 class=" mt-2 text-center">{{ title }}</h4>
+	<hr/>
 	<div class="container-fluid">
 		{% include 'snippets/messages.html' %}
 		{% include 'dashboard/public/partials/carosel.html' %}

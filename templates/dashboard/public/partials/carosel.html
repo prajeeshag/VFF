@@ -1,11 +1,16 @@
+
+{% if carosels %}
+	{% include 'snippets/carousel.html' with slides=carosels %}
+	<hr/>
+{% endif %}
 <div class="d-flex justify-content-center mb-2">
-	<a href="{% url 'dash:createcarosel' %}"> Add </a>
+	<a class="btn btn-sm btn-primary" href="{% url 'dash:createcarosel' %}"> Add </a>
 </div>
 {% if carosels %}
 	<div class="row">
 		{% for carosel in carosels %}
-		<div class="col-md-4">
-		{% include 'users/partials/club_card.html' with club=user.clubprofile %}
+		<div class="col-6 col-md-3">
+			{% include 'dashboard/public/partials/carosel_icon_card.html' %}
 		</div>
 		{% endfor %}
 	</div>

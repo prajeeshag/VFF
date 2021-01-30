@@ -7,17 +7,15 @@
 					<div class="nav-link-icon"><i class="fa fa-home"></i></div>
 					Home	
 				</a>
-			</div>
-		</div>
-		<!-- Sidenav Footer-->
-		<div class="sidenav-footer">
-			<div class="sidenav-footer-content">
+
 				{% if not user.is_anonymous %}
-					<div class="sidenav-footer-subtitle">Logged in as:</div>
-					<div class="sidenav-footer-title">{{ user }}</div>
 					<a class="nav-link" href=" {% url 'account_logout' %} ">
 						<div class="nav-link-icon"><i data-feather="log-out"></i></div>
 						Logout
+					</a>
+					<a class="nav-link" href=" {% url 'dash:home' %} ">
+						<div class="nav-link-icon"><i data-feather="home"></i></div>
+						Dashboard
 					</a>
 				{% else %}
 					<a class="nav-link" href=" {% url 'account_login' %} ">
@@ -28,6 +26,15 @@
 						<div class="nav-link-icon"><i data-feather="log-in"></i></div>
 						Create Account	
 					</a>
+				{% endif %}
+			</div>
+		</div>
+		<!-- Sidenav Footer-->
+		<div class="sidenav-footer">
+			<div class="sidenav-footer-content">
+				{% if not user.is_anonymous %}
+					<div class="sidenav-footer-subtitle">Logged in as:</div>
+					<div class="sidenav-footer-title">{{ user }}</div>
 				{% endif %}
 			</div>
 		</div>

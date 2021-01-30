@@ -1,0 +1,35 @@
+
+{% load thumbnail %}
+
+<div class="card bg-dark" style="width: 100px;">
+	<a class="card-image thumbnail" href="{% url 'dash:editcarosel' carosel.pk %}">
+		{% thumbnail carosel.image "300x300" upscale=False as im %}
+			<div class="m-auto text-center" style="max-width: 100px;">
+				<img class="card-img-top" style="height:100px" src="{{ im.url }}" alt="Card image cap">
+			</div>
+		{% endthumbnail %}
+	</a>
+	<div class="card-footer text-center">
+		{% comment %}<form method="POST" action="{% url 'dash:editcarosel' carosel.pk %}">{% endcomment %}
+			{% comment %}{% csrf_token %}{% endcomment %}
+			{% comment %}{% if carosel.active %}{% endcomment %}
+				{% comment %}<input type="hidden" name="active" value="False">{% endcomment %}
+				{% comment %}<button type="submit" class="btn btn-icon btn-success">{% endcomment %}
+					{% comment %}<i class="fa fa-thumbs-up"> </i>{% endcomment %}
+				{% comment %}</button>{% endcomment %}
+			{% comment %}{% else %}{% endcomment %}
+				{% comment %}<input type="hidden" name="active" value="False">{% endcomment %}
+				{% comment %}<button type="submit" class="btn btn-icon btn-warning">{% endcomment %}
+					{% comment %}<i class="fa fa-thumbs-down"></i>{% endcomment %}
+				{% comment %}</button>{% endcomment %}
+			{% comment %}{% endif %}{% endcomment %}
+		{% comment %}</form>{% endcomment %}
+		<form method="POST" action="{% url 'dash:deletecarosel' carosel.pk %}">
+			{% csrf_token %}
+			<input type="hidden" name="redirect_url" value="{{ request.get_full_path  }}">
+				<button type="submit" class="btn btn-sm btn-danger">
+					<i class="fa fa-trash"> </i>
+				</button>
+		</form>
+	</div>
+</div>
