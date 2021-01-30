@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy, reverse, path, include
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.tokens import default_token_generator
@@ -31,6 +31,35 @@ from public.models import CarouselItem
 
 LOGIN_URL = reverse_lazy('login')
 
+urlpatterns = []
+
+
+class CarouselList(LoginRequiredMixin,
+                   RedirectToPreviousMixin,
+                   ListView):
+    model = CarouselItem
+    template_name = 'dashboard/public/home.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Carousels'
+        return ctx
+
+
+urlpatterns += [path('carosel/', CarouselList.as_view(), name='carosel'), ]
+
+
+class DeleteCarouselItem(LoginRequiredMixin,
+                         RedirectToPreviousMixin,
+                         DeleteView):
+    model = CarouselItem
+    template_name = 'dashboard/base_form.html'
+
+
+urlpatterns += [path('caroselD/',
+                     DeleteCarouselItem.as_view(),
+                     name='caroselD'), ]
+
 
 class CreateCarouselItem(LoginRequiredMixin,
                          RedirectToPreviousMixin,
@@ -42,3 +71,8 @@ class CreateCarouselItem(LoginRequiredMixin,
     def get_context_data(self, **kwargs):
         ctx = self.get_context_data(**kwargs)
         ctx['title'] = 'Create CarouselItem'
+
+
+urlpatterns += [path('createcarosel/',
+                     CreateCarouselItem.as_view(),
+                     name='createcarosel'), ]

@@ -1,0 +1,11 @@
+
+{% load thumbnail %}
+<div class="card w-auto ">
+	<a class="card-image thumbnail" href="#!">
+		{% thumbnail carosel.image "300x300" upscale=False as im %}
+			<div class="m-auto text-center" style="max-width: 300px;">
+				<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">
+			</div>
+		{% endthumbnail %}
+	</a>
+</div>

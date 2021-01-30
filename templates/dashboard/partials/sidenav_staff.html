@@ -1,0 +1,11 @@
+
+{% if user.is_staff %}
+	<a class="nav-link" href="{% url 'users:list' %}">
+		<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+		users list
+	</a>
+	<a class="nav-link" href="{% url 'dash:carosel' %}">
+		<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+		Carosel
+	</a>
+{% endif %}

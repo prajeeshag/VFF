@@ -6,7 +6,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy, reverse, path, include
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.tokens import default_token_generator
@@ -30,9 +30,10 @@ from formtools.wizard.views import SessionWizardView
 from fixture.models import Matches
 from users.models import PlayerProfile, PhoneNumber
 from . import forms
-from .public.views import *
 
 LOGIN_URL = reverse_lazy('login')
+
+urlpatterns = []
 
 
 class Home(LoginRequiredMixin, TemplateView):
@@ -60,6 +61,9 @@ class Home(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+urlpatterns += [path('home/', Home.as_view(), name='home'), ]
+
+
 class UpdateEmail(LoginRequiredMixin,
                   RedirectToPreviousMixin,
                   UpdateView):
@@ -69,6 +73,9 @@ class UpdateEmail(LoginRequiredMixin,
 
     def get_object(self):
         return self.request.user
+
+
+urlpatterns += [path('editemail/', UpdateEmail, name='editemail'), ]
 
 
 @ require_http_methods(['POST'])
@@ -98,6 +105,10 @@ def EditPhoneNumber(request, pk):
         return HttpResponseRedirect(url)
 
 
+urlpatterns += [path('playernumber/<int:pk>',
+                     EditPhoneNumber, name='editphone'), ]
+
+
 class EditPlayer(SuccessMessageMixin,
                  LoginRequiredMixin,
                  RedirectToPreviousMixin,
@@ -112,6 +123,11 @@ class EditPlayer(SuccessMessageMixin,
         if not request.user.has_perm('edit', obj):
             return PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+
+urlpatterns += [path('editplayer/<int:pk>',
+                     EditPlayer.as_view(),
+                     name='editplayer'), ]
 
 
 @ require_http_methods(['POST'])
@@ -148,6 +164,10 @@ def del_player(request, pk):
     return HttpResponseRedirect(url)
 
 
+urlpatterns += [path('delplayer/<int:pk>/',
+                     del_player, name='delplayer'), ]
+
+
 class Calendar(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/calendar.html'
     login_url = LOGIN_URL
@@ -156,3 +176,6 @@ class Calendar(LoginRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.get_upcoming_matches()
         return ctx
+
+
+urlpatterns += [path('calendar/', Calendar.as_view(), name='calendar'), ]

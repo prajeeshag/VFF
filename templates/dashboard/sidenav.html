@@ -39,12 +39,7 @@
 					<div class="nav-link-icon"><i data-feather="users"></i></div>
 					Calendar
 				</a>
-				{% if user.is_staff %}
-				<a class="nav-link" href="{% url 'users:list' %}">
-					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
-					users list &nbsp; 
-				</a>
-				{% endif %}
+				{% include 'dashboard/partials/sidenav_staff.html' %}
 				<a class="nav-link" href=" {% url 'users:change_password' %} ">
 					<div class="nav-link-icon"><i data-feather="settings"></i></div>
 					Change password

@@ -7,7 +7,7 @@ from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy, reverse, path, include
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib.auth.tokens import default_token_generator
@@ -29,20 +29,7 @@ from . import models
 from . import forms
 from django.contrib.auth.decorators import user_passes_test
 
-
-class Home(LoginRequiredMixin, TemplateView):
-    template_name = 'users/home.html'
-    login_url = reverse_lazy('login')
-
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        if user.is_club():
-            return redirect(reverse('users:clublist'))
-
-        if user.is_player() and not hasattr(user, 'playerprofile'):
-            return redirect(reverse('create_player_profile'))
-
-        return super().get(request, *args, **kwargs)
+urlpatterns = []
 
 
 class UsersList(LoginRequiredMixin, ListView):
@@ -54,6 +41,9 @@ class UsersList(LoginRequiredMixin, ListView):
         if not request.user.is_staff:
             return HttpResponseForbidden()
         return super().get(request, *args, **kwargs)
+
+
+urlpatterns += [path('userlist/', UsersList.as_view(), name='list'), ]
 
 
 class FreePlayersList(LoginRequiredMixin, TemplateView):
@@ -76,6 +66,11 @@ class FreePlayersList(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+urlpatterns += [path('unsignedplayers/',
+                     FreePlayersList.as_view(),
+                     name='unsignedplayers'), ]
+
+
 class ClubList(LoginRequiredMixin, TemplateView):
     template_name = 'users/club_list.html'
     login_url = reverse_lazy('login')
@@ -86,10 +81,20 @@ class ClubList(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+urlpatterns += [path('clublist/',
+                     ClubList.as_view(),
+                     name='clublist'), ]
+
+
 class ClubMembersList(LoginRequiredMixin, DetailView):
     model = models.ClubProfile
     template_name = 'users/club_members_list.html'
     login_url = reverse_lazy('login')
+
+
+urlpatterns += [path('clubmemberslist/<int:pk>/',
+                     ClubMembersList.as_view(),
+                     name='clubmemberslist'), ]
 
 
 class ClubDetails(LoginRequiredMixin, DetailView):
@@ -106,6 +111,11 @@ class ClubDetails(LoginRequiredMixin, DetailView):
         return ctx
 
 
+urlpatterns += [path('clubdetails/<int:pk>/',
+                     ClubDetails.as_view(),
+                     name='clubdetails'), ]
+
+
 class ClubOfficialsProfile(LoginRequiredMixin, DetailView):
     template_name = 'users/club_officials_profile.html'
     login_url = reverse_lazy('login')
@@ -116,6 +126,11 @@ class ClubOfficialsProfile(LoginRequiredMixin, DetailView):
         return ctx
 
 
+urlpatterns += [path('clubofficials/<int:pk>/',
+                     ClubOfficialsProfile.as_view(),
+                     name='clubofficialsprofile'), ]
+
+
 class PlayersProfile(LoginRequiredMixin, DetailView):
     template_name = 'users/players_profile.html'
     login_url = reverse_lazy('login')
@@ -124,6 +139,11 @@ class PlayersProfile(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         return ctx
+
+
+urlpatterns += [path('players/<int:pk>/',
+                     PlayersProfile.as_view(),
+                     name='playersprofile'), ]
 
 
 class UpdateClubProfile(LoginRequiredMixin, SuccessMessageMixin,
@@ -143,6 +163,11 @@ class UpdateClubProfile(LoginRequiredMixin, SuccessMessageMixin,
         return self.request.user.get_club()
 
 
+urlpatterns += [path('updateclub/',
+                     UpdateClubProfile.as_view(),
+                     name='updateclubprofile'), ]
+
+
 class ClubOfficialsProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
                                  RedirectToPreviousMixin, UpdateView):
     model = models.ClubOfficialsProfile
@@ -155,6 +180,11 @@ class ClubOfficialsProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
                 obj.club.user != self.request.user):
             return HttpResponseForbidden()
         return super().dispatch(request, *args, **kwargs)
+
+
+urlpatterns += [path('cluboffileupdate/<int:pk>/',
+                     ClubOfficialsProfileUpdate.as_view(),
+                     name='updateclubofficialsprofile'), ]
 
 
 class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
@@ -199,6 +229,11 @@ def CreateClubSigninOffer(request, pk):
     return HttpResponseRedirect(url)
 
 
+urlpatterns += [path('sendoffer/<int:pk>',
+                     CreateClubSigninOffer,
+                     name='signinoffer'), ]
+
+
 @require_http_methods(['POST'])
 @login_required
 def CancelClubSigninOffer(request, pk):
@@ -231,6 +266,11 @@ def CancelClubSigninOffer(request, pk):
     return HttpResponseRedirect(url)
 
 
+urlpatterns += [path('canceloffer/<int:pk>',
+                     CancelClubSigninOffer,
+                     name='cancelsigninoffer'), ]
+
+
 class PasswordChange(SuccessMessageMixin,
                      LoginRequiredMixin,
                      PasswordChangeView):
@@ -238,6 +278,10 @@ class PasswordChange(SuccessMessageMixin,
     success_message = 'Password Changed...'
     success_url = reverse_lazy('dash:home')
     extra_context = {'title': "Change Password"}
+
+
+urlpatterns += [path('changepassword/',
+                     PasswordChange.as_view(), name='change_password'), ]
 
 
 class UpdatePlayerProfile(SuccessMessageMixin,
@@ -274,6 +318,9 @@ class dpUploadView(LoginRequiredMixin, UpdateView):
         return self.request.user.get_profilepicture()
 
 
+urlpatterns += [path('dpupload/', dpUploadView.as_view(), name='dpupload'), ]
+
+
 class dpEditView(LoginRequiredMixin, UpdateView):
     form_class = forms.dpEditForm
     template_name = 'users/dp_edit.html'
@@ -283,6 +330,9 @@ class dpEditView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return self.request.user.get_profile().get_absolute_url()
+
+
+urlpatterns += [path('dpedit/', dpEditView.as_view(), name='dpedit'), ]
 
 
 @ require_http_methods(['POST'])
@@ -330,6 +380,11 @@ def AcceptClubSigninOffer(request, pk):
     return HttpResponseRedirect(url)
 
 
+urlpatterns += [path('acceptoffer/<int:pk>',
+                     AcceptClubSigninOffer,
+                     name='acceptsigninoffer'), ]
+
+
 @ require_http_methods(['POST'])
 @ login_required
 def RegectClubSigninOffer(request, pk):
@@ -362,3 +417,8 @@ def RegectClubSigninOffer(request, pk):
         "You regected an offer from {}".format(signin.club))
 
     return HttpResponseRedirect(url)
+
+
+urlpatterns += [path('regectoffer/<int:pk>',
+                     RegectClubSigninOffer,
+                     name='regectsigninoffer'), ]
