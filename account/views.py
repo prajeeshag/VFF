@@ -71,6 +71,7 @@ class CreatePlayerProfile(SessionWizardView):
         profile.save()
         return redirect('dash:home')
 
+
 class PasswordResetConfirmView(PasswordResetConfirmCore):
     template_name = 'account/password_reset_confirm.html'
 
@@ -118,33 +119,31 @@ class PasswordResetView(SessionWizardView):
 class SignupView(SessionWizardView):
     template_name = 'account/signup.html'
     form_list = [
+        forms.SignupStep3,
         forms.SignupStep1,
         forms.SignupStep2,
-        forms.SignupStep3,
     ]
 
     def get_form_kwargs(self, step=None):
         kwargs = super().get_form_kwargs(step)
-        if step == '1':
+        if step == '2':
             kwargs['request'] = self.request
-            data = self.get_cleaned_data_for_step('0')
+            data = self.get_cleaned_data_for_step('1')
             kwargs['phone_number'] = data.get('phone_number')
         return kwargs
 
     def done(self, form_list, **kwargs):
         forms = [form for form in form_list]  # get all forms
-        # get phone_number from first form
-        # phone_number = forms[0].cleaned_data.get('phone_number')
-        number = forms[0].cleaned_data.get('phone_number')
+        number = forms[1].cleaned_data.get('phone_number')
         phone_number, created = PhoneNumber.objects.get_or_create(
             number=number)
         phone_number.verified = True
         phone_number.save()
 
-        user = forms[2].save(commit=False)
-        user_type = forms[2].cleaned_data.get('user_type')
-        password = forms[2].cleaned_data.get('password1')
-        username = forms[2].cleaned_data.get('username')
+        user = forms[0].save(commit=False)
+        user_type = forms[0].cleaned_data.get('user_type')
+        password = forms[0].cleaned_data.get('password1')
+        username = forms[0].cleaned_data.get('username')
 
         user.user_type = user_type
 
@@ -170,6 +169,8 @@ class SignupView(SessionWizardView):
             user.save()
 
         user = authenticate(username=username, password=password)
+        if (self.request.user.is_authenticated):
+            logut(self.request)
         login(self.request, user)
 
         messages.add_message(
