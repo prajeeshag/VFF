@@ -6,7 +6,7 @@ class ExtraContextMixin:
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        for key, item in extra_context.items():
+        for key, item in self.extra_context.items():
             ctx[key] = item
         return ctx
 

@@ -24,7 +24,7 @@ from guardian.shortcuts import get_objects_for_user
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
-from core.mixins import RedirectToPreviousMixin
+from core.mixins import RedirectToPreviousMixin, coreMixins
 from formtools.wizard.views import SessionWizardView
 
 from public.models import CarouselItem
@@ -35,25 +35,22 @@ urlpatterns = []
 
 
 class CarouselList(LoginRequiredMixin,
-                   RedirectToPreviousMixin,
+                   coreMixins,
                    ListView):
     model = CarouselItem
     template_name = 'dashboard/public/home.html'
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Carousels'
-        return ctx
+    extra_context = {'title': 'Carousels Items'}
 
 
 urlpatterns += [path('carosel/', CarouselList.as_view(), name='carosel'), ]
 
 
 class DeleteCarouselItem(LoginRequiredMixin,
-                         RedirectToPreviousMixin,
+                         coreMixins,
                          DeleteView):
     model = CarouselItem
     template_name = 'dashboard/base_form.html'
+    extra_context = {'title': 'Delete Carousel Items'}
 
 
 urlpatterns += [path('caroselD/',
@@ -62,15 +59,12 @@ urlpatterns += [path('caroselD/',
 
 
 class CreateCarouselItem(LoginRequiredMixin,
-                         RedirectToPreviousMixin,
+                         coreMixins,
                          CreateView):
     model = CarouselItem
     fields = '__all__'
     template_name = 'dashboard/base_form.html'
-
-    def get_context_data(self, **kwargs):
-        ctx = self.get_context_data(**kwargs)
-        ctx['title'] = 'Create CarouselItem'
+    extra_context = {'title': 'Create Carousel Item'}
 
 
 urlpatterns += [path('createcarosel/',
