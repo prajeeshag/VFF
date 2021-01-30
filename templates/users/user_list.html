@@ -13,19 +13,15 @@
 	<div class="mb-4">
 		<div class="card-body">
 			<div class="datatable">
-				<table class="table table-responsive-md table-bordered table-hover hover table-striped bg-dark table-dark" id="userTable" width="100%" cellspacing="0">
+				<table class="table table-responsive-md table-hover hover table-striped bg-dark table-dark" id="userTable" width="100%" cellspacing="0">
 					<thead>
 						<tr>
 							<th>UserName</th>
 							<th>Phone</th>
+							<th>Joined</th>
+							<th>Last Login</th>
 						</tr>
 					</thead>
-					<tfoot>
-						<tr>
-							<th>UserName</th>
-							<th>Phone</th>
-						</tr>
-					</tfoot>
 					<tbody>
 						{% for obj in object_list %}
 						<tr>
@@ -40,6 +36,8 @@
 								{% endif %}
 							</td>
 							<td>{{ obj.phone_number }}</td>
+							<td>{{ obj.date_joined|date:'Y/m/d H:i:s' }}</td>
+							<td>{{ obj.last_login|date:'Y/m/d H:i:s' }}</td>
 						</tr>
 						{% endfor %}
 					</tbody>
@@ -53,9 +51,6 @@
 	<script>
 $(document).ready(function() {
 	$('#userTable').DataTable({
-		"ordering": false,
-		"order":[],
-		"pageLength": 10,
 	});
 });
 	</script>

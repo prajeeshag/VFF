@@ -27,17 +27,17 @@ from . import forms
 from users.models import (PhoneNumber, PlayerProfile, User,
                           ProfilePicture, Document, Documents)
 
-from core.mixins import coreMixins
+from core.mixins import viewMixins
 
 
-class LoginView(coreMixins, LoginViewCore):
+class LoginView(viewMixins, LoginViewCore):
     template_name = 'account/login.html'
     redirect_authenticated_user = True
     authentication_form = forms.LoginForm
     extra_context = {'title': 'Login'}
 
 
-class CreatePlayerProfile(coreMixins, SessionWizardView):
+class CreatePlayerProfile(viewMixins, SessionWizardView):
     template_name = 'account/create_profile.html'
     file_storage = FileSystemStorage(
         location=os.path.join(settings.MEDIA_ROOT, 'tmp'))
@@ -76,19 +76,19 @@ class CreatePlayerProfile(coreMixins, SessionWizardView):
         return redirect('dash:home')
 
 
-class PasswordResetConfirmView(coreMixins, PasswordResetConfirmCore):
+class PasswordResetConfirmView(viewMixins, PasswordResetConfirmCore):
     template_name = 'account/password_reset_confirm.html'
 
 
-class PasswordResetEmail(coreMixins, PasswordResetCore):
+class PasswordResetEmail(viewMixins, PasswordResetCore):
     template_name = 'account/password_reset_email.html'
 
 
-class PasswordResetDoneView(coreMixins, PasswordResetDoneCore):
+class PasswordResetDoneView(viewMixins, PasswordResetDoneCore):
     template_name = 'account/password_reset_done.html'
 
 
-class PasswordResetView(coreMixins, SessionWizardView):
+class PasswordResetView(viewMixins, SessionWizardView):
     template_name = 'account/password_reset.html'
     form_list = [
         forms.PassWordResetStep1,
@@ -129,7 +129,7 @@ class PasswordResetView(coreMixins, SessionWizardView):
         return redirect('login')
 
 
-class SignupView(coreMixins, SessionWizardView):
+class SignupView(viewMixins, SessionWizardView):
     template_name = 'account/signup.html'
     form_list = [
         forms.SignupStep1,  # phone
