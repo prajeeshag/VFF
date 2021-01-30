@@ -4,7 +4,9 @@
 {% load thumbnail %}
 
 {% block content_main %}
-	<div class="container-flex">
+	<div class="container-flex mt-2">
+		{% include 'public/partials/carosel.html' %}
+		<hr/>
 		{% include 'fixture/partials/calendar.html' %}
 	</div>
 {% endblock %}

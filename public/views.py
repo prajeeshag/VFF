@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.views.generic.base import TemplateView
 
 from fixture.models import Matches
+from .models import CarouselItem
 
 
 class LandingPageView(TemplateView):
@@ -10,6 +11,7 @@ class LandingPageView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.get_upcoming_matches()[:10]
+        ctx['carosels'] = CarouselItem.objects.filter(active=True)
         return ctx
 
 
