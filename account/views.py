@@ -88,13 +88,13 @@ class PasswordResetView(SessionWizardView):
     template_name = 'account/password_reset.html'
     form_list = [
         forms.PassWordResetStep1,
-        forms.PassWordResetStep2,
         forms.PassWordResetStep3,
+        forms.PassWordResetStep2,
     ]
 
     def get_form_kwargs(self, step=None):
         kwargs = super().get_form_kwargs(step)
-        if step == '1':
+        if step == '2':
             kwargs['request'] = self.request
             data = self.get_cleaned_data_for_step('0')
             kwargs['phone_number'] = data.get('phone_number')
@@ -103,7 +103,7 @@ class PasswordResetView(SessionWizardView):
     def done(self, form_list, **kwargs):
         UserModel = get_user_model()
         forms = [form for form in form_list]  # get all forms
-        password = forms[2].cleaned_data.get('password1')
+        password = forms[1].cleaned_data.get('password1')
         phone_number = forms[0].cleaned_data.get('phone_number')
         user = UserModel.objects.filter(
             phone_number__number=phone_number).distinct().first()
