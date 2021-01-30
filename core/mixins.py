@@ -28,11 +28,10 @@ class BackUrlMixin:
 class RedirectToPreviousMixin(BackUrlMixin):
 
     def get_success_url(self):
-        if self.request.method == 'POST':
-            url = self.request.POST.get('redirect_url', None)
-            if url:
-                return url
         url = self.request.session.get('previous_page', None)
+        if url is None:
+            if self.request.method == 'POST':
+                url = self.request.POST.get('redirect_url', None)
         if url is None:
             url = self.request.META.get('HTTP_REFERER', self.default_redirect)
         return url
