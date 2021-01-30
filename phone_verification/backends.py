@@ -159,6 +159,44 @@ class fast2smsBackend(BaseBackend):
             data = response.json()
 
 
+class emailBackend(BaseBackend):
+
+    base_url = 'https://www.fast2sms.com/dev/bulk?'
+    url_template = "&".join([
+        'authorization={api_key}',
+        'sender_id={sender_id}',
+        'language=english',
+        'route=qt',
+        'numbers={number}',
+        'message={template_id}',
+        'variables={variables}',
+        'variables_values={values}'
+    ])
+
+    @classmethod
+    def get_url(cls, number, otp):
+        api_key = getattr(settings, 'FAST2SMS_API_KEY', '')
+        sender_id = getattr(settings, 'FAST2SMS_SENDER_ID', '')
+        template_id = getattr(settings, 'FAST2SMS_TEMPLATE_ID', '')
+        variables = getattr(settings, 'FAST2SMS_VARIABLES', '')
+
+        return cls.base_url+cls.url_template.format(
+            api_key=api_key,
+            sender_id=sender_id,
+            template_id=template_id,
+            variables=variables,
+            number=str(number),
+            values=str(otp))
+
+    @ classmethod
+    def send_verification_code(cls, number):
+        code, created = cls.get_or_create_security_code(number)
+        if created:
+            url = cls.get_url(number, code)
+            response = requests.request("GET", url)
+            data = response.json()
+
+
 def get_backend():
     backend_string = getattr(settings, 'PHONE_VERIFICATION_BACKEND', None)
     if not backend_string:

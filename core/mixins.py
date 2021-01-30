@@ -1,6 +1,16 @@
 from django.shortcuts import reverse
 
 
+class ExtraContextMixin:
+    extra_context = {}
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        for key, item in self.extra_context.items():
+            ctx[key] = item
+        return ctx
+
+
 class RedirectToPreviousMixin:
     default_redirect = '/'
 
@@ -53,3 +63,7 @@ class breadcrumbMixin:
             bclink = reverse(viewname)
 
         return (bcname, bclink)
+
+
+class coreMixins(RedirectToPreviousMixin, ExtraContextMixin):
+    pass
