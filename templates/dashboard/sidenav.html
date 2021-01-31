@@ -5,13 +5,17 @@
 			<div class="nav accordion" id="accordionSidenav">
 				<!-- Sidenav Menu Heading (Account)-->
 				<!-- * * Note: * * Visible only on and above the sm breakpoint-->
+				<a class="nav-link" href="{% url 'public:home' %} ">
+					<div class="nav-link-icon"><i class="mdi mdi-home"></i></div>
+					Home
+				</a>
 				<a class="nav-link" href="{% url 'dash:home' %} ">
-					<div class="nav-link-icon"><i data-feather="home"></i></div>
-					Home	
+					<div class="nav-link-icon"><i class="mdi mdi-view-dashboard-outline"></i></div>
+					Dashboard
 				</a>
 				{% if user.get_profile %}
 				<a class="nav-link" href="{{ user.get_profile.get_absolute_url }} ">
-					<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+					<div class="nav-link-icon"><i class="mdi mdi-face"></i></div>
 					My Profile
 				</a>
 				{% endif %}
