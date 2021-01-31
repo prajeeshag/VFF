@@ -4,6 +4,14 @@ from guardian.models import UserObjectPermissionBase
 from guardian.models import GroupObjectPermissionBase
 
 
+class Carousel(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+    title = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class CarouselItem(models.Model):
     color_choices = (
         ('dark', 'dark'),
@@ -20,3 +28,4 @@ class CarouselItem(models.Model):
     link = models.CharField(max_length=300, blank=True)
     active = models.BooleanField(default=True)
     test = models.BooleanField(default=False)
+    cycles = models.PositiveIntegerField(default=1)
