@@ -10,25 +10,11 @@
 		{% endthumbnail %}
 	</a>
 	<div class="card-footer text-center">
-		{% comment %}<form method="POST" action="{% url 'dash:editcarosel' carosel.pk %}">{% endcomment %}
-			{% comment %}{% csrf_token %}{% endcomment %}
-			{% comment %}{% if carosel.active %}{% endcomment %}
-				{% comment %}<input type="hidden" name="active" value="False">{% endcomment %}
-				{% comment %}<button type="submit" class="btn btn-icon btn-success">{% endcomment %}
-					{% comment %}<i class="fa fa-thumbs-up"> </i>{% endcomment %}
-				{% comment %}</button>{% endcomment %}
-			{% comment %}{% else %}{% endcomment %}
-				{% comment %}<input type="hidden" name="active" value="False">{% endcomment %}
-				{% comment %}<button type="submit" class="btn btn-icon btn-warning">{% endcomment %}
-					{% comment %}<i class="fa fa-thumbs-down"></i>{% endcomment %}
-				{% comment %}</button>{% endcomment %}
-			{% comment %}{% endif %}{% endcomment %}
-		{% comment %}</form>{% endcomment %}
 		<form method="POST" action="{% url 'dash:deletecarosel' carosel.pk %}">
-			{% csrf_token %}
-			<input type="hidden" name="redirect_url" value="{{ request.get_full_path  }}">
+			{% include 'snippets/form_common.html' %}
+				<input type="hidden" name="redirect_url" value="{{ request.get_full_path  }}">
 				<button type="submit" class="btn btn-sm btn-danger">
-					<i class="fa fa-trash"> </i>
+					<i class="mdi mdi-trash-can"> </i>
 				</button>
 		</form>
 	</div>
