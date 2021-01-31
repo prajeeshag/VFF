@@ -1,0 +1,11 @@
+
+{% if msgs %}
+<h2> Important! </h2>
+<div class="overflow-auto" style="height: 200px;">
+	{% for msg in msgs %}
+	<div class="mb-2">
+		<p>{{ msg.info }} <a class="btn btn-link" href="{{ msg.url }}"> {{ msg.url_name }}</a></p>
+	</div>
+	{% endfor %}
+</div>
+{% endif %}
