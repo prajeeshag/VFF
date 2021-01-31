@@ -2,28 +2,34 @@
 {% load static %}
 {% load my_tags %}
 
-{% include "snippets/header-light.html" with title=title subtitle=subtitle  %}
-<div class="container">
+<div class="container-fluid p-1">
+<div class="p-2 rounded" style="background-image: linear-gradient(darkslategray, silver)">
 	<div class="mb-4 text-center">
 		{% with object.profilepicture as dp %}
 			{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}
 				<div class="p-2 m-auto" style="max-width: 300px;">
-					<img class="rounded-circle" src="{{ im.url }}" alt="Card image cap">
+					<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap">
 				</div>
 			{% endthumbnail %}
 			{% if object.user == user %}
-				{% if object.user == user%}
-					<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
-				{% endif %}
+				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
 			{% endif %}
 		{% endwith %}
 	</div>
+	<h2>{{ title }}</h2>
+	<p> {{ subtitle }}</p>
 	<hr/>
+	<div class="d-flex justify-content-end">
+		{% if object.user == user or user.is_staff %}
+		<a data-toggle="tooltip" data-placement="top" title="" 
+			data-original-title="Edit Info" href="{% url 'users:updateclubofficialsprofile' object.pk %}">
+			<i class="mdi mdi-file-edit"></i> edit
+		</a>
+		{% endif %}
+	</div>
 	<div class="row mx-3">
 
-		{% with object.get_age|addstr:" Years" as value %}
-			{% include 'dashboard/text_field.html' with name='Age' value=value %}
-		{% endwith %}
+		{% include 'dashboard/text_field.html' with name='Age' value=object.get_age %}
 		{% include 'dashboard/text_field.html' with name='Phone' value=object.get_phone_number %}
 		{% include 'dashboard/text_field.html' with name='Email' value=object.email %}
 		{% if object.user == user %}
@@ -32,17 +38,11 @@
 		{% include 'dashboard/text_field.html' with name='Occupation' value=object.occupation %}
 
 		<div class="col-md-12 p-1">
-			<h6 class="text-black-50">Address</h6>
+			<h6 >Address</h6>
 			<h5 >{{object.address}}</h5>
 		</div>
 
-		{% if object.user == user or user.is_staff %}
-		<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" 
-			data-original-title="Edit Info" href="{% url 'users:updateclubofficialsprofile' object.pk %}">
-			<i data-feather='edit'></i>
-		</a>
-		{% endif %}
-
 	</div>
+</div>
 </div>
 

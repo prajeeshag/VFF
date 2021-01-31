@@ -7,6 +7,9 @@
 	<div class="container-flex mt-2">
 		{% include 'public/partials/carosel.html' %}
 		<hr/>
-		{% include 'fixture/partials/calendar.html' %}
+		<div class="overflow-auto" style="height: 250px;">
+			<h4 class="text-center">Calendar</h4>
+			{% include 'fixture/partials/calendar.html' %}
+		</div>
 	</div>
 {% endblock %}

@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href=" {% static 'assets/img/favicon.png' %} " />
 {% endblock %}
 
-{% block body %} class="bg-gray-600 text-light" {% endblock %}
+{% block body %} class="bg-gray-600 text-white nav-fixed " {% endblock %}
 
 {% block content %}
 	{% include 'public/partials/topbar.html' %}
@@ -26,6 +26,22 @@
 	<script src=" {% static 'js/scripts.js' %} "></script>
 	<script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js" crossorigin="anonymous"></script>
 	<script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js" crossorigin="anonymous"></script>
+		<script>
+			// detect scroll top or down
+			if ($('.smart-scroll').length > 0) { // check if element exists
+			    var last_scroll_top = 0;
+			    $(window).on('scroll', function() {
+			        scroll_top = $(this).scrollTop();
+			        if(scroll_top < last_scroll_top) {
+			            $('.smart-scroll').removeClass('scrolled-down').addClass('scrolled-up');
+			        }
+			        else {
+			            $('.smart-scroll').removeClass('scrolled-up').addClass('scrolled-down');
+			        }
+			        last_scroll_top = scroll_top;
+			    });
+			}
+		</script>
 {% endblock %}
 {% block scripts_extra %}
 {% endblock %}

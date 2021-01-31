@@ -4,8 +4,8 @@
 {% load my_tags %}
 
 
-{% include "snippets/header-light.html" with title=title subtitle=subtitle  %}
-<div class="container">
+<div class="container-fluid p-1">
+<div class="p-2 rounded" style="background-image: linear-gradient(darkslategray, silver)">
 	<div class="mb-4 text-center">
 		{% with object.profilepicture as dp %}
 			{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}
@@ -18,16 +18,11 @@
 			{% endif %}
 		{% endwith %}
 	</div>
-	{% if user == object.user %}
-	<div class="d-flex justify-content-between">
-		{% comment %}<a class="btn btn-link" href="users:updateplayersprofile' %}">edit info</a>{% endcomment %}
-	</div>
-	{% endif %}
+	<h2>{{ title }}</h2>
+	<p> {{ subtitle }}</p>
 	<hr/>
 	<div class="row mx-3">
-		{% with object.get_age|addstr:" Years" as value %}
-			{% include 'dashboard/text_field.html' with name='Age' value=value %}
-		{% endwith %}
+		{% include 'dashboard/text_field.html' with name='Age' value=object.get_age %}
 		{% include 'dashboard/text_field.html' with name='Phone' value=object.get_phone_number %}
 		{% include 'dashboard/text_field.html' with name='Email' value=object.email %}
 		{% if object.user == user %}
@@ -39,12 +34,10 @@
 		{% include 'dashboard/text_field.html' with name='Height' value=object.get_height %}
 		{% include 'dashboard/text_field.html' with name='Weight' value=object.get_weight %}
 		<div class="col-md-12 p-1">
-			<h6 class="text-black-50">Address</h6>
+			<h6>Address</h6>
 			<h5 >{{object.address}}</h5>
 		</div>
-		{% if object.club.user == user or user.is_staff %}
-			<a class="btn btn-primary btn-icon" data-toggle="tooltip" data-placement="top" title="" data-original-title="Edit Info" href="urlUpdate"><i data-feather='edit'></i></a>
-		{% endif %}
 	</div>
+</div>
 </div>
 

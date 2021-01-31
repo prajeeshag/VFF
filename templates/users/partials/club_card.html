@@ -1,39 +1,32 @@
 
-<div class="col-md-4">
-	<div class="card mb-4 card-header-actions">
-		<div class="card-header">
-			{% if club.abbr %}
-				{{ club.abbr|upper }}
-			{% else %}
-				{{ club.name }}
-			{% endif %}
-			<div class="dropdown no-caret">
-				{% if user.is_staff or user == club.user %}
-					<button class="btn btn-transparent-dark btn-icon dropdown-toggle" id="dropdownMenuButton" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						<i data-feather="more-vertical"></i>
-					</button>
-					<div class="dropdown-menu dropdown-menu-right animated--fade-in-up" aria-labelledby="dropdownMenuButton">
-						{% if user.is_staff or user == club.user %}
-							<a class="dropdown-item" href="{% url 'users:clubmemberslist' club.pk %}">list of people</a>
-						{% endif %}
-						{% if user.is_superuser %}
-							<form action="/hijack/{{ club.user.id }}/" method="post">
-								{% csrf_token %}
-								<button type="submit" class="dropdown-item text-danger">Hijack</button>
-							</form>
-						{% endif %}
+{% load thumbnail %}
+
+<div class="mb-2 w-100 rounded" style="background-image: linear-gradient(firebrick,teal)">
+	<div class="d-flex p-0 justify-content-start align-items-center">
+		<div class="p-1" style="height: 120px; width: 120px;">
+			<a href={{ club.get_absolute_url }}>
+				{% if club.logo %}
+					{% thumbnail club.logo "120x120" upscale=False cropbox=dp.cropbox as im %}
+						<img src="{{ im.url }}" alt="Card image cap">
+					{% endthumbnail %}
+				{% else %}
+					<div class="h-100 d-flex flex-column justify-content-center align-items-center text-white" style="font-size: 40px; font-weight:bolder">
+						<div class="p-2">{{ club.abbr|upper }}</div>
 					</div>
-			  {% endif %}
-			</div>
+				{% endif %}
+			</a>
 		</div>
-		<a class="card-body" href={{ club.get_absolute_url }}>
-			{% if club.abbr %}
-				<p class="card-title text-grey h4">{{ club.name|upper }}</p>
-			{% endif %}
-			<p class="card-title text-grey h6"> <i class="fas fa-phone-alt"></i> {{club.get_contact_number}}</p>
-			<p class="card-title text-grey h6"> <strong>Total Players: </strong> {{club.total_players}}</p>
-			<p class="card-title text-grey h6"> <strong>U19 Players: </strong> {{club.num_under19_players}}</p>
-			<p class="card-title text-grey h6"> <strong>U21 Players: </strong> {{club.num_under21_players}}</p>
-		</a>
+		<div class="p-2 text-center">
+			<a href={{ club.get_absolute_url }} class="text-white">
+				<h5>{{ club }}</h5>
+			</a>
+		</div>
 	</div>
+	{% if user.is_superuser and club.user %}
+		<form action="/hijack/{{ club.user.id }}/" method="post">
+			{% csrf_token %}
+			<button type="submit" class="btn btn-sm btn-block btn-danger">hijack</button>
+		</form>
+	{% endif %}
 </div>
+

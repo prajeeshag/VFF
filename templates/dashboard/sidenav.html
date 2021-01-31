@@ -1,6 +1,7 @@
 {% load static %}
+{% load thumbnail %}
 <div id="layoutSidenav_nav">
-	<nav class="sidenav shadow-right sidenav-light">
+	<nav class="sidenav shadow-right sidenav-dark" style="background-color: gray;">
 		<div class="sidenav-menu">
 			<div class="nav accordion" id="accordionSidenav">
 				<!-- Sidenav Menu Heading (Account)-->
@@ -58,7 +59,20 @@
 		<div class="sidenav-footer">
 			<div class="sidenav-footer-content">
 				<div class="sidenav-footer-subtitle">Logged in as:</div>
-				<div class="sidenav-footer-title">{{ user }}</div>
+					<div class="d-flex align-items-center">
+					<div class="avatar-lg">
+						{% with dp=user.get_profilepicture %}
+							{% if dp.image %}
+								{% thumbnail dp.image "70x70" upscale=False cropbox=dp.cropbox as im %}
+									<img class="img-fluid" src="{{ im.url }}" />
+								{% endthumbnail %}
+							{% else %}
+								<img class="img-fluid" src="{% static 'assets/img/illustrations/profiles/profile-1.jpeg' %}">
+							{% endif %}
+						{% endwith %}
+					</div>
+					<div class="ml-2 sidenav-footer-title">{{ user }}</div>
+					</div>
 			</div>
 		</div>
 	</nav>

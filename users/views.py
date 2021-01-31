@@ -53,7 +53,7 @@ class FreePlayersList(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         # very bad, need improvement
-        allplayers = models.PlayerProfile.objects.all()
+        allplayers = models.PlayerProfile.objects.exclude(user=None)
         free_players = []
         for player in allplayers:
             if not player.get_club():
@@ -105,9 +105,6 @@ class ClubDetails(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         user = self.request.user
-        if hasattr(user, 'clubprofile'):
-            ctx['myoffers'] = user.clubprofile.get_invited_players()
-            ctx['myplayers'] = user.clubprofile.get_players()
         return ctx
 
 

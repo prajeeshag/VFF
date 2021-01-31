@@ -1,14 +1,17 @@
 {% load static %}
 {% load hijack_tags %}
 {% load thumbnail %}
-<nav class="topnav navbar navbar-expand justify-content-between bg-gray-900" id="sidenavAccordion">
-	<a class="navbar-brand" href=" {% url 'public:home' %} " style="width: auto !important;">
-		<img src="{% static 'img/logo1.jpeg' %}"  alt="" style="height:40px !important; width:40px !important;" >
-	</a>
-	<div class="flex-grow-1" style="font-size: 28px; font-family: 'Roboto Slab',serif; color:azure;">
-		VFL 2021
-	</div>
+<nav class="topnav navbar navbar-expand shadow justify-content-end" id="sidenavAccordion">
+	<!-- Navbar Items-->
+	{% if request|is_hijacked %}
+	<form action="/hijack/release-hijack/" method="POST">
+		{% csrf_token %}
+		<button class="btn btn-danger btn-icon"> <i class="mdi mdi-logout"></i> </button>
+	</form>
+	{% endif %}
+
+	<!-- Sidenav Toggle Button-->
 	<button class="btn btn-icon btn-transparent-light order-1 order-lg-0 mr-lg-2" id="sidebarToggle">
-		<i class="fa fa-bars"></i>
+		<i class="mdi mdi-menu"></i>
 	</button>
 </nav>

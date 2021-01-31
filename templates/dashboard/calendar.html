@@ -5,8 +5,10 @@
 {% load my_tags %}
 
 {% block content_main %}
-	<div class="container-md">
-		{% include 'fixture/partials/calendar.html' with matches=matches %}
+	<div class="container-fluid p-1">
+		<div class="overflow-auto">
+			{% include 'fixture/partials/calendar.html' with matches=matches %}
+		</div>
 	</div>
 {% endblock %}
 

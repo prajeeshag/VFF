@@ -19,7 +19,7 @@
 				{% for field in form.visible_fields %}
 					<div class="form-group">
 						{{ field.errors }}
-						{{ field | add_label_class:"text-gray-600 small" }}
+						{{ field | add_label_class:"small" }}
 						{% render_field field class="form-control form-control-solid" %}
 					</div>
 				{% endfor %}

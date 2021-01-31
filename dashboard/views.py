@@ -58,6 +58,15 @@ class Home(LoginRequiredMixin, TemplateView):
             ctx['players_no_account'] = get_objects_for_user(
                 user, 'edit', klass=PlayerProfile)
             ctx['player_quota'] = club.player_quota_left()
+
+            if not user.get_club().logo:
+                messages = [
+                    {'info': 'Please upload your club logo...',
+                     'url': reverse_lazy('users:updateclubprofile'),
+                     'url_name': 'Upload club logo'
+                     }
+                ]
+                ctx['msgs'] = messages
         return ctx
 
 

@@ -1,6 +1,7 @@
 {% load humanize %}
-<div class="bg-dark text-light d-flex justify-content-between" style="height: 60px;">
-	<div class="font-weight-bold col-3 d-flex px-1" style="font-size: 20px; background-color: darkcyan;">
+<div class="rounded">
+<div class="text-light bg-dark d-flex justify-content-between p-0" style="height: 60px;">
+	<div class="font-weight-bold col-3 d-flex px-1" style="font-size: 20px; background-image: linear-gradient(darkcyan, darkmagenta)">
 		{% if user.is_anonymous %}
 		<a href="#!" class="m-auto text-light" tabindex="0" data-trigger="focus" title="" data-container="body" 
 				data-toggle="popover" data-placement="top" data-content="{{ match.home }}, {{ match.home.address }}" 
@@ -8,7 +9,7 @@
 				{{ match.home.abbr|upper }}
 		</a>
 		{% else %}
-			<a class="m-auto text-dark" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
+			<a class="m-auto text-light" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
 		{% endif %}
 	</div>
 	<div class="d-flex flex-column overflow-hidden"> 
@@ -21,7 +22,7 @@
 			</p>
 		</div>
 	</div>
-	<div class="font-weight-bold col-3 d-flex px-1" style="font-size: 20px; background-color: darkmagenta">
+	<div class="font-weight-bold col-3 d-flex px-1" style="font-size: 20px; background-image: linear-gradient(darkmagenta,darkcyan)">
 		{% if user.is_anonymous %}
 		<a href="#!" class="m-auto text-light" tabindex="0" data-trigger="focus" title="" data-container="body" 
 				data-toggle="popover" data-placement="top" data-content="{{ match.away }}, {{ match.away.address }}" 
@@ -29,8 +30,9 @@
 				{{ match.away.abbr|upper }}
 			</a>
 		{% else %}
-			<a class="m-auto text-dark" href={{ match.away.get_absolute_url }}> {{ match.away.abbr|upper }} </a>
+			<a class="m-auto text-light" href={{ match.away.get_absolute_url }}> {{ match.away.abbr|upper }} </a>
 		{% endif %}
 	</div>
+</div>
 </div>
 

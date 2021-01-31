@@ -468,6 +468,12 @@ class PlayerProfile(Profile):
             return offer.club
         return None
 
+    def is_under19(self):
+        return self.get_age() <= 19
+
+    def is_under21(self):
+        return (self.get_age() > 19 and self.get_age() <= 21)
+
 
 class PlayerUserObjectPermission(UserObjectPermissionBase):
     content_object = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)

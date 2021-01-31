@@ -4,7 +4,7 @@
 {% load my_tags %}
 
 {% block content %}
-<div class="container-md">
+<div class="container-fluid p-1">
 		{% include 'fixture/partials/calendar.html' with matches=matches %}
 </div>
 {% endblock %}
@@ -15,7 +15,7 @@ $(document).ready(function() {
 	$('#fixtureTable').DataTable({
 		"ordering": false,
 		"order":[],
-		"pageLength": 10,
+		"pageLength": 30,
 	});
 });
 	</script>

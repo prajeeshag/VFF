@@ -1,27 +1,17 @@
 {% load static %}
 {% load hijack_tags %}
 {% load thumbnail %}
-<nav class="topnav navbar navbar-expand shadow justify-content-between justify-content-sm-start navbar-light bg-white" id="sidenavAccordion">
-	<a class="navbar-brand" href=" {% url 'dash:home' %} ">
-		<img src="{% static 'img/logo1.jpeg' %}"  alt="" style="height:40px !important;" >
-	</a>
-	<!-- Sidenav Toggle Button-->
-	<button class="btn btn-icon btn-transparent-dark order-1 order-lg-0 mr-lg-2" id="sidebarToggle">
-		{% with dp=user.get_profilepicture %}
-			{% if dp.image %}
-				{% thumbnail dp.image "50x50" upscale=False cropbox=dp.cropbox as im %}
-					<img class="img-fluid" src="{{ im.url }}" />
-				{% endthumbnail %}
-			{% else %}
-				<img class="img-fluid" src="{% static 'assets/img/illustrations/profiles/profile-1.jpeg' %}">
-			{% endif %}
-		{% endwith %}
-	</button>
+<nav class="topnav navbar navbar-expand shadow justify-content-end" id="sidenavAccordion">
 	<!-- Navbar Items-->
 	{% if request|is_hijacked %}
 	<form action="/hijack/release-hijack/" method="POST">
 		{% csrf_token %}
-		<button class="btn btn-danger btn-icon"> <i data-feather="log-out"></i> </button>
+		<button class="btn btn-danger btn-icon"> <i class="mdi mdi-logout"></i> </button>
 	</form>
 	{% endif %}
+
+	<!-- Sidenav Toggle Button-->
+	<button class="btn btn-icon btn-transparent-light order-1 order-lg-0 mr-lg-2" id="sidebarToggle">
+		<i class="mdi mdi-menu"></i>
+	</button>
 </nav>
