@@ -1,4 +1,4 @@
-
+{% load humanize %}
 <div class="bg-dark text-light d-flex justify-content-between border border-dark" style="height: 60px;">
 	<div class="bg-green font-weight-bold col-3 d-flex">
 		{% if user.is_anonymous %}
@@ -14,7 +14,7 @@
 	<div class="d-flex flex-column overflow-hidden"> 
 		<div class="pt-1 text-center" style="line-height: 1em;"> 
 			<p>
-			<small>{{ match.date|date:"D. d M" }}</small>
+			<small>{{ match.date|naturalday:"D. d M" }}</small>
 			<small>{{ match.date|date:"P" }}</small>
 			<br/>
 			<small>{{ match.ground }}</small>
