@@ -1,6 +1,6 @@
 {% load thumbnail %}
 
-<div id="carouselExampleIndicators" class="carousel slide" data-interval="2000" data-ride="carousel">
+<div id="carouselExampleIndicators" class="carousel slide" data-interval="3500" data-ride="carousel">
 	<ol class="carousel-indicators">
 		{% for slide in slides %}	
 		<li data-target="#carouselExampleIndicators" data-slide-to="{{ forloop.counter0 }}" {% if forloop.first %} class="active" {% endif %}></li>
