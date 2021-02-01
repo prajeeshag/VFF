@@ -31,6 +31,7 @@ urlpatterns += i18n_patterns(
     path('', include('registration.urls')),
     path('', include('public.urls')),
     path('', include('account.urls')),
+    path('fixture/', include('fixture.urls')),
     path('users/', include('users.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('verify_phone/', include('phone_verification.urls')),
