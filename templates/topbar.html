@@ -1,0 +1,19 @@
+{% load static %}
+{% load hijack_tags %}
+{% load thumbnail %}
+<nav class="topnav navbar navbar-expand shadow justify-content-between bg-dark text-white" id="sidenavAccordion">
+	<!-- Sidenav Toggle Button-->
+	<button class="btn btn-icon btn-transparent-light " id="sidebarToggle">
+		<i class="mdi mdi-menu"></i>
+	</button>
+
+	{% comment %}<img src="{% static 'img/logo1.svg' %}"/>{% endcomment %}
+
+	{% if request|is_hijacked %}
+	<form action="/hijack/release-hijack/" method="POST">
+		{% csrf_token %}
+		<button class="btn btn-danger btn-icon"> <i class="mdi mdi-logout"></i> </button>
+	</form>
+	{% endif %}
+
+</nav>

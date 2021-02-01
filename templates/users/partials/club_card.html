@@ -1,12 +1,12 @@
 
 {% load thumbnail %}
 
-<div class="mb-2 w-100 rounded" style="background-image: linear-gradient(firebrick,teal)">
+<div class="mb-2 w-100 rounded" style="background-image: linear-gradient(to left,firebrick,teal)">
 	<div class="d-flex p-0 justify-content-start align-items-center">
 		<div class="p-1" style="height: 120px; width: 120px;">
 			<a href={{ club.get_absolute_url }}>
 				{% if club.logo %}
-					{% thumbnail club.logo "120x120" upscale=False cropbox=dp.cropbox as im %}
+					{% thumbnail club.logo "120x120" upscale=False cropbox=dp.cropbox format="PNG" as im %}
 						<img src="{{ im.url }}" alt="Card image cap">
 					{% endthumbnail %}
 				{% else %}

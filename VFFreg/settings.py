@@ -258,6 +258,7 @@ REST_FRAMEWORK = {
     ]
 }
 
+
 # FAST2SMS
 FAST2SMS_API_KEY = config('FAST2SMS_API_KEY', default='')
 FAST2SMS_SENDER_ID = config('FAST2SMS_SENDER_ID', default='')
