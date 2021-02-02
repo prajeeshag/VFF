@@ -47,7 +47,7 @@ class Matches(models.Model):
         return self.date.strftime('%H:%M %p')
 
     @classmethod
-    def get_upcoming_matches(cls):
+    def get_done_matches(cls):
         date = dt.datetime.now() + dt.timedelta(hours=1)
         return cls.objects.all().filter(date__lte=date)
 
