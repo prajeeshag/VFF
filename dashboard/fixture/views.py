@@ -1,6 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
+from django.views import View
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
@@ -29,18 +30,77 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 from users.models import PlayerProfile, PhoneNumber
-from . import forms
 
 LOGIN_URL = reverse_lazy('login')
 
 urlpatterns = []
 
 
-@ require_http_methods(['POST'])
-@ login_required
-def fixMatches(request):
-    pass
+def get_pk(key, prefix):
+    if key[:len(prefix)] == prefix:
+        try:
+            pk = int(key[prefix:])
+            return pk
+        except ValueError:
+            return None
+    return None
+
+
+class fixMatches(LoginRequiredMixin, View):
+    template_name = 'dashboard/fixture/fix_matches.html'
+
+    def get(self, request, *arg, **kwargs):
+        ctx = {}
+        ctx['tentative_matches'] = Matches.get_tentative_matches()
+        ctx['fixed_matches'] = Matches.get_fixed_matches()
+        return render(request, self.template_name, ctx)
+
+    def post(self, request, *args, **kwargs):
+        obj_pks_fix = request.POST.getlist('checksFix')
+        obj_pks_unfix = request.POST.getlist('checksUnFix')
+        if obj_pks_fix:
+            Matches.objects.filter(pk__in=obj_pks_fix).update(
+                status=Matches.FIXED)
+        if obj_pks_unfix:
+            Matches.objects.filter(pk__in=obj_pks_unfix).update(
+                status=Matches.TENTATIVE)
+
+        ctx = {}
+        ctx['tentative_matches'] = Matches.get_tentative_matches()
+        ctx['fixed_matches'] = Matches.get_fixed_matches()
+        return render(request, self.template_name, ctx)
 
 
 urlpatterns += [path('fixmatches/',
-                     fixMatches, name='fixmatches'), ]
+                     fixMatches.as_view(),
+                     name='fixmatches'), ]
+
+
+class finalizeMatches(LoginRequiredMixin, View):
+    template_name = 'dashboard/fixture/finalize_matches.html'
+
+    def get(self, request, *arg, **kwargs):
+        ctx = {}
+        ctx['finalized_matches'] = Matches.get_done_matches()
+        ctx['fixed_matches'] = Matches.get_fixed_matches()
+        return render(request, self.template_name, ctx)
+
+    def post(self, request, *args, **kwargs):
+        obj_pks_fix = request.POST.getlist('checksFix')
+        obj_pks_unfix = request.POST.getlist('checksUnFix')
+        if obj_pks_fix:
+            Matches.objects.filter(pk__in=obj_pks_fix).update(
+                status=Matches.DONE)
+        if obj_pks_unfix:
+            Matches.objects.filter(pk__in=obj_pks_unfix).update(
+                status=Matches.FIXED)
+
+        ctx = {}
+        ctx['finalized_matches'] = Matches.get_done_matches()
+        ctx['fixed_matches'] = Matches.get_fixed_matches()
+        return render(request, self.template_name, ctx)
+
+
+urlpatterns += [path('finalizematches/',
+                     finalizeMatches.as_view(),
+                     name='finalizematches'), ]

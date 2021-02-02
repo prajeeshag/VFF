@@ -8,4 +8,11 @@
 		<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
 		Carosel
 	</a>
+	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#Matches" name="Matches" icon="soccer-field" %}
+ 	<div class="collapse" id="Matches" data-parent="#accordionSidenav">
+ 	    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+ 	        <a class="nav-link" href="{% url 'dash:fixmatches' %}">Fix matches</a>
+ 	        <a class="nav-link" href="{% url 'dash:finalizematches' %}">Finalize matches</a>
+ 	    </nav>
+ 	</div>
 {% endif %}

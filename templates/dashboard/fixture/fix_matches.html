@@ -1,0 +1,15 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+
+{% block content_main %}
+	<h3 class=" mt-2 text-center">Fix Matches</h3>
+	<hr/>
+	<div class="container-fluid p-1">
+		{% include 'snippets/messages.html' %}
+		{% include 'dashboard/fixture/partials/fix_matches.html' %}
+	</div>
+{% endblock %}
+

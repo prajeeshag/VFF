@@ -59,14 +59,26 @@ class Matches(models.Model):
         return self.date.strftime('%H:%M %p')
 
     @classmethod
+    def get_tentative_matches(cls):
+        return cls.objects.filter(status=cls.TENTATIVE)
+
+    @classmethod
     def get_done_matches(cls):
+        return cls.objects.filter(status=cls.DONE)
+
+    @classmethod
+    def get_fixed_matches(cls):
+        return cls.objects.filter(status=cls.FIXED)
+
+    @classmethod
+    def get_past_matches(cls):
         date = dt.datetime.now() + dt.timedelta(hours=1)
-        return cls.objects.all().filter(date__lte=date)
+        return cls.objects.filter(date__lte=date)
 
     @classmethod
     def get_upcoming_matches(cls):
         date = dt.datetime.now()
-        return cls.objects.all().filter(date__gte=date)
+        return cls.objects.filter(date__gte=date)
 
     @classmethod
     def get_matches_of_club(cls, club):
