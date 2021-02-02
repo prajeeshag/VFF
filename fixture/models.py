@@ -48,6 +48,11 @@ class Matches(models.Model):
 
     @classmethod
     def get_upcoming_matches(cls):
+        date = dt.datetime.now() + dt.timedelta(hours=1)
+        return cls.objects.all().filter(date__lte=date)
+
+    @classmethod
+    def get_upcoming_matches(cls):
         date = dt.datetime.now()
         return cls.objects.all().filter(date__gte=date)
 
