@@ -58,6 +58,9 @@ class Matches(models.Model):
     def get_time(self):
         return self.date.strftime('%H:%M %p')
 
+    def is_tentative(self):
+        return self.status == self.TENTATIVE
+
     @classmethod
     def get_tentative_matches(cls):
         return cls.objects.filter(status=cls.TENTATIVE)
