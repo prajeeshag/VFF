@@ -23,7 +23,7 @@
 			</a>
 		</div>
 	</div>
-	{% if myoffers %}
+	{% if send_offer %}
 		<div>
 			{% if player in myoffers %}
 				<form method="POST" action="{% url 'users:cancelsigninoffer' player.pk %}">

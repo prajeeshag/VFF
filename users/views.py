@@ -60,6 +60,7 @@ class FreePlayersList(LoginRequiredMixin, TemplateView):
                 free_players.append(player)
         ctx['free_players'] = free_players
         user = self.request.user
+        ctx['send_offer'] = True
         if hasattr(user, 'clubprofile'):
             ctx['myoffers'] = user.clubprofile.get_invited_players()
             ctx['myplayers'] = user.clubprofile.get_players()
