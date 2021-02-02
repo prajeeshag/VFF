@@ -20,6 +20,16 @@ class Fixture(models.Model):
 
 
 class Matches(models.Model):
+    DONE = 'DONE'
+    FIXED = 'FIXED'
+    TENTATIVE = 'TENTATIVE'
+    CANCELED = 'CANCELED'
+
+    status_choices = (
+        (DONE, DONE),
+        (FIXED, FIXED),
+        (TENTATIVE, TENTATIVE),
+    )
     num = models.PositiveIntegerField(
         _('Match Number'), validators=[MinValueValidator(1), ],
         default=1)
@@ -32,6 +42,8 @@ class Matches(models.Model):
         Grounds, on_delete=models.PROTECT, null=True, related_name='matches')
     fixture = models.ForeignKey(
         Fixture, on_delete=models.PROTECT, null=True, related_name='matches')
+    status = models.CharField(
+        max_length=20, choices=status_choices, default=TENTATIVE)
 
     class Meta:
         unique_together = ['fixture', 'home', 'away', 'num']
