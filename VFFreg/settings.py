@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'guardian',
 
     # Local
+    'league',
     'users.apps.UsersConfig',
     'account',
     'registration.apps.RegistrationConfig',
