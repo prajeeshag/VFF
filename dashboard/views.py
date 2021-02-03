@@ -30,6 +30,7 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 from users.models import PlayerProfile, PhoneNumber, Document
+from league.models import Season
 
 from . import forms
 
@@ -57,9 +58,8 @@ class Home(LoginRequiredMixin, viewMixins, TemplateView):
                     ctx['club_offers'] = profile.get_all_offers()
 
         if user.is_club():
-            ctx['players_no_account'] = get_objects_for_user(
-                user, 'edit', klass=PlayerProfile)
-            ctx['player_quota'] = club.player_quota_left()
+            if Season.objects.first().is_transfer_window_open():
+                ctx['player_quota'] = club.player_quota_left()
 
             if not user.get_club().logo:
                 messages = [
@@ -108,3 +108,17 @@ class documentEditView(LoginRequiredMixin, formviewMixins, FormView):
 urlpatterns += [path('documentedit/<int:pk>/',
                      documentEditView.as_view(),
                      name='documentedit'), ]
+
+
+class documentUploadView(LoginRequiredMixin, formviewMixins, UpdateView):
+    model = Document
+    fields = ['image', ]
+    template_name = 'dashboard/image_upload.html'
+
+    def get_success_url(self):
+        return reverse('dash:documentedit', kwargs={'pk': self.kwargs.get('pk')})
+
+
+urlpatterns += [path('documentupload/<int:pk>/',
+                     documentUploadView.as_view(),
+                     name='documentupload'), ]

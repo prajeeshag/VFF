@@ -9,7 +9,8 @@
 <h2>{{title}}</h2>
 <div class="container-fluid p-1">
 	<div class="flex justify-content-center">
-		{% include 'dashboard/snippets/image_edit.html' with form=form %}
+		{% url 'dash:documentupload' form.instance.pk as upload_url %}
+		{% include 'dashboard/snippets/image_edit.html' with form=form upload_url=upload_url %}
 	</div>
 </div>
 
