@@ -53,8 +53,6 @@ class FreePlayersList(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        twopen = Season.objects.first().is_transfer_window_open()
-        ctx['send_offer'] = twopen
         if twopen:
             # very bad, need improvement
             allplayers = models.PlayerProfile.objects.exclude(user=None)
@@ -64,6 +62,7 @@ class FreePlayersList(LoginRequiredMixin, TemplateView):
                     free_players.append(player)
             ctx['free_players'] = free_players
             user = self.request.user
+            ctx['send_offer'] = True
             if hasattr(user, 'clubprofile'):
                 ctx['myoffers'] = user.clubprofile.get_invited_players()
                 ctx['myplayers'] = user.clubprofile.get_players()
@@ -199,6 +198,12 @@ class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
 def CreateClubSigninOffer(request, pk):
 
     url = request.META.get('HTTP_REFERER', "/")
+
+    if not Season.objects.first().is_transfer_window_open():
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot not send signin offer, Transfer window is closed")
+        return HttpResponseRedirect(url)
 
     try:
         player = models.PlayerProfile.objects.get(pk=pk)
@@ -344,7 +349,7 @@ def AcceptClubSigninOffer(request, pk):
     if not Season.objects.first().is_transfer_window_open():
         messages.add_message(
             request, messages.WARNING,
-            "Cannot not accept signin offer, Transfer window closed")
+            "Cannot not accept signin offer, Transfer window is closed")
         return HttpResponseRedirect(url)
 
     try:
