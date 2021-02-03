@@ -74,7 +74,7 @@ urlpatterns += [path('unsignedplayers/',
 
 
 class ClubList(LoginRequiredMixin, viewMixins, TemplateView):
-    template_name = 'users/club_list.html'
+    template_name = 'dashboard/club_list.html'
     login_url = reverse_lazy('login')
 
     def get_context_data(self, **kwargs):
