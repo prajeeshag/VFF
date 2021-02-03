@@ -23,7 +23,7 @@ from django.views.decorators.http import require_http_methods
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
-from core.mixins import RedirectToPreviousMixin
+from core.mixins import viewMixins, formviewMixins
 from formtools.wizard.views import SessionWizardView
 
 from . import models
@@ -33,7 +33,7 @@ from league.models import Season
 urlpatterns = []
 
 
-class UsersList(LoginRequiredMixin, ListView):
+class UsersList(LoginRequiredMixin, viewMixins, ListView):
     model = get_user_model()
     login_url = reverse_lazy('login')
     template_name = 'users/users_list.html'
@@ -47,7 +47,7 @@ class UsersList(LoginRequiredMixin, ListView):
 urlpatterns += [path('userlist/', UsersList.as_view(), name='list'), ]
 
 
-class FreePlayersList(LoginRequiredMixin, TemplateView):
+class FreePlayersList(LoginRequiredMixin, viewMixins, TemplateView):
     template_name = 'users/free_players_list.html'
     login_url = reverse_lazy('login')
 
@@ -73,7 +73,7 @@ urlpatterns += [path('unsignedplayers/',
                      name='unsignedplayers'), ]
 
 
-class ClubList(LoginRequiredMixin, TemplateView):
+class ClubList(LoginRequiredMixin, viewMixins, TemplateView):
     template_name = 'users/club_list.html'
     login_url = reverse_lazy('login')
 
@@ -88,7 +88,7 @@ urlpatterns += [path('clublist/',
                      name='clublist'), ]
 
 
-class ClubMembersList(LoginRequiredMixin, DetailView):
+class ClubMembersList(LoginRequiredMixin, viewMixins, DetailView):
     model = models.ClubProfile
     template_name = 'users/club_members_list.html'
     login_url = reverse_lazy('login')
@@ -99,7 +99,7 @@ urlpatterns += [path('clubmemberslist/<int:pk>/',
                      name='clubmemberslist'), ]
 
 
-class ClubDetails(LoginRequiredMixin, DetailView):
+class ClubDetails(LoginRequiredMixin, viewMixins, DetailView):
     template_name = 'users/club_details.html'
     login_url = reverse_lazy('login')
     model = models.ClubProfile
@@ -115,7 +115,7 @@ urlpatterns += [path('clubdetails/<int:pk>/',
                      name='clubdetails'), ]
 
 
-class ClubOfficialsProfile(LoginRequiredMixin, DetailView):
+class ClubOfficialsProfile(LoginRequiredMixin, viewMixins, DetailView):
     template_name = 'users/club_officials_profile.html'
     login_url = reverse_lazy('login')
     model = models.ClubOfficialsProfile
@@ -130,7 +130,7 @@ urlpatterns += [path('clubofficials/<int:pk>/',
                      name='clubofficialsprofile'), ]
 
 
-class PlayersProfile(LoginRequiredMixin, DetailView):
+class PlayersProfile(LoginRequiredMixin, viewMixins, DetailView):
     template_name = 'users/players_profile.html'
     login_url = reverse_lazy('login')
     model = models.PlayerProfile
@@ -146,7 +146,7 @@ urlpatterns += [path('players/<int:pk>/',
 
 
 class UpdateClubProfile(LoginRequiredMixin, SuccessMessageMixin,
-                        RedirectToPreviousMixin, UpdateView):
+                        formviewMixins, UpdateView):
     model = models.ClubProfile
     form_class = forms.UpdateClubForm
     login_url = reverse_lazy('login')
@@ -168,7 +168,7 @@ urlpatterns += [path('updateclub/',
 
 
 class ClubOfficialsProfileUpdate(LoginRequiredMixin, SuccessMessageMixin,
-                                 RedirectToPreviousMixin, UpdateView):
+                                 formviewMixins, UpdateView):
     model = models.ClubOfficialsProfile
     form_class = forms.UpdateClubOfficialsForm
     template_name = 'users/base_form.html'
@@ -186,7 +186,7 @@ urlpatterns += [path('cluboffileupdate/<int:pk>/',
                      name='updateclubofficialsprofile'), ]
 
 
-class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
+class abbrUpdateView(LoginRequiredMixin, formviewMixins, UpdateView):
     model = models.ClubProfile
     fields = ['abbr', ]
     template_name = 'users/abbr_form.html'
@@ -291,6 +291,7 @@ urlpatterns += [path('changepassword/',
 
 class UpdatePlayerProfile(SuccessMessageMixin,
                           LoginRequiredMixin,
+                          formviewMixins,
                           UpdateView):
     model = models.PlayerProfile
     fields = ['first_name', 'last_name', 'dob',
@@ -311,7 +312,7 @@ class UpdatePlayerProfile(SuccessMessageMixin,
         return self.request.user.get_profile()
 
 
-class dpUploadView(LoginRequiredMixin, UpdateView):
+class dpUploadView(LoginRequiredMixin, formviewMixins, UpdateView):
     model = models.ProfilePicture
     form_class = forms.dpUploadForm
     template_name = 'users/dp_upload.html'
@@ -326,7 +327,7 @@ class dpUploadView(LoginRequiredMixin, UpdateView):
 urlpatterns += [path('dpupload/', dpUploadView.as_view(), name='dpupload'), ]
 
 
-class dpEditView(LoginRequiredMixin, UpdateView):
+class dpEditView(LoginRequiredMixin, formviewMixins, UpdateView):
     form_class = forms.dpEditForm
     template_name = 'users/dp_edit.html'
 

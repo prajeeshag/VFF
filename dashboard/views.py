@@ -1,6 +1,7 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
+
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
@@ -24,11 +25,12 @@ from guardian.shortcuts import get_objects_for_user
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
-from core.mixins import RedirectToPreviousMixin
+from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
-from users.models import PlayerProfile, PhoneNumber
+from users.models import PlayerProfile, PhoneNumber, Document
+
 from . import forms
 
 LOGIN_URL = reverse_lazy('login')
@@ -36,7 +38,7 @@ LOGIN_URL = reverse_lazy('login')
 urlpatterns = []
 
 
-class Home(LoginRequiredMixin, TemplateView):
+class Home(LoginRequiredMixin, viewMixins, TemplateView):
     template_name = 'dashboard/home.html'
     login_url = LOGIN_URL
 
@@ -73,110 +75,7 @@ class Home(LoginRequiredMixin, TemplateView):
 urlpatterns += [path('home/', Home.as_view(), name='home'), ]
 
 
-class UpdateEmail(LoginRequiredMixin,
-                  RedirectToPreviousMixin,
-                  UpdateView):
-    model = get_user_model()
-    form_class = forms.EmailForm
-    template_name = 'dashboard/base_form.html'
-
-    def get_object(self):
-        return self.request.user
-
-
-urlpatterns += [path('editemail/', UpdateEmail, name='editemail'), ]
-
-
-@ require_http_methods(['POST'])
-@ login_required
-def EditPhoneNumber(request, pk):
-    url = request.META.get('HTTP_REFERER', "/")
-    form = forms.PhoneNumberForm(request.POST)
-    profile = PlayerProfile.objects.get(pk=pk)
-    if form.is_valid():
-        number = form.cleaned_data.get('phone_number')
-        phone_number, created = PhoneNumber.objects.get_or_create(
-            number=number)
-        if created:
-            profile.phone_number = phone_number
-            profile.save()
-            return HttpResponseRedirect(url)
-
-        user = getattr(phone_number, 'user', None)
-        if user:
-            messages.add_message(
-                request,
-                messages.WARNING,
-                _("Cannot change number, a profile with this number already exist"))
-            return HttpResponseRedirect(url)
-
-        return HttpResponseRedirect(url)
-
-
-urlpatterns += [path('playernumber/<int:pk>',
-                     EditPhoneNumber, name='editphone'), ]
-
-
-class EditPlayer(SuccessMessageMixin,
-                 LoginRequiredMixin,
-                 RedirectToPreviousMixin,
-                 UpdateView):
-    model = PlayerProfile
-    template_name = 'dashboard/base_form.html'
-    login_url = LOGIN_URL
-    success_message = 'Profile updated'
-
-    def dispatch(self, request, *args, **kwargs):
-        obj = self.get_object()
-        if not request.user.has_perm('edit', obj):
-            return PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
-
-
-urlpatterns += [path('editplayer/<int:pk>',
-                     EditPlayer.as_view(),
-                     name='editplayer'), ]
-
-
-@ require_http_methods(['POST'])
-@ login_required
-def del_player(request, pk):
-    url = request.META.get('HTTP_REFERER', "/")
-    try:
-        player = PlayerProfile.objects.get(pk=pk)
-    except PlayerProfile.DoesNotExist:
-        messages.add_message(
-            request, messages.WARNING,
-            _("Couldn't Delete the player"))
-        return HttpResponseRedirect(url)
-
-    if player.user:
-        messages.add_message(
-            request, messages.WARNING,
-            _("You can't delete this player"))
-        return HttpResponseRedirect(url)
-
-    club = request.user.get_club()
-    if club:
-        if club.release_player(player):
-            player.delete()
-        else:
-            messages.add_message(
-                request, messages.WARNING,
-                _("Couldn't release player"))
-            return HttpResponseRedirect(url)
-
-    messages.add_message(
-        request, messages.WARNING,
-        _("Deleted player"))
-    return HttpResponseRedirect(url)
-
-
-urlpatterns += [path('delplayer/<int:pk>/',
-                     del_player, name='delplayer'), ]
-
-
-class Calendar(LoginRequiredMixin, TemplateView):
+class Calendar(LoginRequiredMixin, viewMixins, TemplateView):
     template_name = 'dashboard/calendar.html'
     login_url = LOGIN_URL
 
@@ -188,3 +87,24 @@ class Calendar(LoginRequiredMixin, TemplateView):
 
 
 urlpatterns += [path('calendar/', Calendar.as_view(), name='calendar'), ]
+
+
+class documentEditView(LoginRequiredMixin, formviewMixins, FormView):
+    form_class = forms.imageEditForm
+    template_name = 'dashboard/image_edit.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['instance'] = get_object_or_404(
+            Document, pk=self.kwargs.get('pk', None)
+        )
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+
+urlpatterns += [path('documentedit/<int:pk>/',
+                     documentEditView.as_view(),
+                     name='documentedit'), ]

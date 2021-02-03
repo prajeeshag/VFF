@@ -248,10 +248,9 @@ class AbstractImage(models.Model):
         if (self.x1 + self.y1 + self.x2 + self.y2 == 0 or
                 self.x1 >= self.x2 or self.y1 >= self.y2):
             wh = min(w, h)
-            x1, y1 = int((w-wh)*0.5), 0
-            x2, y2 = int(x1+wh), int(y1+wh)
+            x1, y1 = 0, 0
+            x2, y2 = w, h
             return '{},{},{},{}'.format(x1, y1, x2, y2)
-
         return '{},{},{},{}'.format(self.x1, self.y1, self.x2, self.y2)
 
     def get_cropbox_frac(self):

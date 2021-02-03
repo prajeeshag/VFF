@@ -19,8 +19,15 @@ $(window).on("load", function() {
 	const ratio = 1.;
 	$(".dpedit").each( function () {
 		img = $(this).find("img")[0]
-		console.log(img)
-		var jcp = Jcrop.attach(img, {aspectRatio:ratio});
+		xratio = $(img).attr("data-ratio")
+		console.log('xratio',xratio)
+		if (xratio){
+			var jcp = Jcrop.attach(img, {aspectRatio: xratio});
+		}
+		else{
+			var jcp = Jcrop.attach(img);
+		}
+
 		xp1 = $(this).find("input[name$=xp1]").val();
 		yp1 = $(this).find("input[name$=yp1]").val();
 		xp2 = $(this).find("input[name$=xp2]").val();
@@ -31,7 +38,6 @@ $(window).on("load", function() {
 		y1 = h*yp1; y2 = h*yp2
 		w1 = x2-x1; h1 = y2-y1
 		wh = Math.min(w1,h1)
-		console.log(x1,y1,xp1,w)
 		const rect = Jcrop.Rect.create(x1,y1,wh,wh);
 		jcp.newWidget(rect);
 		jcp.listen('crop.change',(widget,e) => {
@@ -51,3 +57,5 @@ $(window).on("load", function() {
 		jcp.focus();
 	});
 });
+
+

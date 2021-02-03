@@ -6,7 +6,7 @@
 		{% include 'snippets/form_common.html' with form=form %}
 		{% thumbnail form.instance.image "300x300" upscale=False as im %}
 		<div class="p-2 m-auto" style="max-width: 300px;">
-			<img src="{{ im.url }}" alt="Card image cap">
+			<img src="{{ im.url }}" alt="Card image cap" data-ratio="1">
 		</div>
 		{% endthumbnail %}
 		{{ form }}

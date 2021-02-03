@@ -1,0 +1,26 @@
+
+{% extends 'dashboard/base.html' %}
+{% load my_tags %}
+{% load static %}
+{% load thumbnail %}
+
+{% block content_main %}
+
+<h2>{{title}}</h2>
+<div class="container-fluid p-1">
+	<div class="flex justify-content-center">
+		{% include 'dashboard/snippets/image_edit.html' with form=form %}
+	</div>
+</div>
+
+{% endblock %}
+
+{% block styles_extra %}
+		<link href=" {% static 'Jcrop/jcrop.css' %} " rel="stylesheet" />
+{% endblock %}
+
+{% block scripts_extra %}
+	<script src="{% static 'Jcrop/jcrop.js' %}"></script>
+	<script src="{% static 'js/dpedit.js' %}"></script>		
+{% endblock %}
+

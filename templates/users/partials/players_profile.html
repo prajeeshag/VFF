@@ -13,7 +13,10 @@
 					<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap">
 				</div>
 			{% endthumbnail %}
-			{% if object.user == user%}
+			{% if object.user == user %}
+				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
+			{% endif %}
+			{% if not object.user and user.is_club and object.get_club == user.get_club %}
 				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
 			{% endif %}
 		{% endwith %}
@@ -21,7 +24,15 @@
 	<h2>{{ title }}</h2>
 	<p> {{ subtitle }}</p>
 	<hr/>
-	<div class="row mx-3">
+	<div class="d-flex justify-content-end">
+		{% if object.user == user %}
+			<a class="btn btn-link" href="{% url 'dash:editplayer' object.pk %}">edit</a>
+		{% endif %}
+		{% if not object.user and user.is_club and object.get_club == user.get_club %}
+			<a class="btn btn-link" href="{% url 'dash:editplayer' object.pk %}">edit</a>
+		{% endif %}
+	</div>
+	<div class="row mx-3 mb-4">
 		{% include 'dashboard/text_field.html' with name='Age' value=object.get_age %}
 		{% include 'dashboard/text_field.html' with name='Phone' value=object.get_phone_number %}
 		{% include 'dashboard/text_field.html' with name='Email' value=object.email %}
@@ -38,6 +49,25 @@
 			<h5 >{{object.address}}</h5>
 		</div>
 	</div>
-</div>
+		{% if object.user == user or not object.user and user.is_club and object.get_club == user.get_club %}
+			{% for document in object.documents.documents.all %}
+				{% with document as dp %}
+				<div class="d-flex justify-content-center">
+					<h4>{{ dp.document_type }}</h4>
+				</div>
+				<div class="d-flex justify-content-center">
+					{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}
+						<div class="p-2 m-auto" style="max-width: 300px;">
+							<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap">
+						</div>
+					{% endthumbnail %}
+				</div>
+				<div class="d-flex justify-content-center">
+					<a href="{% url 'dash:documentedit' dp.pk %}" class="btn btn-link">edit</a>
+				</div>
+				{% endwith %}
+			{% endfor %}
+		{% endif %}
+	</div>
 </div>
 
