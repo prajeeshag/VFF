@@ -73,7 +73,7 @@ urlpatterns += [path('unsignedplayers/',
                      name='unsignedplayers'), ]
 
 
-class ClubList(LoginRequiredMixin, viewMixins, TemplateView):
+class ClubList(viewMixins, TemplateView):
     template_name = 'dashboard/club_list.html'
     login_url = reverse_lazy('login')
 
@@ -99,7 +99,7 @@ urlpatterns += [path('clubmemberslist/<int:pk>/',
                      name='clubmemberslist'), ]
 
 
-class ClubDetails(LoginRequiredMixin, viewMixins, DetailView):
+class ClubDetails(viewMixins, DetailView):
     template_name = 'users/club_details.html'
     login_url = reverse_lazy('login')
     model = models.ClubProfile
@@ -130,7 +130,7 @@ urlpatterns += [path('clubofficials/<int:pk>/',
                      name='clubofficialsprofile'), ]
 
 
-class PlayersProfile(LoginRequiredMixin, viewMixins, DetailView):
+class PlayersProfile(viewMixins, DetailView):
     template_name = 'users/players_profile.html'
     login_url = reverse_lazy('login')
     model = models.PlayerProfile

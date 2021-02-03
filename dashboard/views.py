@@ -75,7 +75,7 @@ class Home(LoginRequiredMixin, viewMixins, TemplateView):
 urlpatterns += [path('home/', Home.as_view(), name='home'), ]
 
 
-class Calendar(LoginRequiredMixin, viewMixins, TemplateView):
+class Calendar(viewMixins, TemplateView):
     template_name = 'dashboard/calendar.html'
     login_url = LOGIN_URL
 

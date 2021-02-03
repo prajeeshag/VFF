@@ -33,12 +33,12 @@
 		{% endif %}
 	</div>
 	<div class="row mx-3 mb-4">
-		{% include 'dashboard/text_field.html' with name='Age' value=object.get_age %}
 		{% include 'dashboard/text_field.html' with name='Phone' value=object.get_phone_number %}
 		{% include 'dashboard/text_field.html' with name='Email' value=object.email %}
 		{% if object.user == user %}
 			{% include 'dashboard/text_field.html' with name='Birthday' value=object.dob %}
 		{% endif %}
+		{% include 'dashboard/text_field.html' with name='Age' value=object.get_age %}
 		{% include 'dashboard/text_field.html' with name='Occupation' value=object.occupation %}
 		{% include 'dashboard/text_field.html' with name='Prefered foot' value=object.prefered_foot %}
 		{% include 'dashboard/text_field.html' with name='Favorite position' value=object.favorite_position %}

@@ -369,7 +369,7 @@ class Profile(models.Model):
         if self.dob is not None:
             today = datetime.date.today()
             dob = self.dob
-            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            return today.year - dob.year - ((1, 1) < (dob.month, dob.day))
         return None
 
     def get_phone_number(self):
