@@ -16,13 +16,12 @@ class League(models.Model):
 class Season(models.Model):
     league = models.ForeignKey(League, on_delete=models.PROTECT)
     name = models.CharField(_('Season'), max_length=32)
-
     cro_datetime = models.DateTimeField(
-        _('Club Registration Opening Date'), auto_now_add=True)
+        _('Club Registration Opening Date'), default=timezone.now)
     crc_datetime = models.DateTimeField(
-        _('Club Registration Closing Date'), auto_now_add=True)
+        _('Club Registration Closing Date'), default=timezone.now)
     twc_datetime = models.DateTimeField(
-        _('Transfer Window closing date'), auto_now_add=True)
+        _('Transfer Window closing date'), default=timezone.now)
 
     def is_transfer_window_open(self):
         now = timezone.now()

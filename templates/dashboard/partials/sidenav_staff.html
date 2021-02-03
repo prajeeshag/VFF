@@ -10,9 +10,15 @@
 	</a>
 	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#Matches" name="Matches" icon="soccer-field" %}
  	<div class="collapse" id="Matches" data-parent="#accordionSidenav">
- 	    <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
- 	        <a class="nav-link" href="{% url 'dash:fixmatches' %}">Fix matches</a>
- 	        <a class="nav-link" href="{% url 'dash:finalizematches' %}">Finalize matches</a>
- 	    </nav>
+ 	  <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+ 	    <a class="nav-link" href="{% url 'dash:fixmatches' %}">Fix matches</a>
+ 	    <a class="nav-link" href="{% url 'dash:finalizematches' %}">Finalize matches</a>
+ 	  </nav>
+ 	</div>
+	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#league" name="League" icon="soccer" %}
+ 	<div class="collapse" id="league" data-parent="#accordionSidenav">
+		<nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+			<a class="nav-link" href="{% url 'dash:season_edit' %}">VFL 2021</a>
+ 	  </nav>
  	</div>
 {% endif %}
