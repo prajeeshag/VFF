@@ -1,0 +1,14 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+
+{% block content_main %}
+<h2 class="p-3"> Home </h2>
+<hr/>
+	<div class="container-fluid">
+		{% include 'snippets/messages.html' %}
+	</div>
+{% endblock %}
+

@@ -538,6 +538,7 @@ class ClubSignings(models.Model):
 
     def accept(self):
         accepted_offers = self.player.clubsignings.filter(accepted=True)
+
         if accepted_offers:
             raise self.AcceptedOfferExist()
 

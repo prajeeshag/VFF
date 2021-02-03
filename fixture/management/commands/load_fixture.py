@@ -32,12 +32,18 @@ class Command(BaseCommand):
             fixture.matches.all().delete()
         num = 1
         tz = pytz.timezone("Asia/Calcutta")
+        # Delete all tentative matches
+        fdate = tz.localize(
+            datetime.datetime.strptime('08/02/2021', "%d/%m/%Y"))
+        Matches.objects.filter(date__gt=fdate).delete()
         for it in dat:
-            date = tz.localize(it['date'])
+            date = it['date']
+            if date < fdate:
+                continue
             away = Club.objects.get(pk=it['away'])
             home = Club.objects.get(pk=it['home'])
             ground = home.home_ground
-            obj, created = Matches.objects.update_or_create(
+            obj, created = Matches.objects.get_or_create(
                 num=num, home=home,
                 away=away, date=date,
                 ground=ground, fixture=fixture)

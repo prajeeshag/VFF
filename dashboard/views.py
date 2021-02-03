@@ -92,7 +92,6 @@ urlpatterns += [path('editemail/', UpdateEmail, name='editemail'), ]
 def EditPhoneNumber(request, pk):
     url = request.META.get('HTTP_REFERER', "/")
     form = forms.PhoneNumberForm(request.POST)
-    print(request.POST)
     profile = PlayerProfile.objects.get(pk=pk)
     if form.is_valid():
         number = form.cleaned_data.get('phone_number')
@@ -184,6 +183,7 @@ class Calendar(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.get_upcoming_matches()
+        ctx['done_matches'] = Matches.get_done_matches()
         return ctx
 
 

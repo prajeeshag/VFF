@@ -1,0 +1,55 @@
+
+<div class="mb-4">
+	<h4> Finalized matches </h4>
+	<hr class="mt-0"/>
+	<form method="POST">
+		{% include 'snippets/form_common.html' %}
+			<div class="flex-grow-1 overflow-auto mb-2" style="max-height: 50vh;">
+				{% for match in finalized_matches %}
+					<div class="d-flex"> 
+						<div class="m-auto form-group form-check">
+							<input type="checkbox" name="checksUnFix" value="{{ match.pk }}" id="id_{{ match.pk }}" />
+						</div>
+						<label for="id_{{ match.pk }}" class="p-1 flex-grow-1">
+							{% include 'fixture/partials/match_card.html' with match=match %}
+						</label>
+					</div>
+				{% empty %}
+					<div class="d-flex"> 
+						No matches
+					</div>
+				{% endfor %}
+			</div>
+			<div class="text-center">
+				<button type='submit' class='btn btn-primary' name="unfix">Un-Finalize selected matches</button>
+			</div>
+	</form>
+</div>
+
+<div class="mb-4">
+	<h4> Fixed matches </h4>
+	<hr class="mt-0"/>
+	<form method="POST">
+		{% include 'snippets/form_common.html' %}
+			<div class="flex-grow-1 overflow-auto mb-2" style="max-height: 50vh;">
+				{% for match in fixed_matches %}
+					<div class="d-flex"> 
+						<div class="m-auto form-group form-check">
+							<input type="checkbox" name="checksFix" value="{{ match.pk }}" id="id_{{ match.pk }}" />
+						</div>
+						<label for="id_{{ match.pk }}" class="p-1 flex-grow-1">
+							{% include 'fixture/partials/match_card.html' with match=match %}
+						</label>
+					</div>
+				{% empty %}
+					<div class="d-flex"> 
+						No matches
+					</div>
+				{% endfor %}
+			</div>
+			<div class="text-center">
+				<button type='submit' class='btn btn-primary' name="fix">Finalize selected matches</button>
+			</div>
+	</form>
+</div>
+

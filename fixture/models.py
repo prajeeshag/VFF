@@ -20,6 +20,16 @@ class Fixture(models.Model):
 
 
 class Matches(models.Model):
+    DONE = 'DONE'
+    FIXED = 'FIXED'
+    TENTATIVE = 'TENTATIVE'
+    CANCELED = 'CANCELED'
+
+    status_choices = (
+        (DONE, DONE),
+        (FIXED, FIXED),
+        (TENTATIVE, TENTATIVE),
+    )
     num = models.PositiveIntegerField(
         _('Match Number'), validators=[MinValueValidator(1), ],
         default=1)
@@ -32,6 +42,8 @@ class Matches(models.Model):
         Grounds, on_delete=models.PROTECT, null=True, related_name='matches')
     fixture = models.ForeignKey(
         Fixture, on_delete=models.PROTECT, null=True, related_name='matches')
+    status = models.CharField(
+        max_length=20, choices=status_choices, default=TENTATIVE)
 
     class Meta:
         unique_together = ['fixture', 'home', 'away', 'num']
@@ -46,10 +58,30 @@ class Matches(models.Model):
     def get_time(self):
         return self.date.strftime('%H:%M %p')
 
+    def is_tentative(self):
+        return self.status == self.TENTATIVE
+
+    @classmethod
+    def get_tentative_matches(cls):
+        return cls.objects.filter(status=cls.TENTATIVE)
+
+    @classmethod
+    def get_done_matches(cls):
+        return cls.objects.filter(status=cls.DONE)
+
+    @classmethod
+    def get_fixed_matches(cls):
+        return cls.objects.filter(status=cls.FIXED)
+
+    @classmethod
+    def get_past_matches(cls):
+        date = dt.datetime.now() + dt.timedelta(hours=1)
+        return cls.objects.filter(date__lte=date)
+
     @classmethod
     def get_upcoming_matches(cls):
         date = dt.datetime.now()
-        return cls.objects.all().filter(date__gte=date)
+        return cls.objects.filter(date__gte=date)
 
     @classmethod
     def get_matches_of_club(cls, club):

@@ -6,8 +6,8 @@
 
 {% block content_main %}
 
-<div class="container-md">
-	<div class="m-3">
+<div class="container-fluid p-1">
+	<div class="mb-4">
 		<form method="POST" action="" enctype="multipart/form-data">
 				{% if form.title %}
 				<h5> {{ form.title }} </h5>
@@ -43,14 +43,62 @@
 		<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js" crossorigin="anonymous"></script>
 		<script>
 		$(function () {
-		    $('#id_dob').daterangepicker(
+				$('#id_dob').daterangepicker(
+						{
+								singleDatePicker: true,
+								showDropdowns: true,
+								minYear: 1950,
+								maxYear: parseInt(moment().format("YYYY"), 10),
+								locale: {
+											format: 'YYYY-MM-DD'
+								}
+						}
+				);
+		});
+		</script>
+
+		<script>
+		$(function () {
+		    $('#id_cro_datetime').daterangepicker(
 		        {
 		            singleDatePicker: true,
 		            showDropdowns: true,
-		            minYear: 1950,
-		            maxYear: parseInt(moment().format("YYYY"), 10),
+								timePicker: true,
+								timePicker24Hour: true,
 								locale: {
-								      format: 'YYYY-MM-DD'
+								      format: 'YYYY-MM-DD HH:mm:ss'
+								}
+		        }
+		    );
+		});
+		</script>
+
+		<script>
+		$(function () {
+		    $('#id_crc_datetime').daterangepicker(
+		        {
+		            singleDatePicker: true,
+		            showDropdowns: true,
+								timePicker: true,
+								timePicker24Hour: true,
+								locale: {
+								      format: 'YYYY-MM-DD HH:mm:ss'
+								}
+		        }
+		    );
+		});
+		</script>
+
+		<script>
+		$(function () {
+		    $('#id_twc_datetime').daterangepicker(
+		        {
+		            singleDatePicker: true,
+		            showDropdowns: true,
+								timePicker: true,
+								timePicker24Hour: true,
+								locale: {
+								      format: 'YYYY-MM-DD HH:mm:ss'
 								}
 		        }
 		    );

@@ -14,6 +14,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth.decorators import user_passes_test
 
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth import get_user_model
@@ -27,7 +28,7 @@ from formtools.wizard.views import SessionWizardView
 
 from . import models
 from . import forms
-from django.contrib.auth.decorators import user_passes_test
+from league.models import Season
 
 urlpatterns = []
 
@@ -60,6 +61,7 @@ class FreePlayersList(LoginRequiredMixin, TemplateView):
                 free_players.append(player)
         ctx['free_players'] = free_players
         user = self.request.user
+        ctx['send_offer'] = True
         if hasattr(user, 'clubprofile'):
             ctx['myoffers'] = user.clubprofile.get_invited_players()
             ctx['myplayers'] = user.clubprofile.get_players()
@@ -195,6 +197,12 @@ class abbrUpdateView(LoginRequiredMixin, RedirectToPreviousMixin, UpdateView):
 def CreateClubSigninOffer(request, pk):
 
     url = request.META.get('HTTP_REFERER', "/")
+
+    if not Season.objects.first().is_transfer_window_open():
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot not send signin offer, Transfer window is closed")
+        return HttpResponseRedirect(url)
 
     try:
         player = models.PlayerProfile.objects.get(pk=pk)
@@ -336,6 +344,12 @@ urlpatterns += [path('dpedit/', dpEditView.as_view(), name='dpedit'), ]
 @ login_required
 def AcceptClubSigninOffer(request, pk):
     url = request.META.get('HTTP_REFERER', "/")
+
+    if not Season.objects.first().is_transfer_window_open():
+        messages.add_message(
+            request, messages.WARNING,
+            "Cannot not accept signin offer, Transfer window is closed")
+        return HttpResponseRedirect(url)
 
     try:
         signin = models.ClubSignings.objects.get(pk=pk)
