@@ -23,7 +23,7 @@ class Squad(models.Model):
     kind = models.CharField(
         max_length=10, choices=kind_choices, default=PARENT)
     match = models.ForeignKey(
-        Matches, on_delete=models.PROTECT, null=True, related_name=squad)
+        Matches, on_delete=models.PROTECT, null=True, related_name='squad')
     club = models.ForeignKey(ClubProfile, on_delete=models.PROTECT, null=True)
     players = models.ManyToManyField(PlayerProfile, related_name='squads')
     parent = models.ForeignKey(
@@ -165,7 +165,7 @@ class Suspension(models.Model):
     OTHER = 'Other'
     reason_choices = (
         (YELLOWCARDS, YELLOWCARDS),
-        (REDCARDS, REDCARDS),
+        (REDCARD, REDCARD),
         (OTHER, OTHER),
     )
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)
@@ -224,7 +224,7 @@ class Cards(models.Model):
     color = models.CharField(max_length=10, choices=color_choice)
     match = models.ForeignKey(Matches, on_delete=models.PROTECT)
     player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)
-    time = models.DateTimeField(default=timezone.now())
+    time = models.DateTimeField(default=timezone.now)
 
     class Meta:
         unique_together = ['player', 'match', 'color']
@@ -334,7 +334,7 @@ class MatchTimeLine(models.Model):
 class Events(models.Model):
     matchtimeline = models.ForeignKey(MatchTimeLine, on_delete=models.PROTECT)
     message = models.CharField(max_length=200)
-    time = models.DateTimeField(default=timezone.now())
+    time = models.DateTimeField(default=timezone.now)
     url = models.CharField(max_length=200, null=True)
 
 
