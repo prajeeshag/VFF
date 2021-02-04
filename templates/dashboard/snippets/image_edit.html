@@ -1,0 +1,28 @@
+{% load thumbnail %}
+{% load i18n %}
+
+<div class="dpedit text-center">
+	<form method="post" id="id_form" class="d-inline-block">
+		{% include 'snippets/form_common.html' with form=form %}
+		{% thumbnail form.instance.image "400x400" upscale=False as im %}
+		<div class="p-2 m-auto" style="max-width: 400px;">
+			<img src="{{ im.url }}" alt="Card image cap">
+		</div>
+		{% endthumbnail %}
+		{{ form }}
+	</form>
+	<div class="col-12 text-center">
+		<button onclick="document.getElementById('id_form').submit()" data-toggle="tooltip" data-placement="top" title="" data-original-title="Upload" class="btn btn-primary"> 
+			Done
+		</button>
+		{% if upload_url %}
+		<form class="d-inline" method="post" action={{ upload_url }} enctype="multipart/form-data">
+				{% csrf_token %}
+				<label class="btn btn-outline-primary mb-0">
+					{% translate 'Upload New' %}
+					<input type="file" name="image" style="position:fixed;bottom:100%;right:100%;">
+				</label>
+			</form>
+		{% endif %}
+	</div>
+</div>

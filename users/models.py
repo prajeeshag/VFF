@@ -251,7 +251,6 @@ class AbstractImage(models.Model):
             x1, y1 = int((w-wh)*0.5), 0
             x2, y2 = int(x1+wh), int(y1+wh)
             return '{},{},{},{}'.format(x1, y1, x2, y2)
-
         return '{},{},{},{}'.format(self.x1, self.y1, self.x2, self.y2)
 
     def get_cropbox_frac(self):
@@ -370,7 +369,7 @@ class Profile(models.Model):
         if self.dob is not None:
             today = datetime.date.today()
             dob = self.dob
-            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            return today.year - dob.year - ((1, 1) < (dob.month, dob.day))
         return None
 
     def get_phone_number(self):
@@ -536,6 +535,15 @@ class ClubSignings(models.Model):
     class AcceptedOfferExist(Exception):
         pass
 
+    @classmethod
+    def get_all_accepted(cls, club=None):
+        if not club:
+            return cls.objects.filter(accepted=True).prefetch_related('player', 'club')
+        else:
+            return (cls.objects.filter(club=club)
+                    .filter(accepted=True)
+                    .prefetch_related('player', 'club'))
+
     def accept(self):
         accepted_offers = self.player.clubsignings.filter(accepted=True)
 
@@ -562,3 +570,4 @@ class ClubSignings(models.Model):
         playercount.increment(-1)
         self.accepted = False
         self.save()
+

@@ -2,8 +2,8 @@
 {% load thumbnail %}
 
 <div class="mb-2">
-	<div class="d-flex p-0 text-light rounded" style="background-image:linear-gradient(darkgray,darkslategray)">
-		<div class="p-1">
+	<div class="d-flex p-0 text-light rounded" style="background-image:linear-gradient(to right,darkgray,black); height: 150px;">
+		<div class="p-1 my-auto">
 			<a href={{ player.get_absolute_url }}>
 				{% with player.profilepicture as dp %}
 					{% thumbnail dp.image "120x120" upscale=False cropbox=dp.cropbox as im %}
@@ -19,7 +19,12 @@
 					<p><i class="mdi mdi-phone"></i> {{ player.get_phone_number }}</p>
 				{% endif %}
 				<p>{{ player.favorite_position }}</p>
-				<p>Age: {{ player.get_age }}</p>
+				{% if user.is_authenticated %}
+					<p>Age: {{ player.get_age }}</p>
+				{% endif %}
+				{% if club %}
+					<p>Playing for: <a class="text-white" href="{{ club.get_absolute_url }}">{{ club.abbr|upper }}</a></p>
+				{% endif %}
 			</a>
 		</div>
 	</div>
@@ -46,49 +51,3 @@
 	{% endif %}
 </div>
 
-{% comment %}<div class="card w-auto ">{% endcomment %}
-  {% comment %}{% if user.is_superuser %}	{% endcomment %}
-		{% comment %}<div class="card-header">{% endcomment %}
-			{% comment %}{% if player.user %}{% endcomment %}
-				{% comment %}<form action="/hijack/{{ player.user.id }}/" method="post">{% endcomment %}
-					{% comment %}{% csrf_token %}{% endcomment %}
-					{% comment %}<button type="submit" class="dropdown-item text-danger">Hijack</button>{% endcomment %}
-				{% comment %}</form>{% endcomment %}
-			{% comment %}{% endif %}{% endcomment %}
-		{% comment %}</div>{% endcomment %}
-	{% comment %}{% endif %}{% endcomment %}
-	{% comment %}<a class="card-image" href={{ player.get_absolute_url }}>{% endcomment %}
-	{% comment %}{% with player.profilepicture as dp %}{% endcomment %}
-		{% comment %}{% thumbnail dp.image "300x300" upscale=False cropbox=dp.cropbox as im %}{% endcomment %}
-			{% comment %}<div class="p-2 m-auto text-center" style="max-width: 300px;">{% endcomment %}
-				{% comment %}<img class="card-img-top" src="{{ im.url }}" alt="Card image cap">{% endcomment %}
-			{% comment %}</div>{% endcomment %}
-		{% comment %}{% endthumbnail %}{% endcomment %}
-	{% comment %}{% endwith %}{% endcomment %}
-	{% comment %}</a>{% endcomment %}
-	{% comment %}<hr/>{% endcomment %}
-	{% comment %}<a class="card-body text-center" href={{ player.get_absolute_url }}>{% endcomment %}
-		{% comment %}<p class="card-title h5">{{ player }}</p>{% endcomment %}
-		{% comment %}<p class="card-text font-weight-bolder"><i data-feather="phone"></i> {{ player.get_phone_number }}</p>{% endcomment %}
-		{% comment %}<p class="card-text">{{ player.favorite_position }}</p>{% endcomment %}
-	{% comment %}</a>{% endcomment %}
-
-		{% comment %}{% if user.is_club %}{% endcomment %}
-			{% comment %}{% if not player in myplayers %}{% endcomment %}
-			{% comment %}<div class="card-footer text-center">{% endcomment %}
-					{% comment %}{% if player in myoffers %}{% endcomment %}
-						{% comment %}<form method="POST" action="{% url 'users:cancelsigninoffer' player.pk %}">{% endcomment %}
-								{% comment %}{% csrf_token %}{% endcomment %}
-								{% comment %}<input class="btn btn-sm btn-warning" type="submit" value="Cancel offer">{% endcomment %}
-						{% comment %}</form>{% endcomment %}
-					{% comment %}{% else %}{% endcomment %}
-						{% comment %}<form method="POST" action="{% url 'users:signinoffer' player.pk %}">{% endcomment %}
-								{% comment %}{% csrf_token %}{% endcomment %}
-								{% comment %}<input class="btn btn-sm btn-primary" type="submit" value="Send offer">{% endcomment %}
-						{% comment %}</form>{% endcomment %}
-					{% comment %}{% endif %}{% endcomment %}
-			{% comment %}</div>{% endcomment %}
-			{% comment %}{% endif %}{% endcomment %}
-		{% comment %}{% endif %}{% endcomment %}
-
-{% comment %}</div>{% endcomment %}

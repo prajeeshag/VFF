@@ -3,12 +3,13 @@
 {% load my_tags %}
 
 {% block content_main %}
+<h3 class="rounded p-4 mt-1 bg-dark text-center">Players ({{ signings|length }})</h3>
 <div class="container-fluid p-1">
 	<div class="row">
-		{% for club in clubs %}
-		<div class="col-12 col-md-6 col-lg-4">
-			{% include 'users/partials/club_card.html' with club=club %}
-		</div>
+		{% for signing in signings %}
+			<div class="col-md-4 mb-3">
+				{% include 'users/partials/players_card.html' with player=signing.player club=signing.club %}	
+			</div>
 		{% endfor %}
 	</div>
 </div>
