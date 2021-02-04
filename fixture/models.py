@@ -1,5 +1,6 @@
 import datetime as dt
 
+from django.utils import timezone
 from django.db import models
 from django.db.models import Q
 from django.core.validators import MinValueValidator
@@ -75,12 +76,12 @@ class Matches(models.Model):
 
     @classmethod
     def get_past_matches(cls):
-        date = dt.datetime.now() + dt.timedelta(hours=1)
-        return cls.objects.filter(date__lte=date)
+        date = timezone.now()
+        return cls.objects.filter(date__lt=date)
 
     @classmethod
     def get_upcoming_matches(cls):
-        date = dt.datetime.now()
+        date = timezone.now()
         return cls.objects.filter(date__gte=date)
 
     @classmethod
@@ -92,11 +93,36 @@ class Matches(models.Model):
         return cls.objects.filter(Q(home=club))
 
     @classmethod
-    def get_upcoming_matches_of_club(cls, club):
-        date = dt.datetime.now()
-        return cls.objects.filter(Q(home=club) | Q(away=club)).filter(date__gte=date)
+    def get_past_matches_of_club(cls, club):
+        date = timezone.now()
+        return cls.get_matches_of_club(club).filter(date__lt=date)
 
     @classmethod
+    def get_upcoming_matches_of_club(cls, club):
+        date = timezone.now()
+        return cls.get_matches_of_club(club).filter(date__gte=date)
+
+    @classmethod
+    def get_next_match_of_club(cls, club):
+        return self.get_upcoming_matches_of_club(club).first()
+
+    @classmethod
+    def get_prev_match_of_club(cls, club):
+        return self.get_past_matches_of_club(club).last()
+
+    @ classmethod
     def get_upcoming_home_matches_of_club(cls, club):
-        date = dt.datetime.now()
-        return cls.objects.filter(Q(home=club)).filter(date__gte=date)
+        date = timezone.now()
+        return cls.get_home_matches_of_club(club).filter(date__gte=date)
+
+    def is_done(self):
+        return self.status == self.DONE
+
+    @classmethod
+    def get_current_next_match_of_club(cls, club):
+        """ Get next including ongoing match """
+        prev_match = cls.get_prev_match_of_club(club)
+        if prev_match.is_done():
+            return cls.get_next_match_of_club(club)
+        else:
+            return prev_match
