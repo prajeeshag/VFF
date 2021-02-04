@@ -1,0 +1,46 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+
+{% block content_main %}
+	<h3 class=" mt-2 text-center">Add First Team</h3>
+	<hr/>
+	<div class="container-fluid p-1">
+		{% include 'snippets/messages.html' %}
+
+		<div class="mb-4">
+			<h4> First Team </h4>
+			<hr class="mt-0"/>
+			<div class="row overflow-auto mb-2" style="max-height: 40vh;">
+				{% for player in first_team_players %}
+					{% include 'users/partials/players_card.html' with player=player %}
+					<form method="POST">
+						{% include 'snippets/form_common.html' %}
+						<input type="hidden" name="action" value="rm" />
+						<input type="hidden" name="pk" value="{{ player.pk }}" />
+						<button type="submit" class="btn btn-icon btn-success">rm</button>
+					</form>
+				{% endfor %}
+			</div>
+		</div>
+
+		<div class="mb-4">
+			<h4> Available Players </h4>
+			<hr class="mt-0"/>
+			<div class="row overflow-auto mb-2" style="max-height: 40vh;">
+				{% for player in available_players %}
+					{% include 'users/partials/players_card.html' with player=player %}
+					<form method="POST">
+						{% include 'snippets/form_common.html' %}
+						<input type="hidden" name="action" value="add" />
+						<input type="hidden" name="pk" value="{{ player.pk }}" />
+						<button type="submit" class="btn btn-icon btn-success">add</button>
+					</form>
+				{% endfor %}
+			</div>
+		</div>
+	</div>
+{% endblock %}
+

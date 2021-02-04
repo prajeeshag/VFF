@@ -10,8 +10,8 @@ class MatchDoesNotExist(Exception):
 
 
 @receiver(post_save, sender=models.Squad)
-def create_timeline_event(sender, instance, created, **kwargs):
-    if instance.released:
+def create_timeline_event_squad(sender, instance, created, **kwargs):
+    if instance.timeline:
         match = instance.match
         if not match:
             raise MatchDoesNotExist
@@ -20,18 +20,42 @@ def create_timeline_event(sender, instance, created, **kwargs):
         models.Events.objects.create(
             matchtimeline=timeline,
             message=instance.timeline_message(),
-            url=instance.timeline_url()
+            url=instance.timeline_url(),
             time=instance.timeline_time()
         )
 
 
-@ receiver(post_save, sender=models.PlayerProfile)
-def set_player_permission(sender, instance, created, **kwargs):
-    user = instance.user
-    club = instance.club
-    if user:
-        assign_perm('edit', user, instance)
-        if club:
-            remove_perm('edit', club.user, instance)
-    elif club:
-        assign_perm('edit', club.user, instance)
+@receiver(post_save, sender=models.Substitution)
+def create_timeline_event_Substitution(sender, instance, created, **kwargs):
+    if created:
+        match = instance.squad.match
+        if not match:
+            raise MatchDoesNotExist
+
+        timeline, created = models.MatchTimeLine.objects.get_or_create(
+            match=match)
+
+        models.Events.objects.create(
+            matchtimeline=timeline,
+            message=instance.timeline_message(),
+            url=instance.timeline_url(),
+            time=instance.timeline_time()
+        )
+
+
+@receiver(post_save, sender=models.Cards)
+def create_timeline_event_Cards(sender, instance, created, **kwargs):
+    if created:
+        match = instance.match
+        if not match:
+            raise MatchDoesNotExist
+
+        timeline, created = models.MatchTimeLine.objects.get_or_create(
+            match=match)
+
+        models.Events.objects.create(
+            matchtimeline=timeline,
+            message=instance.timeline_message(),
+            url=instance.timeline_url(),
+            time=instance.timeline_time()
+        )

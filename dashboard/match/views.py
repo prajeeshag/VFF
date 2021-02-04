@@ -1,11 +1,11 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
-
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
+from django.views import View
 
 from django.urls import reverse_lazy, reverse, path, include
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -35,6 +35,7 @@ from formtools.wizard.views import SessionWizardView
 from fixture.models import Matches
 from league.models import Season
 from match.models import Squad
+from users.models import PlayerProfile
 
 LOGIN_URL = reverse_lazy('login')
 
@@ -44,7 +45,7 @@ urlpatterns = []
 class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
     template_name = 'dashboard/match/add_first_team.html'
 
-    def dispatch(self, request, *arg, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         user = request.user
         if not user.is_club():
             raise PermissionDenied
@@ -66,27 +67,41 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *arg, **kwargs):
-        ctx = self.get_context_data(self, **kwargs)
-        ctx['first_team_players'] = self.squad.get_first_team_player()
+        ctx = self.get_context_data(**kwargs)
+        ctx['first_team_players'] = self.squad.get_first_players()
         ctx['available_players'] = self.squad.get_available_players()
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        obj_pks_fix = request.POST.getlist('checksFix')
-        obj_pks_unfix = request.POST.getlist('checksUnFix')
-        if obj_pks_fix:
-            Matches.objects.filter(pk__in=obj_pks_fix).update(
-                status=Matches.FIXED)
-        if obj_pks_unfix:
-            Matches.objects.filter(pk__in=obj_pks_unfix).update(
-                status=Matches.TENTATIVE)
+        action = request.POST.get('action')
+        pk = request.POST.get('pk')
+        player = get_object_or_404(PlayerProfile, pk=pk)
+        if player.get_club() != self.club:
+            return HttpResponseNotFound('<h1>Player not from your club</h1>')
 
-        ctx = self.get_context_data(self, **kwargs)
-        ctx['first_team_players'] = self.squad.get_first_team_player()
+        if action == 'add':
+            try:
+                self.squad.add_player_to_first(player)
+            except self.squad.LimitReached:
+                messages.add_message(
+                    request, messages.WARNING,
+                    "Reached Limit")
+            except self.squad.GotSuspension:
+                messages.add_message(
+                    request, messages.WARNING,
+                    "Cannot add this player, Player Got Suspension")
+
+        elif action == 'rm':
+            self.squad.remove_player_from_first(player)
+        else:
+            return HttpResponseNotFound('<h1>Unknown action</h1>')
+
+        ctx = self.get_context_data(**kwargs)
+        ctx['first_team_players'] = self.squad.get_first_players()
         ctx['available_players'] = self.squad.get_available_players()
         return render(request, self.template_name, ctx)
 
 
-urlpatterns += [path('fixmatches/',
-                     fixMatches.as_view(),
-                     name='fixmatches'), ]
+urlpatterns += [path('addfirstteam/',
+                     AddFirstTeam.as_view(),
+                     name='addfirstteam'), ]

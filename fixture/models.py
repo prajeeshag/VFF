@@ -104,11 +104,11 @@ class Matches(models.Model):
 
     @classmethod
     def get_next_match_of_club(cls, club):
-        return self.get_upcoming_matches_of_club(club).first()
+        return cls.get_upcoming_matches_of_club(club).first()
 
     @classmethod
     def get_prev_match_of_club(cls, club):
-        return self.get_past_matches_of_club(club).last()
+        return cls.get_past_matches_of_club(club).last()
 
     @ classmethod
     def get_upcoming_home_matches_of_club(cls, club):

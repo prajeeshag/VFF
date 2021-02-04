@@ -1,0 +1,33 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+
+{% block content_main %}
+	<div class="container-fluid p-1 mt-3">
+		<h3 class="text-center"> {{ object.club.abbr|upper }} Lineup </h3>
+		<hr/>
+		{% with players=object.get_first_players %}
+		<h5> First {{ players|length }} </h5>
+		<div class="row mb-4">
+			{% for player in players %}
+				<div class="col-md-4 mb-3">
+					{% include "users/partials/players_card.html" with player=official %}
+				</div>
+			{% endfor %}
+		</div>
+		{% endwith %}
+		{% with players=object.get_bench_players %}
+		<h5> Sub </h5>
+		<div class="row mb-4">
+			{% for player in players %}
+				<div class="col-md-4 mb-3">
+					{% include "users/partials/players_card.html" with player=official %}
+				</div>
+			{% endfor %}
+		</div>
+		{% endwith %}
+	</div>
+{% endblock %}
+

@@ -7,6 +7,10 @@ from users.models import PlayerProfile, ClubProfile
 from fixture.models import Matches
 
 
+NFIRST = 7
+NSUB = 8
+
+
 class Squad(models.Model):
     PARENT = 'PARENT'
     FIRST = 'FIRST'
@@ -32,7 +36,8 @@ class Squad(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    released = models.BooleanField(default=False)
+    release = models.BooleanField(default=False)
+    timeline = models.BooleanField(editable=False, default=False)
 
     class Meta:
         unique_together = ['club', 'match']
@@ -40,9 +45,20 @@ class Squad(models.Model):
     class MatchAndClubMismatch(Exception):
         pass
 
+    class LimitReached(Exception):
+        pass
+
+    class GotSuspension(Exception):
+        pass
+
     @ classmethod
-    def _create_parent(cls):
-        return cls.objects.create(kind=cls.PARENT)
+    def _create_parent(cls, created_by, club, match):
+        return cls.objects.create(
+            kind=cls.PARENT,
+            created_by=created_by,
+            club=club,
+            match=match
+        )
 
     @ classmethod
     def _create_onbench(cls, parent):
@@ -70,7 +86,7 @@ class Squad(models.Model):
         return parent
 
     @ classmethod
-    def get_squad(match, club):
+    def get_squad(cls, match, club):
         return cls.objects.get(match=match, club=club)
 
     def get_first_squad(self):
@@ -85,30 +101,6 @@ class Squad(models.Model):
     def get_playing_squad(self):
         return self.items.filter(kind=self.PLAYING).first()
 
-    def add_player_to_first(self, player):
-        self.get_first_squad().players.add(player)
-
-    def add_player_to_playing(self, player):
-        self.get_playing_squad().players.add(player)
-
-    def add_player_to_onbench(self, player):
-        self.get_onbench_squad().players.add(player)
-
-    def add_player_to_bench(self, player):
-        self.get_bench_squad().players.add(player)
-
-    def remove_player_to_first(self, player):
-        self.get_first_squad().players.remove(player)
-
-    def remove_player_to_playing(self, player):
-        self.get_playing_squad().players.remove(player)
-
-    def remove_player_to_onbench(self, player):
-        self.get_onbench_squad().players.remove(player)
-
-    def remove_player_to_bench(self, player):
-        self.get_bench_squad().players.remove(player)
-
     def get_first_players(self):
         return self.get_first_squad().players.all()
 
@@ -121,6 +113,44 @@ class Squad(models.Model):
     def get_playing_players(self):
         return self.get_playing_squad().players.all()
 
+    def add_player_to_playing(self, player):
+        if self.get_playing_players().count() >= NFIRST:
+            raise self.LimitReached
+        self.get_playing_squad().players.add(player)
+
+    def add_player_to_onbench(self, player):
+        self.get_onbench_squad().players.add(player)
+
+    def add_player_to_first(self, player):
+        if self.get_first_players().count() >= NFIRST:
+            raise self.LimitReached
+        if Suspension.has_suspension(player):
+            raise self.GotSuspension
+        self.get_first_squad().players.add(player)
+        self.get_playing_squad().players.add(player)
+
+    def add_player_to_bench(self, player):
+        if self.get_bench_players().count() >= NSUB:
+            raise self.LimitReached
+        if Suspension.has_suspension(player):
+            raise self.GotSuspension
+        self.get_bench_squad().players.add(player)
+        self.get_onbench_squad().players.add(player)
+
+    def remove_player_from_playing(self, player):
+        self.get_playing_squad().players.remove(player)
+
+    def remove_player_from_onbench(self, player):
+        self.get_onbench_squad().players.remove(player)
+
+    def remove_player_from_first(self, player):
+        self.get_first_squad().players.remove(player)
+        self.get_playing_squad().players.add(player)
+
+    def remove_player_from_bench(self, player):
+        self.get_bench_squad().players.remove(player)
+        self.get_onbench_squad().players.add(player)
+
     def get_available_players(self):
         first = self.get_first_players()
         bench = self.get_bench_players()
@@ -129,11 +159,18 @@ class Squad(models.Model):
             all_player.remove(player)
         for player in bench:
             all_player.remove(player)
-        # suspensions
+
+        players = all_player.copy()
+
+        for player in players:
+            if Suspension.has_suspension(player):
+                all_player.remove(player)
+
         return all_player
 
-    def release(self):
+    def finalize(self):
         self.release = True
+        self.timeline = True
         self.save()
 
     def substitute(self, playerin, playerout, user):
@@ -251,7 +288,7 @@ class Cards(models.Model):
         red = cls.objects.filter(
             match=match, player=player, color=cls.RED).first()
         if red:
-            raise GotRedAlready
+            raise cls.GotRedAlready
 
         yellow1 = cls.objects.filter(
             match=match, player=player, color=cls.YELLOW).first()
@@ -267,7 +304,9 @@ class Cards(models.Model):
         return self.time
 
     def timeline_message(self):
-        return "{} card for {}".format(self.color, self.player)
+        abbr = self.player.get_club().abbr
+        abbr = abbr.upper()
+        return "{} card for {} player {}".format(self.color, abbr, self.player)
 
 
 class MatchTimeLine(models.Model):
@@ -288,25 +327,40 @@ class MatchTimeLine(models.Model):
 
     def start_first_half(self):
         if self.first_half_start:
-            raise AlreadyStartedError
+            raise MatchTimeLine.AlreadyStartedError
         self.first_half_start = timezone.now()
         self.save()
+        Events.objects.create(
+            time=timezone.now(),
+            matchtimeline=self,
+            message='Match started'
+        )
 
     def start_second_half(self):
         if self.second_half_start:
-            raise AlreadyStartedError
+            raise MatchTimeLine.AlreadyStartedError
         self.second_half_start = timezone.now()
         self.save()
+        Events.objects.create(
+            time=timezone.now(),
+            matchtimeline=self,
+            message='Second half started'
+        )
 
     def end_first_half(self):
         if self.first_half_end:
-            raise AlreadyEndedError
+            raise MatchTimeLine.AlreadyEndedError
         self.first_half_end = timezone.now()
         self.save()
+        Events.objects.create(
+            time=timezone.now(),
+            matchtimeline=self,
+            message='End of first half'
+        )
 
     def finalize_match(self):
         if self.second_half_end:
-            raise AlreadyEndedError
+            raise MatchTimeLine.AlreadyEndedError
 
         with transaction.atomic():
             # Release one suspension(if any) for all players
@@ -329,6 +383,12 @@ class MatchTimeLine(models.Model):
 
             self.second_half_end = timezone.now()
             self.save()
+
+            Events.objects.create(
+                time=timezone.now(),
+                matchtimeline=self,
+                message='Final whistle...'
+            )
 
 
 class Events(models.Model):

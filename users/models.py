@@ -570,4 +570,3 @@ class ClubSignings(models.Model):
         playercount.increment(-1)
         self.accepted = False
         self.save()
-
