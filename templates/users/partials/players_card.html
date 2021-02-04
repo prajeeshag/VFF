@@ -2,8 +2,8 @@
 {% load thumbnail %}
 
 <div class="mb-2">
-	<div class="d-flex p-0 text-light rounded" style="background-image:linear-gradient(to right,darkgray,darkslategray)">
-		<div class="p-1">
+	<div class="d-flex p-0 text-light rounded" style="background-image:linear-gradient(to right,darkgray,black); height: 150px;">
+		<div class="p-1 my-auto">
 			<a href={{ player.get_absolute_url }}>
 				{% with player.profilepicture as dp %}
 					{% thumbnail dp.image "120x120" upscale=False cropbox=dp.cropbox as im %}
@@ -23,7 +23,7 @@
 					<p>Age: {{ player.get_age }}</p>
 				{% endif %}
 				{% if club %}
-					<p>Playing for: <a href="{{ club.get_absolute_url }}">{{ club.abbr }}</a></p>
+					<p>Playing for: <a class="text-white" href="{{ club.get_absolute_url }}">{{ club.abbr|upper }}</a></p>
 				{% endif %}
 			</a>
 		</div>
