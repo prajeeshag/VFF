@@ -2,7 +2,7 @@
 {% load thumbnail %}
 
 <div class="mb-2">
-	<div class="d-flex p-0 text-light rounded" style="background-image:linear-gradient(darkgray,darkslategray)">
+	<div class="d-flex p-0 text-light rounded" style="background-image:linear-gradient(to right,darkgray,darkslategray)">
 		<div class="p-1">
 			<a href={{ player.get_absolute_url }}>
 				{% with player.profilepicture as dp %}
@@ -21,6 +21,9 @@
 				<p>{{ player.favorite_position }}</p>
 				{% if user.is_authenticated %}
 					<p>Age: {{ player.get_age }}</p>
+				{% endif %}
+				{% if club %}
+					<p>Playing for: <a href="{{ club.get_absolute_url }}">{{ club.abbr }}</a></p>
 				{% endif %}
 			</a>
 		</div>

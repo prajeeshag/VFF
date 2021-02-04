@@ -73,6 +73,21 @@ urlpatterns += [path('unsignedplayers/',
                      name='unsignedplayers'), ]
 
 
+class AllPlayers(viewMixins, TemplateView):
+    template_name = 'users/all_players.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['show_which_club'] = True
+        ctx['signings'] = models.ClubSignings.get_all_accepted()
+        return ctx
+
+
+urlpatterns += [path('allplayers/',
+                     AllPlayers.as_view(),
+                     name='allplayers'), ]
+
+
 class ClubList(viewMixins, TemplateView):
     template_name = 'dashboard/club_list.html'
     login_url = reverse_lazy('login')

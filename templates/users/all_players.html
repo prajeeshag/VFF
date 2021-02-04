@@ -1,0 +1,20 @@
+
+{% extends 'dashboard/base.html' %}
+{% load my_tags %}
+
+{% block content_main %}
+<h3 class="rounded p-4 mt-1 bg-dark text-center">Players</h3>
+<div class="container-fluid p-1">
+	<div class="d-flex justify-content-center flex-wrap">
+		{% for signing in signings %}
+			{% include 'users/partials/players_card.html' with player=signing.player club=signing.club %}	
+		{% endfor %}
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+	<script type="text/javascript">
+		$(window).on('load', function() { $('#id_abbr_modal').modal('show'); });
+	</script>
+{% endblock %}

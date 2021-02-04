@@ -535,6 +535,15 @@ class ClubSignings(models.Model):
     class AcceptedOfferExist(Exception):
         pass
 
+    @classmethod
+    def get_all_accepted(cls, club=None):
+        if not club:
+            return cls.objects.filter(accepted=True).prefetch_related('player', 'club')
+        else:
+            return (cls.objects.filter(club=club)
+                    .filter(accepted=True)
+                    .prefetch_related('player', 'club'))
+
     def accept(self):
         accepted_offers = self.player.clubsignings.filter(accepted=True)
 
@@ -561,3 +570,4 @@ class ClubSignings(models.Model):
         playercount.increment(-1)
         self.accepted = False
         self.save()
+
