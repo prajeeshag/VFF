@@ -1,0 +1,21 @@
+
+{% load thumbnail %}
+
+	<div class="d-flex p-0 text-light rounded" style="background-color: black; height: 70px; width: 300px;">
+		<div class="p-1 my-auto">
+			<a href={{ player.get_absolute_url }}>
+				{% with player.profilepicture as dp %}
+					{% thumbnail dp.image "120x120" upscale=False cropbox=dp.cropbox as im %}
+						<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap" height="60" width="60">
+					{% endthumbnail %}
+				{% endwith %}
+			</a>
+		</div>
+		<div class="flex-grow-1">
+			<div class="w-100 text-center">{{ player }}</div>
+			{% if user.is_authenticated %}
+			<div class="w-100 text-center">Age: {{ player.get_age }}</div>
+			{% endif %}
+		</div>
+	</div>
+

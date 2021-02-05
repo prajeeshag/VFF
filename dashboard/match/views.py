@@ -49,9 +49,9 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         user = request.user
         if not user.is_club():
             raise PermissionDenied
+
         club = user.get_club()
         match = Matches.get_current_next_match_of_club(club)
-
         if not match:
             return HttpResponseNotFound('<h1>No next match found</h1>')
 
@@ -60,16 +60,22 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         except Squad.DoesNotExist:
             squad = Squad.create(match, club, user)
 
+        if squad.lock:
+            messages.add_message(
+                request, messages.INFO,
+                "You have already finalized the squad")
+            return redirect(squad)
+
         self.squad = squad
         self.user = user
         self.club = club
         self.match = match
+
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *arg, **kwargs):
         ctx = self.get_context_data(**kwargs)
-        ctx['first_team_players'] = self.squad.get_first_players()
-        ctx['available_players'] = self.squad.get_available_players()
+        ctx['squad'] = self.squad
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
@@ -97,11 +103,63 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
             return HttpResponseNotFound('<h1>Unknown action</h1>')
 
         ctx = self.get_context_data(**kwargs)
-        ctx['first_team_players'] = self.squad.get_first_players()
-        ctx['available_players'] = self.squad.get_available_players()
+        ctx['squad'] = self.squad
         return render(request, self.template_name, ctx)
 
 
 urlpatterns += [path('addfirstteam/',
                      AddFirstTeam.as_view(),
                      name='addfirstteam'), ]
+
+
+class AddSubTeam(AddFirstTeam):
+    template_name = 'dashboard/match/add_sub_team.html'
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+        pk = request.POST.get('pk')
+        player = get_object_or_404(PlayerProfile, pk=pk)
+        if player.get_club() != self.club:
+            return HttpResponseNotFound('<h1>Player not from your club</h1>')
+
+        if action == 'add':
+            try:
+                self.squad.add_player_to_bench(player)
+            except self.squad.LimitReached:
+                messages.add_message(
+                    request, messages.WARNING,
+                    "Reached Limit")
+            except self.squad.GotSuspension:
+                messages.add_message(
+                    request, messages.WARNING,
+                    "Cannot add this player, Player Got Suspension")
+
+        elif action == 'rm':
+            self.squad.remove_player_from_bench(player)
+        else:
+            return HttpResponseNotFound('<h1>Unknown action</h1>')
+
+        ctx = self.get_context_data(**kwargs)
+        ctx['squad'] = self.squad
+        return render(request, self.template_name, ctx)
+
+
+urlpatterns += [path('addsubteam/',
+                     AddSubTeam.as_view(),
+                     name='addsubteam'), ]
+
+
+class FinalizeSquad(AddFirstTeam):
+    template_name = 'dashboard/match/finalize_squad.html'
+
+    def post(self, request, *args, **kwargs):
+        self.squad.finalize()
+        messages.add_message(
+            request, messages.INFO,
+            "You have finalized the squad")
+        return redirect(squad)
+
+
+urlpatterns += [path('finalizesquad/',
+                     FinalizeSquad.as_view(),
+                     name='finalizesquad'), ]

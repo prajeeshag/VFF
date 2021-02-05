@@ -1,7 +1,8 @@
-from django.db import models
+from django.db import models, transaction
 
 from django.conf import settings
 from django.utils import timezone
+from django.urls import reverse_lazy, reverse, path, include
 
 from users.models import PlayerProfile, ClubProfile
 from fixture.models import Matches
@@ -36,8 +37,7 @@ class Squad(models.Model):
     updated_time = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    release = models.BooleanField(default=False)
-    timeline = models.BooleanField(editable=False, default=False)
+    lock = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ['club', 'match']
@@ -50,6 +50,12 @@ class Squad(models.Model):
 
     class GotSuspension(Exception):
         pass
+
+    def __str__(self):
+        if self.parent:
+            return '{} ({})'.format(self.parent, self.kind)
+        else:
+            return '{} squad for {}'.format(self.club.abbr.upper(), self.match)
 
     @ classmethod
     def _create_parent(cls, created_by, club, match):
@@ -78,11 +84,14 @@ class Squad(models.Model):
 
     @ classmethod
     def create(cls, match, club, user):
-        parent = cls._create_parent(created_by=user, club=club, match=match)
-        cls._create_first(parent)
-        cls._create_bench(parent)
-        cls._create_playing(parent)
-        cls._create_onbench(parent)
+        parent = None
+        with transaction.atomic():
+            parent = cls._create_parent(
+                created_by=user, club=club, match=match)
+            cls._create_first(parent)
+            cls._create_bench(parent)
+            cls._create_playing(parent)
+            cls._create_onbench(parent)
         return parent
 
     @ classmethod
@@ -165,20 +174,32 @@ class Squad(models.Model):
         for player in players:
             if Suspension.has_suspension(player):
                 all_player.remove(player)
-
         return all_player
 
+    def create_timeline_event(self):
+        timeline, created = MatchTimeLine.objects.get_or_create(
+            match=self.match)
+        message = '{} Lineup'.format(self.club.abbr.upper())
+        Events.objects.create(
+            matchtimeline=timeline,
+            message=message,
+            url=self.get_absolute_url(),
+            time=self.updated_time,
+        )
+
     def finalize(self):
-        self.release = True
-        self.timeline = True
+        self.lock = True
         self.save()
+        self.create_timeline_event()
 
     def substitute(self, playerin, playerout, user):
         self.get_playing_squad().players.remove(playerout)
         self.get_playing_squad().players.add(playerin)
         self.get_onbench_squad().players.remove(playerin)
         obj = Substitution.objects.create(
-            squad=self, created_by=user, sub_in=playerin, sub_out=playerout)
+            squad=self, created_by=user,
+            sub_in=playerin, sub_out=playerout)
+        obj.create_timeline_event()
         return obj
 
     def get_absolute_url(self):
@@ -297,17 +318,6 @@ class Cards(models.Model):
         else:
             cls.raise_red_card(match, player)
 
-    def timeline_url(self):
-        return None
-
-    def timeline_time(self):
-        return self.time
-
-    def timeline_message(self):
-        abbr = self.player.get_club().abbr
-        abbr = abbr.upper()
-        return "{} card for {} player {}".format(self.color, abbr, self.player)
-
 
 class MatchTimeLine(models.Model):
     match = models.OneToOneField(Matches, on_delete=models.PROTECT)
@@ -408,14 +418,17 @@ class Substitution(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
-    def timeline_url(self):
-        return None
-
-    def timeline_time(self):
-        return self.time
-
-    def timeline_message(self):
-        return "Substitution: {}(in), {}(out)".format(self.sub_in, self.sub_out)
-
     def get_absolute_url(self):
         return None
+
+    def create_timeline_event(self):
+        timeline, created = MatchTimeLine.objects.get_or_create(
+            match=self.squad.match)
+        message = "{} substitution : {}(in), {}(out)".format(
+            self.squad.club.abbr.upper(), self.sub_in, self.sub_out)
+        Events.objects.create(
+            matchtimeline=timeline,
+            message=message,
+            url=self.get_absolute_url(),
+            time=self.time,
+        )

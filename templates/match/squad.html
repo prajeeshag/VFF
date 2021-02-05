@@ -5,29 +5,37 @@
 {% load my_tags %}
 
 {% block content_main %}
-	<div class="container-fluid p-1 mt-3">
-		<h3 class="text-center"> {{ object.club.abbr|upper }} Lineup </h3>
-		<hr/>
-		{% with players=object.get_first_players %}
-		<h5> First {{ players|length }} </h5>
-		<div class="row mb-4">
+	{% with match=squad.match players=squad.get_first_players sub_players=squad.get_bench_players club=squad.club %}
+	{% include 'fixture/partials/match_card.html' with match=match %}
+	{% include 'users/partials/club_banner.html' with club=club %}
+	<h4 class="mt-2 text-center">Lineup</h4>
+	<hr/>
+	<div class="container-fluid">
+		{% include 'snippets/messages.html' %}
+		<h4> First {{ players|length }} </h4>
+		<hr class="mt-0"/>
+		<div class="row overflow-auto mb-4">
 			{% for player in players %}
 				<div class="col-md-4 mb-3">
-					{% include "users/partials/players_card.html" with player=official %}
+					<div class="d-flex align-content-center">
+						{% include 'users/partials/player_card_small.html' with player=player %}
+					</div>
 				</div>
 			{% endfor %}
 		</div>
-		{% endwith %}
-		{% with players=object.get_bench_players %}
-		<h5> Sub </h5>
-		<div class="row mb-4">
-			{% for player in players %}
+
+		<h4> Sub ({{ sub_players|length }}) </h4>
+		<hr class="mt-0"/>
+		<div class="row  mb-2">
+			{% for player in sub_players %}
 				<div class="col-md-4 mb-3">
-					{% include "users/partials/players_card.html" with player=official %}
+					<div class="d-flex align-content-center">
+						{% include 'users/partials/player_card_small.html' with player=player %}
+					</div>
 				</div>
 			{% endfor %}
 		</div>
-		{% endwith %}
 	</div>
+	{% endwith %}
 {% endblock %}
 

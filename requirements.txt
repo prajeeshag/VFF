@@ -13,7 +13,6 @@ decorator==4.4.2
 defusedxml==0.6.0
 djangify==1.0.0
 Django==3.1.1
-django-allauth==0.44.0
 django-archive==0.2.0
 django-bootstrap-datepicker-plus==3.0.5
 django-bootstrap4==2.3.1
@@ -60,7 +59,6 @@ Pygments==2.7.3
 PyJWT==2.0.0
 pylint==2.6.0
 python-decouple==3.4
-python-memcached==1.59
 python3-openid==3.2.0
 pytz==2020.4
 requests==2.25.1

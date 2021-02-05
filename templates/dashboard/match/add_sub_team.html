@@ -5,14 +5,14 @@
 {% load my_tags %}
 
 {% block content_main %}
-	{% with match=squad.match players=squad.get_first_players av_players=squad.get_available_players %}
-	<h6 class=" mt-2 text-center">Add First Team</h6>
+	{% with match=squad.match players=squad.get_bench_players av_players=squad.get_available_players %}
+	<h6 class=" mt-2 text-center">Add Sub Team</h6>
 	{% include 'fixture/partials/match_card.html' with match=match %}
 	<hr/>
 	<div class="container-fluid p-1">
 		{% include 'snippets/messages.html' %}
 		<div class="mb-4">
-			<h4> First team ({{ players|length }}) </h4>
+			<h4> Sub Team ({{ players|length }}) </h4>
 			<hr class="mt-0"/>
 			<div class="row overflow-auto mb-2" style="max-height: 40vh;">
 				{% for player in players %}
@@ -56,5 +56,6 @@
 		</div>
 	</div>
 	{% endwith %}
+
 {% endblock %}
 

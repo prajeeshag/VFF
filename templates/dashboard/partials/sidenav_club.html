@@ -1,0 +1,11 @@
+
+{% if user.is_club %}
+	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#Squad" name="Squad" icon="mdi-account-group" %}
+ 	<div class="collapse" id="Squad" data-parent="#accordionSidenav">
+ 	  <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+ 	    <a class="nav-link" href="{% url 'dash:addfirstteam' %}">Add First Team</a>
+ 	    <a class="nav-link" href="{% url 'dash:addsubteam' %}">Add Sub</a>
+ 	    <a class="nav-link" href="{% url 'dash:finalizesquad' %}">Finalize</a>
+ 	  </nav>
+ 	</div>
+{% endif %}

@@ -51,7 +51,7 @@ class Matches(models.Model):
         ordering = ['date']
 
     def __str__(self):
-        return "{} x {}".format(self.home, self.away)
+        return "{} x {}".format(self.home.abbr.upper(), self.away.abbr.upper())
 
     def get_day_nY(self):
         return self.date.strftime("%b. %d %a")

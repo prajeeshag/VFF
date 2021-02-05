@@ -7,7 +7,7 @@
 				{% include 'dashboard/partials/sidenav_anonymous.html' %}
 				{% include 'dashboard/partials/sidenav_authenticated.html' %}
 				{% include 'dashboard/partials/sidenav_staff.html' %}
-
+				{% include 'dashboard/partials/sidenav_club.html' %}
 				<hr/>
 				{% if user.is_authenticated %}
 					<a class="nav-link" href=" {% url 'users:change_password' %} ">

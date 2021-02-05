@@ -1,15 +1,8 @@
 {% load humanize %}
+
 <div class="text-light d-flex justify-content-between p-0" style="height: 60px;">
 	<div class="rounded-left font-weight-bold col-3 d-flex px-1" style="font-size: 20px; background-image: linear-gradient(to right, darkred, black)">
-		{% if user.is_anonymous %}
-		<a href="#!" class="m-auto text-light" tabindex="0" data-trigger="focus" title="" data-container="body" 
-				data-toggle="popover" data-placement="top" data-content="{{ match.home }}, {{ match.home.address }}" 
-				data-original-title="">
-				{{ match.home.abbr|upper }}
-		</a>
-		{% else %}
-			<a class="m-auto text-light" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
-		{% endif %}
+		<a class="m-auto text-light" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
 	</div>
 	<div class="d-flex flex-column justify-content-center overflow-hidden col-6" style="background-color: black;"> 
 		<div class="pt-1 text-center" style="line-height: 1em;"> 
@@ -19,22 +12,16 @@
 			<br/>
 			{{ match.ground }}
 			<br/>
-			{% if match.is_tentative %}
-			<span class="text-warning">(tentative)</span>
-			{% endif %}
+				{% if match.matchtimeline %}
+					<a href="{{ match.matchtimeline.get_absolute_url }}" class="text-success">click for timeline</a>
+				{% elif match.is_tentative %}
+					<span class="text-warning">(tentative)</span>
+				{% endif %}
 			</div>
 		</div>
 	</div>
 	<div class="rounded-right font-weight-bold col-3 d-flex px-1" style="font-size: 20px; background-image: linear-gradient(to right, black, darkblue)">
-		{% if user.is_anonymous %}
-		<a href="#!" class="m-auto text-light" tabindex="0" data-trigger="focus" title="" data-container="body" 
-				data-toggle="popover" data-placement="top" data-content="{{ match.away }}, {{ match.away.address }}" 
-				data-original-title="">
-				{{ match.away.abbr|upper }}
-			</a>
-		{% else %}
-			<a class="m-auto text-light" href={{ match.away.get_absolute_url }}> {{ match.away.abbr|upper }} </a>
-		{% endif %}
+		<a class="m-auto text-light" href={{ match.away.get_absolute_url }}> {{ match.away.abbr|upper }} </a>
 	</div>
 </div>
 

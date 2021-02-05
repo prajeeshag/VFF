@@ -1,0 +1,23 @@
+
+{% load thumbnail %}
+<div class="my-2" style="background-image: linear-gradient(darkblue,black,darkred);">
+	<div class="d-flex p-0 justify-content-start align-items-center">
+		<div class="p-1" style="height: 100px; width: 100px;">
+			<a href={{ club.get_absolute_url }}>
+				{% if club.logo %}
+					{% thumbnail club.logo "200x200" upscale=False cropbox=dp.cropbox format="PNG" as im %}
+						<img src="{{ im.url }}" alt="Card image cap" height="90" width="90">
+					{% endthumbnail %}
+				{% else %}
+					<div class="h-100 d-flex flex-column justify-content-center align-items-center text-white" style="font-size: 40px; font-weight:bolder">
+						<div class="p-2">{{ club.abbr|upper }}</div>
+					</div>
+				{% endif %}
+			</a>
+		</div>
+		<div class="p-2 text-center">
+			<h4>{{ club }}</h4>
+		</div>
+	</div>
+</div>
+
