@@ -39,7 +39,7 @@
 							<td>{{ member.get_age }}</td>
 						</tr>
 						{% endfor %}
-						{% for member in object.players.all %}
+						{% for member in object.get_players %}
 						<tr>
 							<td><a href="{% url 'users:playersprofile' member.pk %}">{{ member }}</a></td>
 							<td>Player</td>

@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'core',
     'fixture',
     'phone_verification',
+    'verification',
     'dashboard',
 ]
 

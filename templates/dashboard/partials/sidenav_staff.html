@@ -1,11 +1,11 @@
 
 {% if user.is_staff %}
 	<a class="nav-link" href="{% url 'users:list' %}">
-		<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+		<div class="nav-link-icon"><i class="mdi mdi-clipboard-list"></i></div>
 		users list
 	</a>
 	<a class="nav-link" href="{% url 'dash:carosel' %}">
-		<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+		<div class="nav-link-icon"><i class="mdi mdi-view-carousel-outline"></i></div>
 		Carosel
 	</a>
 	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#Matches" name="Matches" icon="soccer-field" %}
@@ -21,4 +21,8 @@
 			<a class="nav-link" href="{% url 'dash:season_edit' %}">VFL 2021</a>
  	  </nav>
  	</div>
+	<a class="nav-link" href="{% url 'dash:verificationlist' %}">
+		<div class="nav-link-icon"><i class="mdi mdi-clipboard-edit"></i></div>
+		Verification
+	</a>
 {% endif %}

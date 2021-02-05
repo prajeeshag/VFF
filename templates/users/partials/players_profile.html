@@ -35,7 +35,7 @@
 	<div class="row mx-3 mb-4">
 		{% include 'dashboard/text_field.html' with name='Phone' value=object.get_phone_number %}
 		{% include 'dashboard/text_field.html' with name='Email' value=object.email %}
-		{% if object.user == user %}
+		{% if object.user == user or user.is_staff %}
 			{% include 'dashboard/text_field.html' with name='Birthday' value=object.dob %}
 		{% endif %}
 		{% include 'dashboard/text_field.html' with name='Age' value=object.get_age %}
@@ -49,7 +49,7 @@
 			<h5 >{{object.address}}</h5>
 		</div>
 	</div>
-		{% if object.user == user or not object.user and user.is_club and object.get_club == user.get_club %}
+		{% if object.user == user or user.is_staff or not object.user and user.is_club and object.get_club == user.get_club %}
 			{% for document in object.documents.documents.all %}
 				{% with document as dp %}
 				<div class="d-flex justify-content-center">

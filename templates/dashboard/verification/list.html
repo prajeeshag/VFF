@@ -1,0 +1,51 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+{% load i18n %}
+
+{% block content_main %}
+<h3 class="p-3"> Profile verification </h3>
+<hr/>
+<div class="container-fluid">
+	<div class="p-1 text-white mb-4 bg-warning">
+		<h4 class="text-center">Pending</h4>
+		{% include 'dashboard/verification/partials/list.html' with ver=pending id='table1' bg='warning' %}
+	</div>
+	<div class="p-1 bg-dark text-white mb-4">
+		<h4>Asked for Review</h4>
+		{% include 'dashboard/verification/partials/list.html' with ver=needreview id='table2' %}
+	</div>
+	<div class="p-1 bg-dark text-white mb-4">
+		<h4>Verified</h4>
+		{% include 'dashboard/verification/partials/list.html' with ver=verified id='table3' %}
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+	<script>
+		$(document).ready(function() {
+			$('#table1').DataTable({
+				"ordering": false,
+				"order":[],
+				"pageLength": 10,
+			});
+		});
+		$(document).ready(function() {
+			$('#table2').DataTable({
+				"ordering": false,
+				"order":[],
+				"pageLength": 10,
+			});
+		});
+		$(document).ready(function() {
+			$('#table3').DataTable({
+				"ordering": false,
+				"order":[],
+				"pageLength": 10,
+			});
+		});
+	</script>
+{% endblock %}
