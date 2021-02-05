@@ -14,18 +14,18 @@
 	
 	{% if user.get_club %}
 		<a class="nav-link" href="{{ user.get_club.get_absolute_url }}">
-			<div class="nav-link-icon"><i data-feather="dribbble"></i></div>
+			<div class="nav-link-icon"><i class="mdi mdi-home-heart"></i></div>
 			My Club &nbsp; 
 			<small>({{ user.get_club }})</small>
 		</a>
 		<a class="nav-link" href="{% url 'users:clubmemberslist' user.get_club.pk %}">
-			<div class="nav-link-icon"><i data-feather="users"></i></div>
+			<div class="nav-link-icon"><i class="mdi mdi-account-group"></i></div>
 			My Club Members
 		</a>
 	{% endif %}
 	
 	<a class="nav-link" href=" {% url 'users:unsignedplayers' %} ">
-		<div class="nav-link-icon"><i data-feather="users"></i></div>
+		<div class="nav-link-icon"><i class="mdi mdi-account-box-multiple-outline"></i></div>
 		Unsigned Players
 	</a>
 {% endif %}
