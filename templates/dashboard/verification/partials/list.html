@@ -4,6 +4,7 @@
 		<thead>
 			<th>Name</th>
 			<th>Club</th>
+			<th>Reviewed by</th>
 		</thead>
 		<tbody>
 			{% for v in ver %}
@@ -13,6 +14,9 @@
 				</td>
 				<td>
 					{{ v.profile.get_club }}
+				</td>
+				<td>
+					{{ v.last_updated_by }}
 				</td>
 			</tr>
 			{% endfor %}

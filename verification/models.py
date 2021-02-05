@@ -2,6 +2,7 @@ from django.db import models
 
 from django.utils import timezone
 from users.models import PlayerProfile
+from django.conf import settings
 
 
 class Verification(models.Model):
@@ -18,6 +19,8 @@ class Verification(models.Model):
         max_length=15, choices=status_choice, default=PENDING)
     review_submitted = models.BooleanField(default=False)
     review_comment = models.TextField(max_length=300, blank=True)
+    last_updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.status

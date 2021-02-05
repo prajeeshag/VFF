@@ -43,6 +43,10 @@ class ReviewPlayerProfile(LoginRequiredMixin,
     fields = ['status', 'review_comment']
     template_name = 'dashboard/verification/profile_verification.html'
 
+    def form_valid(self, form):
+        form.instance.last_updated_by = self.request.user
+        return super().form_valid(form)
+
 
 urlpatterns += [path('reviewplayerprofile/<int:pk>/',
                      ReviewPlayerProfile.as_view(),
