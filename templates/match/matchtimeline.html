@@ -6,7 +6,11 @@
 {% load my_tags %}
 {% load i18n %}
 
+{% block body %} 
+		class="bg-dark text-white nav-fixed"
+{% endblock %}
 {% block content_main %}
 <div class="container-fluid">
+	{% include 'timeline/timeline.html' %}
 </div>
 {% endblock %}

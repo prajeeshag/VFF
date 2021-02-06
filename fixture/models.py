@@ -53,6 +53,21 @@ class Matches(models.Model):
     def __str__(self):
         return "{} x {}".format(self.home.abbr.upper(), self.away.abbr.upper())
 
+    def is_playing(self, club):
+        if club == self.home or club == self.away:
+            return True
+        return False
+
+    def get_opponent_club(self, club):
+        if club == self.away:
+            return self.home
+        elif club == self.home:
+            return self.away
+        return None
+
+    def get_opponent_club_of_player(self, player):
+        return self.get_opponent_club(player.get_club())
+
     def get_day_nY(self):
         return self.date.strftime("%b. %d %a")
 

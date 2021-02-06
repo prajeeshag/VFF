@@ -53,7 +53,7 @@ urlpatterns += [path('substitution/<int:pk>/',
                      name='substitution'), ]
 
 
-class MatchTimeLine(viewMixins, DeleteView):
+class MatchTimeLine(viewMixins, DetailView):
     template_name = 'match/matchtimeline.html'
     model = models.MatchTimeLine
 

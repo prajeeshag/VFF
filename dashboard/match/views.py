@@ -60,7 +60,7 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         except Squad.DoesNotExist:
             squad = Squad.create(match, club, user)
 
-        if squad.lock:
+        if not squad.is_pre:
             messages.add_message(
                 request, messages.INFO,
                 "You have already finalized the squad")
@@ -95,7 +95,7 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
             except self.squad.GotSuspension:
                 messages.add_message(
                     request, messages.WARNING,
-                    "Cannot add this player, Player Got Suspension")
+                    "Cannot add this player, player got pending suspension")
 
         elif action == 'rm':
             self.squad.remove_player_from_first(player)
@@ -132,8 +132,7 @@ class AddSubTeam(AddFirstTeam):
             except self.squad.GotSuspension:
                 messages.add_message(
                     request, messages.WARNING,
-                    "Cannot add this player, Player Got Suspension")
-
+                    "Cannot add this player, player got pending suspension")
         elif action == 'rm':
             self.squad.remove_player_from_bench(player)
         else:
@@ -157,7 +156,7 @@ class FinalizeSquad(AddFirstTeam):
         messages.add_message(
             request, messages.INFO,
             "You have finalized the squad")
-        return redirect(squad)
+        return redirect(self.squad)
 
 
 urlpatterns += [path('finalizesquad/',
