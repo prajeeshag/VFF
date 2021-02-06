@@ -1,0 +1,35 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+{% load i18n %}
+{% load widget_tweaks %}
+
+{% block content_main %}
+<h3 class="p-3"> Profile verification </h3>
+<hr/>
+<div class="container-fluid">
+	<div>
+		{% include 'users/partials/players_profile.html' with object=form.instance.profile title=form.instance.profile %}
+	</div>
+	<div class="mb-4">
+		<form method="POST" action="" enctype="multipart/form-data">
+			{% include "snippets/form_common.html" with form=form %}
+			{% for field in form.visible_fields %}
+				<div class="form-group">
+					{{ field.errors }}
+					{{ field | add_label_class:"small" }}
+					{% render_field field class="form-control form-control-solid" %}
+				</div>
+			{% endfor %}
+			<div class="form-group d-flex align-items-center justify-content-between">
+				<button class="btn btn-primary" type="submit" name="submit">Submit</button>
+				{% if back_url %}
+					<a href="{{ back_url }}" class="btn btn-warning">cancel</a>
+				{% endif %}
+			</div>
+		</form>
+	</div>
+</div>
+{% endblock %}

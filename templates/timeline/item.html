@@ -1,0 +1,12 @@
+<div class="d-flex {% if home %} flex-row-reverse {% endif %}" style="height: 55px;">
+	<div class="col-10 {% if home %} text-left {%else%} text-right {%endif%} pt-1">
+		<p class="p-0 m-0">{{ main_label }}</p>
+		<p class="p-0 m-0" style="font-size: small;">{{ sub_label }}</p> 
+	</div>
+	<div class="col-2 {% if home %} border-right {%else%} border-left {%endif%} border-light">
+		<i style="color: {{ icon_color|default:'yellow' }};" class="flaticon-{{ icon|default:"white-flag-outline-with-thin-pole" }}"></i>
+		{% if minute %}
+		<p class="text-center p-0 m-0" style="color: gray; font-size: small;">{{ minute }}'</p>
+		{% endif %}
+	</div>
+</div>

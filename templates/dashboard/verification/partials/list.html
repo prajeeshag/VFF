@@ -1,0 +1,25 @@
+
+<div class="mb-4">
+	<table class="table table-bordered table-hover" id="{{id}}" width="100%" cellspacing="0">
+		<thead>
+			<th>Name</th>
+			<th>Club</th>
+			<th>Reviewed by</th>
+		</thead>
+		<tbody>
+			{% for v in ver %}
+			<tr>
+				<td>
+					<a href="{% url 'dash:reviewplayerprofile' v.pk %}">{{ v.profile }}</a>
+				</td>
+				<td>
+					{{ v.profile.get_club }}
+				</td>
+				<td>
+					{{ v.last_updated_by }}
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
