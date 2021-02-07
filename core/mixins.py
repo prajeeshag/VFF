@@ -16,10 +16,11 @@ class ExtraContextMixin:
 class BackUrlMixin:
     default_redirect = '/'
 
-    def get(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         request.session['previous_page'] = request.META.get(
             'HTTP_REFERER', self.default_redirect)
-        return super().get(request, *args, **kwargs)
+        self.backurl = request.session['previous_page']
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = {}

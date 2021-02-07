@@ -22,7 +22,7 @@
 		{% else %}
 		<div class="col-2 d-flex flex-column justify-content-center border-left border-light" >
 		{% endif %}
-			<i style='color: {{ icon_color|default:"yellow" }};' class="flaticon-{{ icon|default:"white-flag-outline-with-thin-pole" }}"></i>
+			<i style='color: {{ icon_color|default:"white" }};' class="flaticon-{{ event.kind }}"></i>
 			{% if event.time_label %}
 				<p class="text-center p-0 m-0" style="color: gray; font-size: small;">{{ event.time_label }}</p>
 			{% endif %}

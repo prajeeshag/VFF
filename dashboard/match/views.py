@@ -35,7 +35,7 @@ from formtools.wizard.views import SessionWizardView
 from fixture.models import Matches
 from league.models import Season
 from match.models import Squad
-from users.models import PlayerProfile
+from users.models import PlayerProfile, ClubProfile
 
 LOGIN_URL = reverse_lazy('login')
 
@@ -47,13 +47,10 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
 
     def dispatch(self, request, *args, **kwargs):
         user = request.user
-        if not user.is_club():
-            raise PermissionDenied
-
-        club = user.get_club()
-        match = Matches.get_current_next_match_of_club(club)
-        if not match:
-            return HttpResponseNotFound('<h1>No next match found</h1>')
+        club_pk = kwargs.get('club', None)
+        match_pk = kwargs.get('match', None)
+        match = get_object_or_404(Matches, pk=match_pk)
+        club = get_object_or_404(ClubProfile, pk=club_pk)
 
         try:
             squad = Squad.get_squad(match, club)
@@ -63,14 +60,13 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         if not squad.is_pre:
             messages.add_message(
                 request, messages.INFO,
-                "You have already finalized the squad")
+                "Already finalized the squad")
             return redirect(squad)
 
         self.squad = squad
         self.user = user
         self.club = club
         self.match = match
-
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *arg, **kwargs):
@@ -82,9 +78,6 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         action = request.POST.get('action')
         pk = request.POST.get('pk')
         player = get_object_or_404(PlayerProfile, pk=pk)
-        if player.get_club() != self.club:
-            return HttpResponseNotFound('<h1>Player not from your club</h1>')
-
         if action == 'add':
             try:
                 self.squad.add_player_to_first(player)
@@ -107,7 +100,7 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return render(request, self.template_name, ctx)
 
 
-urlpatterns += [path('addfirstteam/',
+urlpatterns += [path('addfirstteam/<int:match>/<int:club>/',
                      AddFirstTeam.as_view(),
                      name='addfirstteam'), ]
 
@@ -119,9 +112,6 @@ class AddSubTeam(AddFirstTeam):
         action = request.POST.get('action')
         pk = request.POST.get('pk')
         player = get_object_or_404(PlayerProfile, pk=pk)
-        if player.get_club() != self.club:
-            return HttpResponseNotFound('<h1>Player not from your club</h1>')
-
         if action == 'add':
             try:
                 self.squad.add_player_to_bench(player)
@@ -143,7 +133,7 @@ class AddSubTeam(AddFirstTeam):
         return render(request, self.template_name, ctx)
 
 
-urlpatterns += [path('addsubteam/',
+urlpatterns += [path('addsubteam/<int:match>/<int:club>/',
                      AddSubTeam.as_view(),
                      name='addsubteam'), ]
 
@@ -159,6 +149,22 @@ class FinalizeSquad(AddFirstTeam):
         return redirect(self.squad)
 
 
-urlpatterns += [path('finalizesquad/',
+urlpatterns += [path('finalizesquad/<int:match>/<int:club>/',
                      FinalizeSquad.as_view(),
                      name='finalizesquad'), ]
+
+
+class ManageMatchList(LoginRequiredMixin, viewMixins, TemplateView):
+    template_name = 'dashboard/match/manage_match_list.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['fixed_matches'] = Matches.fixed.all()
+        ctx['tentative_matches'] = Matches.tentative.all()
+        ctx['done_matches'] = Matches.done.all()
+        return ctx
+
+
+urlpatterns += [path('managematches/',
+                     ManageMatchList.as_view(),
+                     name='managematches'), ]

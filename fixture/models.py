@@ -4,8 +4,10 @@ from django.utils import timezone
 from django.db import models
 from django.db.models import Q
 from django.core.validators import MinValueValidator
-
 from django.utils.translation import ugettext_lazy as _
+
+from model_utils.models import StatusModel, TimeStampedModel
+from model_utils import Choices
 
 from users.models import ClubProfile as Club, Grounds
 
@@ -20,17 +22,8 @@ class Fixture(models.Model):
         return "{} {}".format(LEAGUE_NAME, self.season)
 
 
-class Matches(models.Model):
-    DONE = 'DONE'
-    FIXED = 'FIXED'
-    TENTATIVE = 'TENTATIVE'
-    CANCELED = 'CANCELED'
-
-    status_choices = (
-        (DONE, DONE),
-        (FIXED, FIXED),
-        (TENTATIVE, TENTATIVE),
-    )
+class Matches(TimeStampedModel, StatusModel):
+    STATUS = Choices('done', 'fixed', 'tentative', 'canceled')
     num = models.PositiveIntegerField(
         _('Match Number'), validators=[MinValueValidator(1), ],
         default=1)
@@ -44,7 +37,7 @@ class Matches(models.Model):
     fixture = models.ForeignKey(
         Fixture, on_delete=models.PROTECT, null=True, related_name='matches')
     status = models.CharField(
-        max_length=20, choices=status_choices, default=TENTATIVE)
+        max_length=20, choices=STATUS, default=STATUS.tentative)
 
     class Meta:
         unique_together = ['fixture', 'home', 'away', 'num']
@@ -79,19 +72,19 @@ class Matches(models.Model):
         return self.date.strftime('%H:%M %p')
 
     def is_tentative(self):
-        return self.status == self.TENTATIVE
+        return self.status == self.STATUS.tentative
 
     @classmethod
     def get_tentative_matches(cls):
-        return cls.objects.filter(status=cls.TENTATIVE)
+        return cls.tentative.all()
 
     @classmethod
     def get_done_matches(cls):
-        return cls.objects.filter(status=cls.DONE)
+        return cls.done.all()
 
     @classmethod
     def get_fixed_matches(cls):
-        return cls.objects.filter(status=cls.FIXED)
+        return cls.fixed.all()
 
     @classmethod
     def get_past_matches(cls):
@@ -135,7 +128,7 @@ class Matches(models.Model):
         return cls.get_home_matches_of_club(club).filter(date__gte=date)
 
     def is_done(self):
-        return self.status == self.DONE
+        return self.status == self.STATUS.done
 
     @classmethod
     def get_current_next_match_of_club(cls, club):

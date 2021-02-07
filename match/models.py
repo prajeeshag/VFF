@@ -419,12 +419,18 @@ class Squad(StatusModel, TimeStampedModel, EventMixin):
     def add_player_to_playing(self, player):
         if self.get_playing_players().count() >= NFIRST:
             raise self.LimitReached
+        if player.get_club() != self.club:
+            raise NotMyMatch
         self.get_playing_squad().players.add(player)
 
     def add_player_to_onbench(self, player):
+        if player.get_club() != self.club:
+            raise NotMyMatch
         self.get_onbench_squad().players.add(player)
 
     def add_player_to_first(self, player):
+        if player.get_club() != self.club:
+            raise NotMyMatch
         if self.get_first_players().count() >= NFIRST:
             raise self.LimitReached
         if Suspension.has_suspension(player):
@@ -437,6 +443,8 @@ class Squad(StatusModel, TimeStampedModel, EventMixin):
         self.get_avail_squad().players.remove(player)
 
     def add_player_to_bench(self, player):
+        if player.get_club() != self.club:
+            raise NotMyMatch
         if self.get_bench_players().count() >= NSUB:
             raise self.LimitReached
         if Suspension.has_suspension(player):

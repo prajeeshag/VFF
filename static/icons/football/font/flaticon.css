@@ -76,6 +76,7 @@ font-style: normal;
 .flaticon-football-leader-man:before { content: "\f12d"; }
 .flaticon-football-line-referee-t-shirt-with-stripes:before { content: "\f12e"; }
 .flaticon-football-list-and-field-outline:before { content: "\f12f"; }
+.flaticon-lineup:before { content: "\f12f"; }
 .flaticon-football-list-with-up-and-down-arrows:before { content: "\f130"; }
 .flaticon-football-long-socks:before { content: "\f131"; }
 .flaticon-football-long-socks-1:before { content: "\f132"; }
@@ -188,3 +189,4 @@ font-style: normal;
 .flaticon-whistle-with-necklace:before { content: "\f19d"; }
 .flaticon-whistle-with-white-detail:before { content: "\f19e"; }
 .flaticon-white-flag-outline-with-thin-pole:before { content: "\f19f"; }
+.flaticon-other:before { content: "\f19f"; }

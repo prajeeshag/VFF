@@ -1,0 +1,60 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+{% load i18n %}
+
+{% block content_main %}
+<h2> Manage Matches </h2>
+<hr/>
+	<div class="container-fluid">
+		{% include 'snippets/messages.html' %}
+
+		<h4> Fixed Matches </h4>
+		<div class="mb-4">
+		{% for match in fixed_matches %}
+			<div class="d-flex mb-1">
+				<div class="col-11 px-0">
+					{% include 'fixture/partials/match_card.html' %}
+				</div>
+				<div class="col-1 dropleft px-0">
+					<button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="mdi mdi-chevron-down"></i>
+					</button>
+					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+						<a class="dropdown-item" href="{% url 'dash:addfirstteam' match=match.pk club=match.home.pk %}">Add {{ match.home.abbr|upper }} Squad</a>
+						<a class="dropdown-item" href="{% url 'dash:addfirstteam' match=match.pk club=match.away.pk %}">Add {{ match.away.abbr|upper }} Squad</a>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+		</div>
+
+		<h4> Tentative Matches </h4>
+		<div class="mb-4">
+		{% for match in tentative_matches %}
+			<div class="d-flex mb-1">
+				<div class="col-11 px-0">
+					{% include 'fixture/partials/match_card.html' %}
+				</div>
+
+				<div class="col-1 dropleft px-0">
+					<button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						<i class="mdi mdi-chevron-down"></i>
+					</button>
+					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+						<form method="POST" action={% url 'dash:fixmatches' %}>
+							{% include 'snippets/form_common.html' %}
+							<input type="hidden" name="fix_pk" value="{{ match.pk }}" />
+							<button type='submit' class='dropdown-item'>Fix match</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+		</div>
+
+	</div>
+{% endblock %}
+

@@ -25,7 +25,7 @@ from guardian.shortcuts import get_objects_for_user
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
-from core.mixins import RedirectToPreviousMixin
+from core.mixins import viewMixins
 from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
@@ -36,7 +36,7 @@ LOGIN_URL = reverse_lazy('login')
 urlpatterns = []
 
 
-class fixMatches(LoginRequiredMixin, View):
+class fixMatches(LoginRequiredMixin, viewMixins, View):
     template_name = 'dashboard/fixture/fix_matches.html'
 
     def get(self, request, *arg, **kwargs):
@@ -50,15 +50,21 @@ class fixMatches(LoginRequiredMixin, View):
         obj_pks_unfix = request.POST.getlist('checksUnFix')
         if obj_pks_fix:
             Matches.objects.filter(pk__in=obj_pks_fix).update(
-                status=Matches.FIXED)
+                status=Matches.STATUS.fixed)
         if obj_pks_unfix:
             Matches.objects.filter(pk__in=obj_pks_unfix).update(
-                status=Matches.TENTATIVE)
+                status=Matches.STATUS.tentative)
 
-        ctx = {}
-        ctx['tentative_matches'] = Matches.get_tentative_matches()
-        ctx['fixed_matches'] = Matches.get_fixed_matches()
-        return render(request, self.template_name, ctx)
+        fix_pk = request.POST.get('fix_pk')
+        unfix_pk = request.POST.get('unfix_pk')
+        if fix_pk:
+            Matches.objects.filter(pk=fix_pk).update(
+                status=Matches.STATUS.fixed)
+
+        if unfix_pk:
+            Matches.objects.filter(pk=unfix_pk).update(
+                status=Matches.STATUS.tentative)
+        return redirect(self.backurl)
 
 
 urlpatterns += [path('fixmatches/',
