@@ -58,6 +58,10 @@ class Matches(models.Model):
             return True
         return False
 
+    def is_player_playing(self, player):
+        club = player.get_club()
+        return self.is_playing(club)
+
     def get_opponent_club(self, club):
         if club == self.away:
             return self.home

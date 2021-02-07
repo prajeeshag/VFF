@@ -1,4 +1,6 @@
-<div>
-	{% include 'fixture/partials/match_card.html' with match=object.match %}
-	{% include 'timeline/item.html' %}
+<div class="mt-2">
+	{% include 'timeline/timeline_head.html' with timeline=object %}
+	{% for event in object.events_set.all %}
+		{% include 'timeline/item.html' with side=event.side label=event.label %}
+	{% endfor %}
 </div>

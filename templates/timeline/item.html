@@ -1,16 +1,32 @@
 
+{% if event.side == "home" %}
+<div class="d-flex flex-row-reverse" style="height: 55px;">
+{% else %}
+<div class="d-flex" style="height: 55px;">
+{% endif %}
 
-<div class="d-flex {% if side=='home' %} flex-row-reverse {% endif %}" style="height: 55px;">
-	<div class="{% if side=='home' %} col-10 text-left {%elif side=='away' %} col-10 text-right {%else%} col-12 text-center {%endif%} pt-1">
-		<p class="p-0 m-0">{{ label }}</p>
+	{% if event.side == "home" %}
+	<div class="col-10 text-left pt-1">
+	{% elif event.side == "away" %}
+	<div class="col-10 text-right pt-1">
+	{% else %}
+	<div class="col-12 text-center pt-1">
+	{% endif %}
+		<p class="p-0 m-0"> <a href="{{ event.url }}">{{ label }}</a> </p>
 		<p class="p-0 m-0" style="font-size: small;">{{ sublabel }}</p> 
 	</div>
-	{% if side != 'neutral' %}
-		<div class="col-2 {% if side=='home' %} border-right {% else %} border-left {% endif %} border-light">
-			<i style="color: {{ icon_color|default:'yellow' }};" class="flaticon-{{ icon|default:"white-flag-outline-with-thin-pole" }}"></i>
-			{% if minute %}
-				<p class="text-center p-0 m-0" style="color: gray; font-size: small;">{{ minute }}'</p>
+
+	{% if event.side != "neutral" %}
+		{% if event.side == "home" %}
+		<div class="col-2 d-flex flex-column justify-content-center border-right border-light" >
+		{% else %}
+		<div class="col-2 d-flex flex-column justify-content-center border-left border-light" >
+		{% endif %}
+			<i style='color: {{ icon_color|default:"yellow" }};' class="flaticon-{{ icon|default:"white-flag-outline-with-thin-pole" }}"></i>
+			{% if event.get_time_string %}
+				<p class="text-center p-0 m-0" style="color: gray; font-size: small;">{{ event.get_time_string }}</p>
 			{% endif %}
 		</div>
 	{% endif %}
 </div>
+

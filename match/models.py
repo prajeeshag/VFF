@@ -1,3 +1,5 @@
+import humanize
+
 from django.db import models, transaction
 
 from model_utils.models import StatusModel, TimeStampedModel
@@ -51,6 +53,42 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
 
     def get_absolute_url(self):
         return reverse('match:matchtimeline', kwargs={'pk': self.pk})
+
+    def score_as_string(self):
+        return Goal.score_as_string(self.match)
+
+    def get_time_string(self, evtime=None):
+        halftime = int(MATCHTIME/2)
+        time = None
+        if self.second_half_start:
+            time = self.second_half_start
+            offset = halftime
+        elif self.first_half_start:
+            time = self.first_half_start
+            offset = 0
+
+        if not time:
+            if evtime:
+                return ""
+            return (humanize.naturalday(self.match.date)
+                    +" "+ timezone.localtime(self.match.date).strftime('%I:%M %p'))
+
+        if self.second_half_end:
+            return 'FT'
+
+        stime = evtime
+        if not stime:
+            stime = timezone.now()
+
+        diff = stime - time
+        minute = (diff.days*24*60) + (diff.seconds/60)
+        minute = int(minute)
+        addl = max(0, minute-halftime)
+        minute = offset + minute - addl
+        minutec = "{}'".format(minute)
+        if addl > 0:
+            minutec = "{}+{}'".format(minutec, addl)
+        return minutec
 
     def start_first_half(self):
         if self.first_half_start:
@@ -134,29 +172,8 @@ class Events(TimeStampedModel):
     def __str__(self):
         return self.label
 
-    def get_minutes(self):
-        halftime = int(MATCHTIME/2)
-        time = None
-        if self.matchtimeline.second_half_start:
-            time = self.matchtimeline.second_half_start
-            offset = halftime
-        elif self.matchtimeline.first_half_start:
-            time = self.matchtimeline.first_half_start
-            offset = 0
-
-        if not time:
-            return None
-
-        diff = self.time - time
-        minute = (diff.days*24*60) + (diff.seconds/60)
-        minute = int(minute)
-        addl = max(0, minute-halftime)
-        minute = offset + minute - addl
-        minutec = "{}".format(minute)
-        if addl > 0:
-            minutec = "{}+{}".format(minutec, addl)
-        return minutec
-
+    def get_time_string(self):
+        return self.matchtimeline.get_time_string(evtime=self.time)
 
 class EventMixin:
     event_label = None
@@ -207,7 +224,7 @@ class EventMixin:
 
     def get_event_kind(self):
         if hasattr(self, 'event_kind'):
-            return event_kind
+            return self.event_kind
         return Events.KIND.other
 
     def get_event_side(self):
@@ -255,13 +272,13 @@ class EventMixin:
 
 
 class Squad(StatusModel, TimeStampedModel, EventMixin):
-    KIND = Choices('PARENT', 'first', 'bench', 'playing',
+    KIND = Choices('parent', 'first', 'bench', 'playing',
                    'onbench', 'avail', 'suspen')
     STATUS = Choices('pre', 'final', 'approved')
     event_label = 'Line Up'
     event_kind = Events.KIND.lineup
     kind = models.CharField(
-        max_length=10, choices=KIND, default=KIND.PARENT)
+        max_length=10, choices=KIND, default=KIND.parent)
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, null=True, related_name='squad')
     club = models.ForeignKey(ClubProfile, on_delete=models.PROTECT, null=True)
@@ -302,7 +319,7 @@ class Squad(StatusModel, TimeStampedModel, EventMixin):
             raise NotMyMatch
 
         return cls.objects.create(
-            kind=cls.PARENT,
+            kind=cls.KIND.parent,
             created_by=created_by,
             club=club,
             match=match,
@@ -343,13 +360,13 @@ class Squad(StatusModel, TimeStampedModel, EventMixin):
             cls._create_bench(parent)
             cls._create_playing(parent)
             cls._create_onbench(parent)
-            cls._create_avail(parent)
-            cls._create_suspen(parent)
+            avail = cls._create_avail(parent)
+            suspen = cls._create_suspen(parent)
             for player in club.get_players():
                 if Suspension.has_suspension(player):
-                    cls.get_suspen_squad().players.add(player)
+                    suspen.players.add(player)
                 else:
-                    cls.get_avail_squad().players.add(player)
+                    avail.players.add(player)
 
         return parent
 
