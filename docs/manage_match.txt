@@ -1,0 +1,12 @@
+
+Steps for offline (past) Match details entry:
+
+1. Enter and finalize Squad for both teams
+2. Enter Actual date-time of Kickoff, Halftime, second half start, Final time
+3. Enter Events with Minutes: 
+	- First half is from 1-20, first addl time should be given as for 20+n, e.g 20+1 for 1st minute of addl time
+	- Second half is from 21-40
+  - Second half addl time should be given as 40+n, e.g 40+2 for second minute of addl time
+
+
+

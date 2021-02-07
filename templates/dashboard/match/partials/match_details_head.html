@@ -1,0 +1,20 @@
+
+{% load thumbnail %}
+<div class="text-light d-flex p-0 mb-2" style="height: 90px;">
+	<div class="col-3 d-flex justify-content-center align-content-center px-1" style="font-size: small;">
+		<a href="#!">Goals: 0</a>
+		<a href="#!">Cards: 0</a>
+		<a href="#!">Subs: 0</a>
+	</div>
+	<div class="col-3 d-flex justify-content-right align-content-center px-1 border-right" style="color: darkred;">
+		<a class="mx-1 my-auto text-light" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
+	</div>
+	<div class="col-3 d-flex justify-content-left align-content-center px-1 border-left" style="color: darkolivegreen;">
+		<a class="mx-1 my-auto text-light" href={{ timeline.match.away.get_absolute_url }}> {{ timeline.match.away.abbr|upper }} </a>
+	</div>
+	<div class="col-3 d-flex justify-content-center align-content-center px-1" style="font-size: small;">
+		<a href="#!">Goals: 0</a>
+		<a href="#!">Cards: 0</a>
+		<a href="#!">Subs: 0</a>
+	</div>
+</div>

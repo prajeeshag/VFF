@@ -46,6 +46,19 @@ class Matches(TimeStampedModel, StatusModel):
     def __str__(self):
         return "{} x {}".format(self.home.abbr.upper(), self.away.abbr.upper())
 
+    def get_home_squad(self):
+        if hasattr(self, 'squad'):
+            return self.squad.filter(club=self.home).first()
+        return None
+
+    def get_away_squad(self):
+        if hasattr(self, 'squad'):
+            return self.squad.filter(club=self.away).first()
+        return None
+
+    def is_fixed(self):
+        return self.status == self.STATUS.fixed
+
     def is_playing(self, club):
         if club == self.home or club == self.away:
             return True

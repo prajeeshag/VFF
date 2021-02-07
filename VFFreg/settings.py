@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'formtools',
     'guardian',
+    'lock_tokens.apps.LockTokensConfig',
 
     # Local
     'league',
@@ -269,3 +270,7 @@ FAST2SMS_VARIABLES = config('FAST2SMS_VARIABLES', default='')
 FAST2SMS_TEMPLATE_ID = config('FAST2SMS_TEMPLATE_ID', default='')
 PHONE_VERIFICATION_BACKEND = config('PHONE_VERIFICATION_BACKEND',
                                     default='phone_verification.backends.test')
+
+LOCK_TOKENS = {
+    'TIMEOUT': 15,
+}

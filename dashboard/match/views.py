@@ -16,6 +16,9 @@ from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import PermissionDenied
 
+from lock_tokens.exceptions import AlreadyLockedError, UnlockForbiddenError
+from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
+
 from django.http import (
     HttpResponseForbidden, HttpResponseRedirect,
     HttpResponse, HttpResponseNotFound
@@ -34,12 +37,29 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 from league.models import Season
-from match.models import Squad
+from match.models import Squad, MatchTimeLine, Goal, Cards
 from users.models import PlayerProfile, ClubProfile
+from .forms import DateTimeForm
 
 LOGIN_URL = reverse_lazy('login')
 
 urlpatterns = []
+
+
+class ManageMatchList(LoginRequiredMixin, viewMixins, TemplateView):
+    template_name = 'dashboard/match/manage_match_list.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['fixed_matches'] = Matches.fixed.all()
+        ctx['tentative_matches'] = Matches.tentative.all()
+        ctx['done_matches'] = Matches.done.all()
+        return ctx
+
+
+urlpatterns += [path('managematches/',
+                     ManageMatchList.as_view(),
+                     name='managematches'), ]
 
 
 class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
@@ -70,14 +90,29 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *arg, **kwargs):
+        try:
+            lock_for_session(self.squad, request.session)
+        except AlreadyLockedError:
+            messages.add_message(
+                request, messages.INFO,
+                "Someone else has locked squad editing!!")
+            return redirect(self.backurl)
+
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
+        if not check_for_session(self.squad, request.session):
+            messages.add_message(
+                request, messages.INFO,
+                "Someone else has locked squad editing!")
+            return redirect(self.backurl)
+
         action = request.POST.get('action')
         pk = request.POST.get('pk')
         player = get_object_or_404(PlayerProfile, pk=pk)
+
         if action == 'add':
             try:
                 self.squad.add_player_to_first(player)
@@ -97,6 +132,7 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
 
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad
+        unlock_for_session(self.squad, request.session)
         return render(request, self.template_name, ctx)
 
 
@@ -109,6 +145,11 @@ class AddSubTeam(AddFirstTeam):
     template_name = 'dashboard/match/add_sub_team.html'
 
     def post(self, request, *args, **kwargs):
+        if not check_for_session(self.squad, request.session):
+            messages.add_message(
+                request, messages.INFO,
+                "Someone else has locked squad editing!")
+            return redirect(self.backurl)
         action = request.POST.get('action')
         pk = request.POST.get('pk')
         player = get_object_or_404(PlayerProfile, pk=pk)
@@ -130,6 +171,7 @@ class AddSubTeam(AddFirstTeam):
 
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad
+        unlock_for_session(self.squad, request.session)
         return render(request, self.template_name, ctx)
 
 
@@ -142,10 +184,17 @@ class FinalizeSquad(AddFirstTeam):
     template_name = 'dashboard/match/finalize_squad.html'
 
     def post(self, request, *args, **kwargs):
+        if not check_for_session(self.squad, request.session):
+            messages.add_message(
+                request, messages.WARNING,
+                "Someone else has locked squad editing!")
+            return redirect(self.backurl)
+
         self.squad.finalize()
         messages.add_message(
             request, messages.INFO,
             "You have finalized the squad")
+        unlock_for_session(self.squad, request.session)
         return redirect(self.squad)
 
 
@@ -154,17 +203,52 @@ urlpatterns += [path('finalizesquad/<int:match>/<int:club>/',
                      name='finalizesquad'), ]
 
 
-class ManageMatchList(LoginRequiredMixin, viewMixins, TemplateView):
-    template_name = 'dashboard/match/manage_match_list.html'
+class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
+    template_name = 'dashboard/match/enter_past_match_details.html'
+    model = Matches
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['fixed_matches'] = Matches.fixed.all()
-        ctx['tentative_matches'] = Matches.tentative.all()
-        ctx['done_matches'] = Matches.done.all()
-        return ctx
+    def get(self, request, *args, **kwargs):
+        match = self.get_object()
+        if not match.is_fixed():
+            messages.add_message(
+                request, messages.WARNING,
+                "Cannot Enter match details. This match is either tentative or finalized!")
+            return redirect(self.backurl)
+        return super().get(request, *args, **kwargs)
 
 
-urlpatterns += [path('managematches/',
-                     ManageMatchList.as_view(),
-                     name='managematches'), ]
+urlpatterns += [path('enterpastmatchdetails/<int:pk>/',
+                     FinalizeSquad.as_view(),
+                     name='enterpastmatchdetails'), ]
+
+
+class EnterMatchTimes(LoginRequiredMixin, formviewMixins, UpdateView):
+    model = MatchTimeLine
+    fields = ['first_half_start', 'first_half_end',
+              'second_half_start', 'second_half_end']
+    template_name = 'dashboard/match/base_form.html'
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        try:
+            lock_for_session(obj, request.session)
+        except AlreadyLockedError:
+            messages.add_message(
+                request, messages.INFO,
+                "Someone else has locked MatchTimeLine for editing!!")
+            return redirect(self.backurl)
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if not check_for_session(obj, request.session):
+            messages.add_message(
+                request, messages.INFO,
+                "Someone else has locked MatchTimeLine for editing!!")
+            return redirect(self.backurl)
+        return super().post(request, *args, **kwargs)
+
+
+urlpatterns += [path('entermatchtimes/<int:pk>/',
+                     EnterMatchTimes.as_view(),
+                     name='entermatchtimes'), ]
