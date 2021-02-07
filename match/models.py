@@ -64,8 +64,7 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
         obj = TimeEvents.kickoff.create(match=self.match,time=self.first_half_start)
         Events.objects.create(
             matchtimeline=self,
-            event_object=obj,
-        )
+            event_object=obj,)
 
     def start_second_half(self):
         self.second_half_start = timezone.now()
@@ -73,15 +72,13 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
         obj = TimeEvents.second_half.create(match=self.match, time=self.second_half_start)
         Events.objects.create(
             matchtimeline=self,
-            event_object=obj,
-        )
+            event_object=obj,)
 
     def half_time(self):
         obj = TimeEvents.half_time.create(match=self.match)
         Events.objects.create(
             matchtimeline=self,
-            event_object=obj,
-        )
+            event_object=obj,)
 
     def finalize_match(self):
         with transaction.atomic():
@@ -94,26 +91,20 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
             self.second_half_end = timezone.now()
             self.save()
 
-            sublabel = Goal.score_as_string(self.match)
             Events.objects.create(
-                time=timezone.now(),
                 matchtimeline=self,
-                label='Full Time',
-                sublabel=sublabel,
-                side=Events.SIDE.neutral,
-                kind=Events.KIND.other,
-            )
+                event_object=obj,)
 
 
 class Events(TimeStampedModel):
     matchtimeline = models.ForeignKey(MatchTimeLine, on_delete=models.PROTECT)
-    event_type = models.ForeignKey(ContentType)
+    event_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     event_object = GenericForeignKey('event_type', 'object_id')
     event_id = models.IntegerField()
 
     class Meta:
-        ordering = ['event_time', ]
+        ordering = ['event_id', ]
 
     def __str__(self):
         return self.label()
@@ -141,7 +132,7 @@ class Events(TimeStampedModel):
         super().save(*args, **kwargs)
 
 
-class EventModel(models.Model)
+class EventModel(models.Model):
     event_label = None
     event_label_field = None
     event_sublabel = None
@@ -270,7 +261,7 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
     event_side = 'neutral'
     STATUS = Choices(('kickoff', 'Kickoff'),
                     ('half_time', 'Half Time'),
-                    ('second_half', 'Second Half')
+                    ('second_half', 'Second Half'),
                     ('final_time', 'Final Time'))
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, related_name='timeevents')
@@ -289,11 +280,11 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
 
 
 class Squad(StatusModel, TimeStampedModel, EventModel):
+    event_kind = 'lineup'
+    event_label = 'Line Up'
     KIND = Choices('parent', 'first', 'bench', 'playing',
                    'onbench', 'avail', 'suspen')
     STATUS = Choices('pre', 'finalized', 'approved')
-    event_label = 'Line Up'
-    event_kind = Events.KIND.lineup
     kind = models.CharField(
         max_length=10, choices=KIND, default=KIND.parent)
     match = models.ForeignKey(
@@ -593,13 +584,12 @@ class SubstitutionReason(NoteModel):
 
 class Substitution(StatusModel, TimeStampedModel, EventModel):
     STATUS = Choices('submitted', 'finalized', 'approved')
-    event_kind = Events.KIND.sub
+    event_kind = 'sub'
     squad = models.ForeignKey(Squad, on_delete=models.PROTECT)
     sub_in = models.ForeignKey(
         PlayerProfile, on_delete=models.PROTECT, related_name='sub_ins')
     sub_out = models.ForeignKey(
         PlayerProfile, on_delete=models.PROTECT, related_name='sub_outs')
-        'Second half time in second', default = 0)
     reason=models.ForeignKey(
         SubstitutionReason,
         on_delete = models.PROTECT,
@@ -629,7 +619,7 @@ class GoalAttr(NoteModel):
 
 
 class Goal(StatusModel, TimeStampedModel, EventModel):
-    event_kind=Events.KIND.goal
+    event_kind='goal'
     STATUS=Choices('submitted', 'finalized', 'approved')
     own=models.BooleanField(default = False)
     player=models.ForeignKey(
