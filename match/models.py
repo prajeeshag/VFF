@@ -71,7 +71,7 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
             if evtime:
                 return ""
             return (humanize.naturalday(self.match.date)
-                    +" "+ timezone.localtime(self.match.date).strftime('%I:%M %p'))
+                    + " " + timezone.localtime(self.match.date).strftime('%I:%M %p'))
 
         if self.second_half_end:
             return 'FT'
@@ -168,12 +168,18 @@ class Events(TimeStampedModel):
     sublabel = models.CharField(max_length=128, blank=True)
     time = models.DateTimeField(default=timezone.now)
     url = models.CharField(max_length=200, null=True)
+    time_label = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return self.label
 
     def get_time_string(self):
         return self.matchtimeline.get_time_string(evtime=self.time)
+
+    def save(self, *args, **kwargs):
+        self.time_label = self.get_time_string()
+        super().save(*args, **kwargs)
+
 
 class EventMixin:
     event_label = None
