@@ -55,7 +55,7 @@
 
 	
 	<body {% block body %} class="bg-dark" {% endblock %}>
-		
+		{% include 'snippets/messages.html' %}
 		{% block content %}
 		{% endblock %}
 
@@ -72,6 +72,13 @@
 			<script>
 				$(document).ready( function() { $.scrollTrack(); } );
 			</script>
+
+			{% if messages %}
+				<script type="text/javascript">
+					$(window).on('load', function() { $('#id_message_modal').modal('show'); });
+				</script>
+			{% endif %}
+
 		{% endblock %}
 
 		{% block scripts_extra %} {% endblock %}

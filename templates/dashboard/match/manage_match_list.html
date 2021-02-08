@@ -9,7 +9,6 @@
 <h2> Manage Matches </h2>
 <hr/>
 	<div class="container-fluid">
-		{% include 'snippets/messages.html' %}
 
 		<h4> Fixed Matches </h4>
 		<div class="mb-4">
@@ -23,8 +22,7 @@
 						<i class="mdi mdi-chevron-down"></i>
 					</button>
 					<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-						<a class="dropdown-item" href="{% url 'dash:addfirstteam' match=match.pk club=match.home.pk %}">Add {{ match.home.abbr|upper }} Squad</a>
-						<a class="dropdown-item" href="{% url 'dash:addfirstteam' match=match.pk club=match.away.pk %}">Add {{ match.away.abbr|upper }} Squad</a>
+						<a class="dropdown-item" href="{% url 'dash:enterpastmatchdetails' match.pk %}">Enter past match details</a>
 					</div>
 				</div>
 			</div>

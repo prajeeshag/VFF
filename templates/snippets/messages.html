@@ -1,9 +1,14 @@
 
 {% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-		<li{% if message.tags %} class="alert alert-{{ message.tags }}" {% else %} class="alert alert-info" {% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
+<div class="modal fade" id="id_message_modal" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+			<div class="modal-body"> 
+			{% for message in messages %}
+			<div {% if message.tags %} class="p-1 mb-1 alert alert-{{ message.tags }}" {% else %} class="alert alert-info" {% endif %}>{{ message }}</div>
+    	{% endfor %}
+			</div>
+    </div>
+  </div>
+</div>
 {% endif %}
- 

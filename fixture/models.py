@@ -11,7 +11,6 @@ from model_utils import Choices
 
 from users.models import ClubProfile as Club, Grounds
 
-
 LEAGUE_NAME = 'VFL'
 
 

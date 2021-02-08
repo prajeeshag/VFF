@@ -1,0 +1,53 @@
+
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load widget_tweaks %}
+
+{% block content_main %}
+
+<div class="container-fluid p-1">
+	<div class="mb-4">
+		<form method="POST" action="" enctype="multipart/form-data">
+				{% if form.title %}
+				<h5> {{ form.title }} </h5>
+				{% else %}
+				<h5> {{ title }} </h5>
+				{% endif %}
+				<hr class="mb-3"/>
+				{% include "snippets/form_common.html" with form=form %}
+				{% for field in form.visible_fields %}
+					<div class="form-group">
+						{{ field.errors }}
+						{{ field | add_label_class:"small" }}
+						{% render_field field class="form-control form-control-solid" %}
+					</div>
+				{% endfor %}
+				<div class="form-group d-flex align-items-center justify-content-between">
+					<button class="btn btn-primary" type="submit" name="submit">Submit</button>
+					{% if back_url %}
+						<a href="{{ back_url }}" class="btn btn-warning">cancel</a>
+					{% endif %}
+				</div>
+		</form>
+	</div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+	<script>
+		$(function () {
+		    $('#id_time').daterangepicker(
+		        {
+		            singleDatePicker: true,
+		            showDropdowns: true,
+								timePicker: true,
+								timePicker24Hour: true,
+								locale: {
+								      format: 'YYYY-MM-DD HH:mm:ss'
+								}
+		        }
+		    );
+		});
+	</script>
+{% endblock %}

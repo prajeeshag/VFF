@@ -1,20 +1,20 @@
 
 {% load thumbnail %}
 <div class="text-light d-flex p-0 mb-2" style="height: 90px;">
-	<div class="col-3 d-flex justify-content-center align-content-center px-1" style="font-size: small;">
-		<a href="#!">Goals: 0</a>
-		<a href="#!">Cards: 0</a>
-		<a href="#!">Subs: 0</a>
+	<div class="col-3 d-flex flex-column justify-content-center align-items-start px-1" style="font-size: small;">
+		<a href="#!" class="text-light">Goals: 0</a>
+		<a href="#!" class="text-light">Cards: 0</a>
+		<a href="#!" class="text-light">Subs: 0</a>
 	</div>
-	<div class="col-3 d-flex justify-content-right align-content-center px-1 border-right" style="color: darkred;">
-		<a class="mx-1 my-auto text-light" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
+	<div class="col-3 d-flex justify-content-end align-content-center px-1 border-right" >
+		<a class="mx-1 my-auto" style="color: red; font-size: x-large; font-weight: bolder" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
 	</div>
-	<div class="col-3 d-flex justify-content-left align-content-center px-1 border-left" style="color: darkolivegreen;">
-		<a class="mx-1 my-auto text-light" href={{ timeline.match.away.get_absolute_url }}> {{ timeline.match.away.abbr|upper }} </a>
+	<div class="col-3 d-flex justify-content-left align-content-center px-1 border-left">
+		<a class="mx-1 my-auto" style="color: blue; font-size: x-large; font-weight: bolder" href={{ match.away.get_absolute_url }}> {{ match.away.abbr|upper }} </a>
 	</div>
-	<div class="col-3 d-flex justify-content-center align-content-center px-1" style="font-size: small;">
-		<a href="#!">Goals: 0</a>
-		<a href="#!">Cards: 0</a>
-		<a href="#!">Subs: 0</a>
+	<div class="col-3 d-flex flex-column justify-content-center align-items-end px-1" style="font-size: small;">
+		<a href="#!" class="text-light">Goals: 0</a>
+		<a href="#!" class="text-light">Cards: 0</a>
+		<a href="#!" class="text-light">Subs: 0</a>
 	</div>
 </div>

@@ -17,20 +17,25 @@ class BackUrlMixin:
     default_redirect = '/'
 
     def dispatch(self, request, *args, **kwargs):
-        request.session['previous_page'] = request.META.get(
+        request.session['back_url'] = request.META.get(
             'HTTP_REFERER', self.default_redirect)
-        self.backurl = request.session['previous_page']
+        self.backurl = request.session['back_url']
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = {}
         if hasattr(super(), 'get_context_data'):
             ctx = super().get_context_data(**kwargs)
-        ctx['back_url'] = self.request.session.get('previous_page', None)
+        ctx['back_url'] = self.request.session.get('back_url', None)
         return ctx
 
 
 class RedirectToPreviousMixin(BackUrlMixin):
+
+    def get(self, request, *args, **kwargs):
+        request.session['previous_page'] = request.META.get(
+            'HTTP_REFERER', self.default_redirect)
+        return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
         url = None

@@ -11,6 +11,7 @@ from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 from django.core.validators import MinLengthValidator, FileExtensionValidator
 from django.core.exceptions import ValidationError
 
@@ -367,7 +368,7 @@ class Profile(models.Model):
 
     def get_age(self):
         if self.dob is not None:
-            today = datetime.date.today()
+            today = timezone.now()
             dob = self.dob
             return today.year - dob.year - ((1, 1) < (dob.month, dob.day))
         return None

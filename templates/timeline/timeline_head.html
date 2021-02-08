@@ -1,6 +1,6 @@
 {% load thumbnail %}
 <div class="text-light d-flex p-0 mb-2" style="height: 70px;">
-	<div class="col-4 d-flex justify-content-right align-content-center px-1" >
+	<div class="col-4 d-flex justify-content-end align-content-center px-1" >
 		<a class="mx-1 my-auto text-light" href={{ timeline.match.home.get_absolute_url }}> {{ timeline.match.home.abbr|upper }} </a>
 		{% if timeline.match.home.logo %}
 			{% thumbnail timeline.match.home.logo "200x200" upscale=False cropbox=dp.cropbox format="PNG" as im %}
@@ -14,7 +14,7 @@
 		<p class="p-0 m-0" style="font-size: large;"> {{ timeline.score_as_string }} </p>
 		<p class="p-0 m-0" style="font-size: small; color: gray;">{{ timeline.get_time_string }}</p> 
 	</div>
-	<div class="col-4 d-flex justify-content-left align-content-center px-1" >
+	<div class="col-4 d-flex justify-content-start align-content-center px-1" >
 		{% if timeline.match.away.logo %}
 			{% thumbnail timeline.match.away.logo "200x200" upscale=False cropbox=dp.cropbox format="PNG" as im %}
 			<a href="{{ timeline.match.away.get_absolute_url }}">
