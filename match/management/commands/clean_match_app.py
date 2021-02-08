@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = 'match app cleanup'
 
     def handle(self, *args, **kwargs):
-        MatchTimeLine.objects.all().delete()
         Events.objects.all().delete()
+        MatchTimeLine.objects.all().delete()
         while Squad.objects.last():
             Squad.objects.last().delete()

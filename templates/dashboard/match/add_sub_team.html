@@ -37,23 +37,7 @@
 		<div class="mb-4 p-1 text-center rounded" style="background-color: darkred;">
 			<h4> Available Players ({{ av_players|length }}) </h4>
 			<hr class="mt-0"/>
-			<div class="row overflow-auto mb-2" style="max-height: 40vh;">
-				{% for player in av_players %}
-					<div class="col-md-4 mb-3">
-						<div class="d-flex align-content-center">
-							{% include 'users/partials/player_card_small.html' with player=player %}
-							<div>
-								<form class="h-100" method="POST">
-									{% include 'snippets/form_common.html' %}
-									<input type="hidden" name="action" value="add" />
-									<input type="hidden" name="pk" value="{{ player.pk }}" />
-									<button type="submit" class="btn btn-sm btn-success h-100">+</button>
-								</form>
-							</div>
-						</div>
-					</div>
-				{% endfor %}
-			</div>
+			{% include 'dashboard/match/players_table.html' with players=av_players %}
 		</div>
 		<div class="d-flex justify-content-between">
 			<a href="{% url 'dash:addfirstteam' match=match.pk club=club.pk %}" class="btn btn-block btn-primary">Back</a>
@@ -64,3 +48,14 @@
 
 {% endblock %}
 
+{% block scripts_extra %}
+	<script>
+$(document).ready(function() {
+	$('#playersTable').DataTable({
+		"ordering": false,
+		"order":[],
+		"pageLength": 5,
+	});
+});
+	</script>
+{% endblock %}

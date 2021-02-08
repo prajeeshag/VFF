@@ -272,5 +272,5 @@ PHONE_VERIFICATION_BACKEND = config('PHONE_VERIFICATION_BACKEND',
                                     default='phone_verification.backends.test')
 
 LOCK_TOKENS = {
-    'TIMEOUT': 15,
+    'TIMEOUT': 30,
 }

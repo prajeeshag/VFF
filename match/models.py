@@ -165,18 +165,17 @@ class EventModel(models.Model):
 
     def save(self, *args, **kwargs):
         match = self.get_match()
-        if not match:
-            raise EventMatchNotAvailable
-        timeline = getattr(match, 'matchtimeline', None)
-        if timeline:
-            if timeline.second_half_start:
-                self.ftime = 0
-                tdelta = timeline.second_half_start - self.time
-                self.stime = tdelta.total_seconds()
-            elif timeline.first_half_start:
-                self.stime = 0
-                tdelta = timeline.first_half_start - self.time
-                self.ftime = tdelta.total_seconds()
+        if match:
+            timeline = getattr(match, 'matchtimeline', None)
+            if timeline:
+                if timeline.second_half_start:
+                    self.ftime = 0
+                    tdelta = timeline.second_half_start - self.time
+                    self.stime = tdelta.total_seconds()
+                elif timeline.first_half_start:
+                    self.stime = 0
+                    tdelta = timeline.first_half_start - self.time
+                    self.ftime = tdelta.total_seconds()
         super().save(*args, **kwargs)
 
 

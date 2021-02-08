@@ -132,7 +132,6 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
 
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad
-        unlock_for_session(self.squad, request.session)
         return render(request, self.template_name, ctx)
 
 
@@ -171,7 +170,6 @@ class AddSubTeam(AddFirstTeam):
 
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad
-        unlock_for_session(self.squad, request.session)
         return render(request, self.template_name, ctx)
 
 
@@ -194,7 +192,6 @@ class FinalizeSquad(AddFirstTeam):
         messages.add_message(
             request, messages.INFO,
             "You have finalized the squad")
-        unlock_for_session(self.squad, request.session)
         return redirect(self.squad)
 
 
