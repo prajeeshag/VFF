@@ -740,7 +740,8 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
     match=models.ForeignKey(
         Matches, on_delete = models.PROTECT, related_name = 'goals')
     attr=models.ForeignKey(
-        GoalAttr, on_delete = models.PROTECT, null = True, related_name = 'goals')
+        GoalAttr, on_delete = models.PROTECT,
+        null = True, related_name = 'goals')
     time=models.DateTimeField(default = timezone.now)
 
     def __str__(self):
