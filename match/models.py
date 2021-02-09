@@ -23,6 +23,7 @@ NU19 = 1
 NU21 = 3
 NPLAYERS = 7
 
+
 class NotMyMatch(Exception):
     pass
 
@@ -69,8 +70,8 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
             self.first_half_start = timezone.now()
         self.save()
         obj = TimeEvents.objects.create(match=self.match,
-                time=self.first_half_start,
-                status=TimeEvents.STATUS.kickoff)
+                                        time=self.first_half_start,
+                                        status=TimeEvents.STATUS.kickoff)
         Events.objects.create(
             matchtimeline=self,
             event_object=obj,)
@@ -82,17 +83,19 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
             self.second_half_start = timezone.now()
         self.save()
         obj = TimeEvents.objects.create(match=self.match,
-                time=self.second_half_start,
-                status=TimeEvents.STATUS.second_half)
+                                        time=self.second_half_start,
+                                        status=TimeEvents.STATUS.second_half)
         Events.objects.create(
             matchtimeline=self,
             event_object=obj,)
 
     def set_half_time(self, time=None):
         if time:
-            obj = TimeEvents.objects.create(match=self.match, status=TimeEvents.STATUS.half_time, ftime=time)
+            obj = TimeEvents.objects.create(
+                match=self.match, status=TimeEvents.STATUS.half_time, ftime=time)
         else:
-            obj = TimeEvents.objects.create(match=self.match, status=TimeEvents.STATUS.half_time)
+            obj = TimeEvents.objects.create(
+                match=self.match, status=TimeEvents.STATUS.half_time)
         self.half_time = True
         self.save()
         Events.objects.create(
@@ -102,9 +105,11 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
     def finalize_match(self, time=None):
         with transaction.atomic():
             if time:
-                obj = TimeEvents.objects.create(match=self.match,stime=time, status=TimeEvents.STATUS.final_time)
+                obj = TimeEvents.objects.create(
+                    match=self.match, stime=time, status=TimeEvents.STATUS.final_time)
             else:
-                obj = TimeEvents.objects.create(match=self.match, status=TimeEvents.STATUS.final_time)
+                obj = TimeEvents.objects.create(
+                    match=self.match, status=TimeEvents.STATUS.final_time)
             self.final_time = True
             self.save()
 
@@ -123,7 +128,7 @@ class Events(TimeStampedModel):
     matchtimeline = models.ForeignKey(MatchTimeLine, on_delete=models.PROTECT)
     event_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    event_object = GenericForeignKey('event_type', 'object_id')
+    event_object = GenericForeignKey('event_id', 'object_id')
     event_id = models.IntegerField()
 
     class Meta:
@@ -168,8 +173,8 @@ class EventModel(models.Model):
     time = models.DateTimeField(default=timezone.now)
     ftime = models.IntegerField(default=-1)
     stime = models.IntegerField(default=-1)
-    created_by=models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete = models.SET_NULL, null = True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     class Meta:
         abstract = True
@@ -187,7 +192,7 @@ class EventModel(models.Model):
         pass
 
     def save(self, *args, **kwargs):
-        if self.ftime==-1 and self.stime==-1:
+        if self.ftime == -1 and self.stime == -1:
             halftime = int(MATCHTIME/2)*60
             match = self.get_match()
             if match:
@@ -206,7 +211,6 @@ class EventModel(models.Model):
         elif self.stime > -1:
             self.ftime = 0
         super().save(*args, **kwargs)
-
 
     def get_event_label(self):
         if self.event_label:
@@ -290,9 +294,9 @@ class EventModel(models.Model):
 class TimeEvents(TimeStampedModel, StatusModel, EventModel):
     event_side = 'neutral'
     STATUS = Choices(('kickoff', 'Kickoff'),
-                    ('half_time', 'Half Time'),
-                    ('second_half', 'Second Half'),
-                    ('final_time', 'Final Time'))
+                     ('half_time', 'Half Time'),
+                     ('second_half', 'Second Half'),
+                     ('final_time', 'Final Time'))
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, related_name='timeevents')
 
@@ -308,18 +312,17 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
         return Goal.score_as_string(self.match)
 
 
-
 class Squad(StatusModel, TimeStampedModel, EventModel):
     event_kind = 'lineup'
     event_label = 'Line Up'
-    KIND = Choices( ('parent','Parent'),
-                    ('first','First Team'), 
-                    ('bench','Sub'), 
-                    ('playing','Playing'),
-                    ('onbench','Sub'), 
-                    ('avail','Available'), 
-                    ('suspen','Suspended'),
-                )
+    KIND = Choices(('parent', 'Parent'),
+                   ('first', 'First Team'),
+                   ('bench', 'Sub'),
+                   ('playing', 'Playing'),
+                   ('onbench', 'Sub'),
+                   ('avail', 'Available'),
+                   ('suspen', 'Suspended'),
+                   )
     STATUS = Choices('pre', 'finalized', 'approved')
     kind = models.CharField(
         max_length=10, choices=KIND, default=KIND.parent)
@@ -375,9 +378,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         if self.get_playing_squad().players.filter(player).exists():
             self.get_playing_squad().remove_player(player)
             if player.get_age() <= 19:
-                self.NU19S = max(0,self.NU19S-1)
+                self.NU19S = max(0, self.NU19S-1)
             if player.get_age() <= 21:
-                self.NU21S = max(0,self.NU21S-1)
+                self.NU21S = max(0, self.NU21S-1)
             self.save()
         elif self.get_onbench_squad().players.filter(player).exists():
             self.get_onbench_squad().remove_player(player)
@@ -385,11 +388,10 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def delete_red_card(self, player):
         self.get_playing_squad().add_player(player)
         if player.get_age() <= 19:
-            self.NU19S = max(0,self.NU19S+1)
+            self.NU19S = max(0, self.NU19S+1)
         if player.get_age() <= 21:
-            self.NU21S = max(0,self.NU21S+1)
+            self.NU21S = max(0, self.NU21S+1)
         self.save()
-
 
     @ classmethod
     def _create_parent(cls, created_by, club, match):
@@ -575,7 +577,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         if not self.get_playing_squad().is_nU21():
             raise self.NotEnoughPlayers('Not enough U21 players')
 
-    def finalize(self,bypassU=False):
+    def finalize(self, bypassU=False):
         if not bypassU:
             self.check_nU()
         if self.get_playing_squad().num_players < NPLAYERS:
@@ -594,7 +596,8 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                 self.check_nU()
             reason = None
             if reason_text:
-                reason = SubstitutionReason.objects.get_or_create(text=reason_text)
+                reason = SubstitutionReason.objects.get_or_create(
+                    text=reason_text)
 
             obj = Substitution.objects.create(
                 squad=self, created_by=user,
@@ -612,7 +615,7 @@ class CardReason(NoteModel):
 
 
 class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
-    STATUS = Choices('active', 'inactive','approved')
+    STATUS = Choices('active', 'inactive', 'approved')
     COLOR = Choices('red', 'yellow')
     event_label_field = 'player'
     event_sublabel_field = 'reason'
@@ -663,9 +666,10 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
     @classmethod
     def raise_red_card(cls, match, player, reason_text):
         with transaction.atomic():
-            cls.objects.filter(match=match, player=player).update(is_removed=True)
+            cls.objects.filter(match=match, player=player).update(
+                is_removed=True)
             reason = CardReason.objects.get_or_create(text=reason_text)
-            squad = Squad.get_squad_player(match,player)
+            squad = Squad.get_squad_player(match, player)
             squad.raise_red_card(player)
             obj = cls.objects.create(
                 match=match, player=player, color=cls.COLOR.red, reason=reason)
@@ -704,10 +708,10 @@ class Substitution(StatusModel, TimeStampedModel, EventModel):
         PlayerProfile, on_delete=models.PROTECT, related_name='sub_ins')
     sub_out = models.ForeignKey(
         PlayerProfile, on_delete=models.PROTECT, related_name='sub_outs')
-    reason=models.ForeignKey(
+    reason = models.ForeignKey(
         SubstitutionReason,
-        on_delete = models.PROTECT,
-        null = True)
+        on_delete=models.PROTECT,
+        null=True)
 
     def get_club(self):
         return self.sub_in.get_club()
@@ -719,7 +723,7 @@ class Substitution(StatusModel, TimeStampedModel, EventModel):
         return "In: {}".format(self.sub_in)
 
     def get_event_sublabel(self):
-        sublabel="Out: {}".format(self.sub_out)
+        sublabel = "Out: {}".format(self.sub_out)
         if not self.reason:
             return sublabel
         return "{} ({})".format(sublabel, self.reason)
@@ -733,27 +737,27 @@ class GoalAttr(NoteModel):
 
 
 class Goal(StatusModel, TimeStampedModel, EventModel):
-    event_kind='goal'
-    STATUS=Choices('submitted', 'finalized', 'approved')
-    own=models.BooleanField(default = False)
-    player=models.ForeignKey(
-        PlayerProfile, on_delete = models.SET_NULL, null = True, related_name = 'goals')
-    club=models.ForeignKey(
-        ClubProfile, on_delete = models.PROTECT, related_name = 'goals')
-    match=models.ForeignKey(
-        Matches, on_delete = models.PROTECT, related_name = 'goals')
-    attr=models.ForeignKey(
-        GoalAttr, on_delete = models.PROTECT,
-        null = True, related_name = 'goals')
-    time=models.DateTimeField(default = timezone.now)
+    event_kind = 'goal'
+    STATUS = Choices('submitted', 'finalized', 'approved')
+    own = models.BooleanField(default=False)
+    player = models.ForeignKey(
+        PlayerProfile, on_delete=models.SET_NULL, null=True, related_name='goals')
+    club = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT, related_name='goals')
+    match = models.ForeignKey(
+        Matches, on_delete=models.PROTECT, related_name='goals')
+    attr = models.ForeignKey(
+        GoalAttr, on_delete=models.PROTECT,
+        null=True, related_name='goals')
+    time = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        strng="Goal: {}".format(self.player)
+        strng = "Goal: {}".format(self.player)
         if self.own:
             return "Goal(own): {}".format(self.player)
 
     def get_event_label(self):
-        strng="Goal: {}".format(self.player)
+        strng = "Goal: {}".format(self.player)
         if self.own:
             return "Goal (own)".format(self.player)
 
@@ -764,9 +768,9 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
 
     def save(self, *args, **kwargs):
         if self.own:
-            self.club=self.match.get_opponent_team_of_player(player)
+            self.club = self.match.get_opponent_team_of_player(player)
         else:
-            self.club=player.get_club()
+            self.club = player.get_club()
         super().save(*args, **kwargs)
 
     @ classmethod
@@ -776,7 +780,7 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
 
     @ classmethod
     def score_as_string(cls, match):
-        home, away=cls.score(match)
+        home, away = cls.score(match)
         return "{} - {}".format(home, away)
 
 
@@ -785,26 +789,26 @@ class SuspensionReason(NoteModel):
 
 
 class Suspension(StatusModel, TimeStampedModel):
-    STATUS=Choices('pending', 'completed', 'canceled')
-    player=models.ForeignKey(PlayerProfile, on_delete = models.CASCADE)
-    reason=models.ForeignKey(SuspensionReason, on_delete = models.PROTECT)
+    STATUS = Choices('pending', 'completed', 'canceled')
+    player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)
+    reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
 
     class SuspensionExist(Exception):
         pass
 
     @ classmethod
     def has_suspension(cls, player):
-        return cls.pending.filter(player = player).exists()
+        return cls.pending.filter(player=player).exists()
 
     @ classmethod
     def create(cls, player, reason):
-        return cls.pending.create(player = player, reason = reason)
+        return cls.pending.create(player=player, reason=reason)
 
     @ classmethod
     def set_completed(cls, player):
-        susp=cls.pending.filter(player).first()
+        susp = cls.pending.filter(player).first()
         if susp:
-            susp.status=cls.STATUS.completed
+            susp.status = cls.STATUS.completed
             susp.save()
 
     @ classmethod
@@ -816,14 +820,14 @@ class Suspension(StatusModel, TimeStampedModel):
 
 
 class AccumulatedCards(TimeStampedModel):
-    player=models.OneToOneField(PlayerProfile, on_delete = models.CASCADE)
-    yellow=models.PositiveIntegerField(default = 0)
+    player = models.OneToOneField(PlayerProfile, on_delete=models.CASCADE)
+    yellow = models.PositiveIntegerField(default=0)
 
     def add_yellow(self):
         self.yellow += 1
         if self.yellow > 2:
-            reason=SuspensionReason.objects.get_or_create(
-                text = 'Yellow card ban')
+            reason = SuspensionReason.objects.get_or_create(
+                text='Yellow card ban')
             Suspension.create(player, reason)
-            self.yellow=0
+            self.yellow = 0
         self.save()
