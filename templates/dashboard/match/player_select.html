@@ -10,36 +10,19 @@
 	<hr/>
 	<div class="container-fluid p-1">
 		<form method="POST" action="">
-	
-			<div class="form-group">
-				<label for="time">Match Time (in minutes):</label>
-				<input id="time" name="time" type="number" min="0" step="1"/>
-			</div>
-
-			<div class="form-group">
-				<label for="attr">Attributes:</label>
-				{% if kind == 'own' %}
-					<input id="attr" name="attr" value="own goal">
-				{% else %}
-					<input id="attr" name="attr" list="attrs">
-				{% endif %}
-			</div>
-			<datalist id="attrs">
-				<option value="default">
-				{% for attr in attrs %}
-				<option value="{{ attr }}">
+			{% include 'snippets/form_common.html' %}
+				{% for field in form.visible_fields %}
+					<div class="form-group">
+						{{ field.errors }}
+						{{ field | add_label_class:"small" }}
+						{% render_field field class="form-control form-control-solid" %}
+					</div>
 				{% endfor %}
-			</datalist>
-			
-			{% for player in players %}
-			<div class="form-group">
-				<input name="pk" type="radio" id="player_{{ player.pk }}" value="{{ player.pk }}">
-				<label for="player_{{ player.pk }}">{{ player }}</label>
-			</div>
-			{% endfor %}
-
+	
+			<div class="form-group d-flex align-items-center justify-content-between">
 			<button class="btn btn-primary" type="submit" name="kind" value="{{ kind }}" >Submit</button>
 			<a href="{{ backurl }}" class="btn btn-warning"> cancel </a>
+			</div>
 		</form>
 	</div>
 {% endblock %}

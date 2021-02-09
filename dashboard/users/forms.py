@@ -3,6 +3,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.admin.widgets import AdminDateWidget
 
 from myapp.widgets import ImageInput
 
@@ -30,11 +31,9 @@ class EditPlayerForm(forms.ModelForm):
 
     class Meta:
         model = PlayerProfile
-        fields = ['first_name', 'last_name', 'dob',
-                  'address', 'pincode', 'student',
-                  'occupation', 'prefered_foot',
-                  'favorite_position', 'height',
-                  'weight']
+        fields = ['first_name', 'last_name', 'dob', 'address',
+                  'pincode', 'student', 'occupation', 'height',
+                  'weight', 'prefered_foot', 'favorite_position']
 
 
 class PhoneNumberForm(forms.Form):
