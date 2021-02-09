@@ -23,15 +23,30 @@
 
 {% if user.is_club %}
 	{% for player in user.get_club.get_players %}
-		{% if player.verification.need_review %}
+		{% if player.verification.need_review and not player.user %}
 			{% with ver=player.verification %}
 				<div class="alert alert-danger">
 					<h4 class="text-center">{% translate "Attention" %}</h4>
 					<h5>{{ player }}{% translate ", a players of your club needs to review his/her profile!" %}</h5>
 					<p>review: <strong>{{ ver.review_comment }}</strong></p>
+					<a href="{{ player.get_absolute_url }}" class="btn btn-link">Edit</a>
 				</div>
 			{% endwith %}
 		{% endif %}
 	{% endfor %}
+
+	{% for player in user.get_club.get_players %}
+		{% if player.verification.need_review and player.user %}
+			{% with ver=player.verification %}
+				<div class="alert alert-danger">
+					<h4 class="text-center">{% translate "Attention" %}</h4>
+					<h5>{{ player }}{% translate ", a players of your club needs to review his/her profile!" %}</h5>
+					<p>review: <strong>{{ ver.review_comment }}</strong></p>
+					<p>Please ask the player to edit his profile information.</p>
+				</div>
+			{% endwith %}
+		{% endif %}
+	{% endfor %}
+
 {% endif %}
 

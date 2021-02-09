@@ -10,6 +10,9 @@
 		</div>
 		{% endthumbnail %}
 		{{ form }}
+		{% if redirect_url %}
+		<input type="hidden" name="redirect_url" value="{{ redirect_url }}">
+		{% endif %}
 	</form>
 	<div class="col-12 text-center">
 		<button onclick="document.getElementById('id_form').submit()" data-toggle="tooltip" data-placement="top" title="" data-original-title="Upload" class="btn btn-primary"> 

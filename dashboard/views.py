@@ -116,7 +116,12 @@ class documentUploadView(LoginRequiredMixin, formviewMixins, UpdateView):
     template_name = 'dashboard/image_upload.html'
 
     def get_success_url(self):
-        return reverse('dash:documentedit', kwargs={'pk': self.kwargs.get('pk')})
+        redirect_url = self.request.POST.get('redirect_url', None)
+        if redirect_url:
+            return redirect_url
+
+        return reverse('dash:documentedit', kwargs={
+                       'pk': self.kwargs.get('pk')})
 
 
 urlpatterns += [path('documentupload/<int:pk>/',

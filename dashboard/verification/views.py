@@ -43,6 +43,11 @@ class ReviewPlayerProfile(LoginRequiredMixin,
     fields = ['status', 'review_comment']
     template_name = 'dashboard/verification/profile_verification.html'
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['redirect_url'] = reverse('dash:verificationlist')
+        return ctx
+
     def form_valid(self, form):
         form.instance.last_updated_by = self.request.user
         return super().form_valid(form)

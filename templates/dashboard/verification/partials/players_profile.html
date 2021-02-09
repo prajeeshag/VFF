@@ -1,10 +1,6 @@
-
 {% load thumbnail %}
-{% load static %}
 {% load my_tags %}
-
-
-<div class="container-fluid p-1">
+{% load i18n %}
 <div class="p-2 rounded" style="background-image: linear-gradient(darkslategray, silver)">
 	<div class="mb-4 text-center">
 		{% with object.profilepicture as dp %}
@@ -21,8 +17,12 @@
 			{% endif %}
 		{% endwith %}
 	</div>
-	<h2>{{ title }}</h2>
-	<p> {{ subtitle }}</p>
+	<h2>{{ object }}</h2>
+		{% if object.get_club %}
+		<p>{{ "Player of club "|addstr:object.get_club }}</p>
+		{% else %}
+		 <p>	{{ "Not signed in with any club" }}</p>
+		{% endif %}
 	<hr/>
 	<div class="d-flex justify-content-end">
 		{% if object.user == user %}
@@ -49,27 +49,19 @@
 			<h5 >{{object.address}}</h5>
 		</div>
 	</div>
-		{% if object.user == user or user.is_staff or not object.user and user.is_club and object.get_club == user.get_club %}
-			{% for document in object.documents.documents.all %}
-				{% with document as dp %}
+		{% for document in object.documents.documents.all %}
+			{% with document as dp %}
 				<div class="d-flex justify-content-center">
 					<h4>{{ dp.document_type }}</h4>
 				</div>
 				<div class="d-flex justify-content-center">
-					{% comment %}{% thumbnail dp.image "300x300" cropbox=dp.cropbox upscale=False as im %}{% endcomment %}
 					{% with dp.image as im %}
 						<div class="p-2 m-auto" style="max-width: 300px;">
 							<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap">
 						</div>
 					{% endwith %}
-					{% comment %}{% endthumbnail %}{% endcomment %}
 				</div>
-				<div class="d-flex justify-content-center">
-					<a href="{% url 'dash:documentedit' dp.pk %}" class="btn btn-link">edit</a>
-				</div>
-				{% endwith %}
-			{% endfor %}
-		{% endif %}
+			{% endwith %}
+		{% endfor %}
 	</div>
-</div>
 

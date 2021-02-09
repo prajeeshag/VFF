@@ -11,7 +11,7 @@
 <hr/>
 <div class="container-fluid">
 	<div>
-		{% include 'users/partials/players_profile.html' with object=form.instance.profile title=form.instance.profile %}
+		{% include 'dashboard/verification/partials/players_profile.html' with object=form.instance.profile %}
 	</div>
 	<div class="mb-4">
 		<form method="POST" action="" enctype="multipart/form-data">
@@ -23,10 +23,13 @@
 					{% render_field field class="form-control form-control-solid" %}
 				</div>
 			{% endfor %}
+			{% if redirect_url %}
+				<input type="hidden" name="redirect_url" value="{{ redirect_url }}">
+			{% endif %}
 			<div class="form-group d-flex align-items-center justify-content-between">
 				<button class="btn btn-primary" type="submit" name="submit">Submit</button>
-				{% if back_url %}
-					<a href="{{ back_url }}" class="btn btn-warning">cancel</a>
+				{% if redirect_url %}
+					<a href="{{ redirect_url }}" class="btn btn-warning">cancel</a>
 				{% endif %}
 			</div>
 		</form>
