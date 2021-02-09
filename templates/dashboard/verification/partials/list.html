@@ -8,6 +8,7 @@
 		</thead>
 		<tbody>
 			{% for v in ver %}
+			{% if v.profile.get_club or v.profile.user %}
 			<tr>
 				<td>
 					<a href="{% url 'dash:reviewplayerprofile' v.pk %}">{{ v.profile }}</a>
@@ -19,6 +20,7 @@
 					{{ v.last_updated_by }}
 				</td>
 			</tr>
+			{% endif %}
 			{% endfor %}
 		</tbody>
 	</table>
