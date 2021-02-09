@@ -1,0 +1,6 @@
+<div class="mt-2">
+	{% include 'timeline/timeline_head.html' with timeline=timeline %}
+	{% for event in timeline.events_set.all %}
+		{% include 'timeline/item.html' %}
+	{% endfor %}
+</div>
