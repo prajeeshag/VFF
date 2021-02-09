@@ -9,12 +9,6 @@
 					<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap">
 				</div>
 			{% endthumbnail %}
-			{% if object.user == user %}
-				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
-			{% endif %}
-			{% if not object.user and user.is_club and object.get_club == user.get_club %}
-				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
-			{% endif %}
 		{% endwith %}
 	</div>
 	<h2>{{ object }}</h2>
@@ -24,20 +18,10 @@
 		 <p>	{{ "Not signed in with any club" }}</p>
 		{% endif %}
 	<hr/>
-	<div class="d-flex justify-content-end">
-		{% if object.user == user %}
-			<a class="btn btn-link" href="{% url 'dash:editplayer' object.pk %}">edit</a>
-		{% endif %}
-		{% if not object.user and user.is_club and object.get_club == user.get_club %}
-			<a class="btn btn-link" href="{% url 'dash:editplayer' object.pk %}">edit</a>
-		{% endif %}
-	</div>
 	<div class="row mx-3 mb-4">
 		{% include 'dashboard/text_field.html' with name='Phone' value=object.get_phone_number %}
 		{% include 'dashboard/text_field.html' with name='Email' value=object.email %}
-		{% if object.user == user or user.is_staff %}
-			{% include 'dashboard/text_field.html' with name='Birthday' value=object.dob %}
-		{% endif %}
+		{% include 'dashboard/text_field.html' with name='Birthday' value=object.dob %}
 		{% include 'dashboard/text_field.html' with name='Age' value=object.get_age %}
 		{% include 'dashboard/text_field.html' with name='Occupation' value=object.occupation %}
 		{% include 'dashboard/text_field.html' with name='Prefered foot' value=object.prefered_foot %}
