@@ -21,16 +21,33 @@ class MatchTimeForm(forms.Form):
         min_value=0, max_value=200, initial=0,
         label='Additional time (in minutes)')
 
-    def __init__(self, timeline=None, *args, **kwargs):
+    def __init__(self, timeline, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if timeline.first_half_start:
+            self.first_half = True
+        if timeline.second_half_start:
+            self.first_half = False
 
     def clean(self):
         data = super().clean()
         ftime = data.get('ftime')
         stime = data.get('stime')
-        if stime > 0 and ftime <= 0:
-            raise ValidationError(
-                'Match time cannot be 0 when additional time is above 0')
+        halftime = int(MATCHTIME/2)
+        fulltime = MATCHTIME
+        if self.first_half:
+            if ftime > halftime:
+                raise ValidationError(
+                    'Wrong Match timings!')
+            if stime > 0 and ftime == halftime:
+                raise ValidationError(
+                    'Wrong Match timings!')
+        if not self.first_half:
+            if ftime <= halftime or ftime > fulltime:
+                raise ValidationError(
+                    'Wrong Match timings!')
+            if stime > 0 and ftime == fulltime:
+                raise ValidationError(
+                    'Wrong Match timings!')
 
 
 class PlayerSelectForm(MatchTimeForm):

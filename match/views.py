@@ -57,6 +57,10 @@ class MatchTimeLine(viewMixins, DetailView):
     template_name = 'match/matchtimeline.html'
     model = models.MatchTimeLine
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        return ctx
+
 
 urlpatterns += [path('matchtimeline/<int:pk>/',
                      MatchTimeLine.as_view(),

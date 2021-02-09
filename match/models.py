@@ -64,40 +64,43 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
         return Goal.score_as_string(self.match)
 
     def start_match(self, time=None):
-        if time:
-            self.first_half_start = time
-        else:
-            self.first_half_start = timezone.now()
-        self.save()
-        obj = TimeEvents.objects.create(match=self.match,
-                                        time=self.first_half_start,
-                                        status=TimeEvents.STATUS.kickoff)
-        Events.objects.create(
-            matchtimeline=self,
-            content_object=obj,)
+        with transaction.atomic():
+            if time:
+                self.first_half_start = time
+            else:
+                self.first_half_start = timezone.now()
+            self.save()
+            obj = TimeEvents.objects.create(match=self.match,
+                                            time=self.first_half_start,
+                                            status=TimeEvents.STATUS.kickoff)
+            Events.objects.create(
+                matchtimeline=self,
+                content_object=obj,)
 
     def start_second_half(self, time=None):
-        if time:
-            self.second_half_start = time
-        else:
-            self.second_half_start = timezone.now()
-        self.save()
-        obj = TimeEvents.objects.create(match=self.match,
-                                        time=self.second_half_start,
-                                        status=TimeEvents.STATUS.second_half)
-        Events.objects.create(
-            matchtimeline=self,
-            content_object=obj,)
+        with transaction.atomic():
+            if time:
+                self.second_half_start = time
+            else:
+                self.second_half_start = timezone.now()
+            self.save()
+            obj = TimeEvents.objects.create(match=self.match,
+                                            time=self.second_half_start,
+                                            status=TimeEvents.STATUS.second_half)
+            Events.objects.create(
+                matchtimeline=self,
+                content_object=obj,)
 
     def set_half_time(self, ftime=-1, stime=-1):
-        obj = TimeEvents.objects.create(
-            match=self.match, status=TimeEvents.STATUS.half_time,
-            ftime=ftime, stime=sstime)
-        self.half_time = True
-        self.save()
-        Events.objects.create(
-            matchtimeline=self,
-            content_object=obj,)
+        with transaction.atomic():
+            obj = TimeEvents.objects.create(
+                match=self.match, status=TimeEvents.STATUS.half_time,
+                ftime=ftime, stime=stime)
+            self.half_time = True
+            self.save()
+            Events.objects.create(
+                matchtimeline=self,
+                content_object=obj,)
 
     def finalize_match(self, ftime=-1, stime=-1):
         with transaction.atomic():
@@ -124,10 +127,11 @@ class Events(TimeStampedModel):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    event_id = models.IntegerField()
+    ftime = models.IntegerField(default=-1)
+    stime = models.IntegerField(default=-1)
 
     class Meta:
-        ordering = ['event_id', ]
+        ordering = ['ftime', 'stime']
 
     def __str__(self):
         return self.label()
@@ -151,7 +155,8 @@ class Events(TimeStampedModel):
         return self.content_object.get_event_time_label()
 
     def save(self, *args, **kwargs):
-        self.event_id = self.content_object.ftime*2 + self.content_object.stime*1
+        self.ftime = self.content_object.ftime
+        self.stime = self.content_object.stime
         super().save(*args, **kwargs)
 
 
