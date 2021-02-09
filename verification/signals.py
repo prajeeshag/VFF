@@ -11,7 +11,7 @@ from core.utils import disable_for_loaddata
 @disable_for_loaddata
 def create_verification(sender, instance, created, **kwargs):
     if not hasattr(instance, 'verification'):
-        Verification.objects.create(profile=PlayerProfile)
+        Verification.objects.create(profile=instance)
 
 
 @receiver(pre_save, sender=PlayerProfile)
