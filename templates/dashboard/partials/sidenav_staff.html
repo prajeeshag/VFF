@@ -1,5 +1,6 @@
 
 {% if user.is_staff %}
+
 	<a class="nav-link" href="{% url 'users:list' %}">
 		<div class="nav-link-icon"><i class="mdi mdi-clipboard-list"></i></div>
 		users list
@@ -20,8 +21,12 @@
 			<a class="nav-link" href="{% url 'dash:season_edit' %}">VFL 2021</a>
  	  </nav>
  	</div>
+{% endif %}
+
+{% if perms.verification.add_verification %}
 	<a class="nav-link" href="{% url 'dash:verificationlist' %}">
 		<div class="nav-link-icon"><i class="mdi mdi-clipboard-edit"></i></div>
 		Verification
 	</a>
 {% endif %}
+
