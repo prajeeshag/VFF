@@ -41,7 +41,7 @@ from fixture.models import Matches
 from league.models import Season
 from match.models import Squad, MatchTimeLine, Goal, Cards, GoalAttr, CardReason
 from users.models import PlayerProfile, ClubProfile
-from .forms import DateTimeForm, MatchTimeForm
+from .forms import DateTimeForm, MatchTimeForm, PlayerSelectForm
 
 LOGIN_URL = reverse_lazy('login')
 
@@ -339,14 +339,14 @@ class HalfTime(LoginRequiredMixin,
         return ctx
 
     def form_valid(self, form):
-        time = form.cleaned_data.get('minutes')
-        time = time*60
+        ftime = form.cleaned_data.get('ftime')*60
+        stime = form.cleaned_data.get('stime')*60
         if self.match.matchtimeline.half_time:
             messages.add_message(
                 self.request, messages.DANGER,
                 "Match already in halftime!!")
         else:
-            self.match.matchtimeline.set_half_time(time=time)
+            self.match.matchtimeline.set_half_time(ftime=ftime, stime=stime)
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -423,14 +423,14 @@ class FinalTime(LoginRequiredMixin,
         return ctx
 
     def form_valid(self, form):
-        time = form.cleaned_data.get('minutes')
-        time = time*60
+        ftime = form.cleaned_data.get('ftime')*60
+        stime = form.cleaned_data.get('stime')*60
         if self.match.matchtimeline.final_time:
             messages.add_message(
                 self.request, messages.DANGER,
                 "Match already in Final Time!!")
         else:
-            self.match.matchtimeline.finalize_match(time=time)
+            self.match.matchtimeline.finalize_match(ftime=ftime, stime=stime)
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -449,83 +449,30 @@ urlpatterns += [path('finaltime/<int:pk>/',
                      name='finaltime'), ]
 
 
-# class PlayerSelect(LoginRequiredMixin,
-# viewMixins,
-# MatchLockMixin,
-# TemplateView):
-
-# template_name = 'dashboard/match/player_select.html'
-# kind = 'goal'
-
-# def get_context_data(self, **kwargs):
-# club_pk = kwargs.get('club')
-# club = get_object_or_404(ClubProfile, pk=club_pk)
-# ctx = super().get_context_data(**kwargs)
-# ctx['backurl'] = reverse('dash:enterpastmatchdetails', kwargs={
-# 'pk': self.match.pk})
-# ctx['kind'] = self.kind
-# ctx['club'] = club
-# if self.kind == 'goal':
-# ctx['title'] = 'Goal: Select player'
-# ctx['players'] = Squad.get_squad(
-# self.match, club).get_playing_players()
-# ctx['attrs'] = GoalAttr.objects.all()
-# elif self.kind == 'own':
-# opclub = self.match.get_opponent_club(club)
-# ctx['title'] = 'Goal(own): Select player'
-# ctx['players'] = Squad.get_squad(
-# self.match, opclub).get_playing_players()
-# elif self.kind == 'yellow':
-# ctx['title'] = 'Yellow card: Select player'
-# ctx['players'] = Squad.get_squad(
-# self.match, club).get_playing_players()
-# ctx['attrs'] = CardReason.objects.all()
-# elif self.kind == 'red':
-# ctx['title'] = 'Red card: Select player'
-# ctx['players'] = Squad.get_squad(
-# self.match, club).get_playing_players()
-# ctx['attrs'] = CardReason.objects.all()
-# return ctx
-
 class PlayerSelect(LoginRequiredMixin,
                    formviewMixins,
                    MatchLockMixin,
                    FormView):
-
+    form_class = PlayerSelectForm
     template_name = 'dashboard/match/player_select.html'
     kind = 'goal'
 
-    def get_context_data(self, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         club_pk = kwargs.get('club')
-        club = get_object_or_404(ClubProfile, pk=club_pk)
+        self.club = get_object_or_404(ClubProfile, pk=club_pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        club = self.club
         ctx = super().get_context_data(**kwargs)
         ctx['backurl'] = reverse('dash:enterpastmatchdetails', kwargs={
                                  'pk': self.match.pk})
         ctx['kind'] = self.kind
         ctx['club'] = club
-        if self.kind == 'goal':
-            ctx['title'] = 'Goal: Select player'
-            ctx['players'] = Squad.get_squad(
-                self.match, club).get_playing_players()
-            ctx['attrs'] = GoalAttr.objects.all()
-        elif self.kind == 'own':
-            opclub = self.match.get_opponent_club(club)
-            ctx['title'] = 'Goal(own): Select player'
-            ctx['players'] = Squad.get_squad(
-                self.match, opclub).get_playing_players()
-        elif self.kind == 'yellow':
-            ctx['title'] = 'Yellow card: Select player'
-            ctx['players'] = Squad.get_squad(
-                self.match, club).get_playing_players()
-            ctx['attrs'] = CardReason.objects.all()
-        elif self.kind == 'red':
-            ctx['title'] = 'Red card: Select player'
-            ctx['players'] = Squad.get_squad(
-                self.match, club).get_playing_players()
-            ctx['attrs'] = CardReason.objects.all()
         return ctx
 
     def get_form_kwargs(self):
+        club = self.club
         kwargs = super().get_form_kwargs()
         if self.kind == 'goal':
             kwargs['qplayers'] = Squad.get_squad(
@@ -535,6 +482,7 @@ class PlayerSelect(LoginRequiredMixin,
             opclub = self.match.get_opponent_club(club)
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, opclub).get_playing_players()
+            kwargs['qattrs'] = ['Own Goal']
         elif self.kind == 'yellow':
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, club).get_playing_players()
@@ -544,6 +492,37 @@ class PlayerSelect(LoginRequiredMixin,
                 self.match, club).get_playing_players()
             kwargs['qattrs'] = CardReason.objects.all()
         return kwargs
+
+    def form_valid(self, form):
+        player = form.cleaned_data.get('player')
+        attr = form.cleaned_data.get('attr')
+        ftime = form.cleaned_data.get('ftime')*60
+        stime = form.cleaned_data.get('stime')*60
+        if attr == 'None':
+            attr = None
+
+        if self.kind == 'goal':
+            Goal.create(match=self.match, player=player,
+                        created_by=self.request.user, ftime=ftime,
+                        stime=stime, attr=attr)
+        elif self.kind == 'own':
+            attr = 'own goal'
+            Goal.create(match=self.match, player=player,
+                        created_by=self.request.user, ftime=ftime,
+                        stime=stime, attr=attr, own=True)
+        elif self.kind == 'yellow':
+            Cards.raise_yellow_card(
+                match=self.match, player=player,
+                reason_text=attr, ftime=ftime, stime=stime)
+        elif self.kind == 'red':
+            Cards.raise_red_card(
+                match=self.match, player=player,
+                reason_text=attr, ftime=ftime, stime=stime)
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
 
 
 urlpatterns += [path('goalplayersel/<int:pk>/<int:club>/',

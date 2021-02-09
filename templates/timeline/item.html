@@ -12,9 +12,9 @@
 	{% else %}
 	<div class="col-12 text-center px-2 pt-1 d-flex flex-column justify-content-center">
 	{% endif %}
-		<p class="p-0 m-0"> <a class="text-white" style="font-size: large;" href="{{ event.url }}">{{ event.label }}</a> </p>
+		<p class="p-0 m-0"> <a class="text-white" style="font-size: large;" href="{{ event.url }}">{{ event.label | safe }}</a> </p>
 		{% if event.sublabel %}
-			<p class="p-0 m-0" style="font-size: small;">{{ event.sublabel }}</p> 
+			<p class="p-0 m-0" style="font-size: small;">{{ event.sublabel | safe }}</p> 
 		{% endif %}
 	</div>
 
@@ -26,7 +26,7 @@
 		{% endif %}
 			<i style='color: {{ icon_color|default:"white" }};' class="flaticon-{{ event.kind }}"></i>
 			{% if event.time_label %}
-				<p class="text-center p-0 m-0" style="color: gray; font-size: small;">{{ event.time_label }}</p>
+				<p class="text-center p-0 m-0" style="color: gray; font-size: small;">{{ event.time_label | safe }}</p>
 			{% endif %}
 		</div>
 	{% endif %}

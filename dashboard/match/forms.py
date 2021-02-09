@@ -1,8 +1,10 @@
 
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ValidationError
 
 from core.forms import ListTextWidget
+
 
 from match.models import MATCHTIME
 
@@ -12,13 +14,23 @@ class DateTimeForm(forms.Form):
 
 
 class MatchTimeForm(forms.Form):
-    minutes = forms.IntegerField(
-        min_value=0, max_value=200, label='Match time (in minutes)')
+    ftime = forms.IntegerField(
+        min_value=0, max_value=200, initial=0,
+        label='Match time (in minutes)')
+    stime = forms.IntegerField(
+        min_value=0, max_value=200, initial=0,
+        label='Additional time (in minutes)')
+
+    def clean(self):
+        data = super().clean()
+        ftime = data.get('ftime')
+        stime = data.get('stime')
+        if stime > 0 and ftime <= 0:
+            raise ValidationError(
+                'Match time cannot be 0 when additional time is above 0')
 
 
-class PlayerSelectForm(forms.Form):
-    time = forms.IntegerField(
-        max_value=MATCHTIME, min_value=0, label='Match time (in minutes)')
+class PlayerSelectForm(MatchTimeForm):
     attr = forms.CharField(label='Attributes', max_length=100)
     player = forms.ModelChoiceField(queryset=None, required=True)
 
