@@ -39,7 +39,7 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 from league.models import Season
-from match.models import Squad, MatchTimeLine, Goal, Cards
+from match.models import Squad, MatchTimeLine, Goal, Cards, GoalAttr, CardReason
 from users.models import PlayerProfile, ClubProfile
 from .forms import DateTimeForm, MatchTimeForm
 
@@ -442,3 +442,56 @@ class FinalTime(LoginRequiredMixin,
 urlpatterns += [path('finaltime/<int:pk>/',
                      FinalTime.as_view(),
                      name='finaltime'), ]
+
+
+class PlayerSelect(LoginRequiredMixin,
+                   viewMixins,
+                   MatchLockMixin,
+                   TemplateView):
+
+    template_name = 'dashboard/match/player_select.html'
+    kind = 'goal'
+
+    def get_context_data(self, **kwargs):
+        club_pk = kwargs.get('club')
+        club = get_object_or_404(ClubProfile, pk=club_pk)
+        ctx = super().get_context_data(**kwargs)
+        ctx['backurl'] = reverse('dash:enterpastmatchdetails', kwargs={
+                                 'pk': self.match.pk})
+        ctx['kind'] = self.kind
+        ctx['club'] = club
+        if self.kind == 'goal':
+            ctx['title'] = 'Goal: Select player'
+            ctx['players'] = Squad.get_squad(
+                self.match, club).get_playing_players()
+            ctx['attrs'] = GoalAttr.objects.all()
+        elif self.kind == 'own':
+            opclub = self.match.get_opponent_club(club)
+            ctx['title'] = 'Goal(own): Select player'
+            ctx['players'] = Squad.get_squad(
+                self.match, opclub).get_playing_players()
+        elif self.kind == 'yellow':
+            ctx['title'] = 'Yellow card: Select player'
+            ctx['players'] = Squad.get_squad(
+                self.match, club).get_playing_players()
+            ctx['attrs'] = CardReason.objects.all()
+        elif self.kind == 'red':
+            ctx['title'] = 'Red card: Select player'
+            ctx['players'] = Squad.get_squad(
+                self.match, club).get_playing_players()
+            ctx['attrs'] = CardReason.objects.all()
+        return ctx
+
+
+urlpatterns += [path('goalplayersel/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='goal'),
+                     name='goalplayersel'), ]
+urlpatterns += [path('ownplayersel/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='own'),
+                     name='ownplayersel'), ]
+urlpatterns += [path('yellowplayersel/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='yellow'),
+                     name='yellowplayersel'), ]
+urlpatterns += [path('redplayersel/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='red'),
+                     name='redplayersel'), ]

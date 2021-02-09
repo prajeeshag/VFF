@@ -372,12 +372,15 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         return self.KIND[self.kind]
 
     def raise_red_card(self, player):
-        self.get_playing_squad().remove_player(player)
-        if player.get_age() <= 19:
-            self.NU19S = max(0,self.NU19S-1)
-        if player.get_age() <= 21:
-            self.NU21S = max(0,self.NU21S-1)
-        self.save()
+        if self.get_playing_squad().players.filter(player).exists():
+            self.get_playing_squad().remove_player(player)
+            if player.get_age() <= 19:
+                self.NU19S = max(0,self.NU19S-1)
+            if player.get_age() <= 21:
+                self.NU21S = max(0,self.NU21S-1)
+            self.save()
+        elif self.get_onbench_squad().players.filter(player).exists():
+            self.get_onbench_squad().remove_player(player)
 
     def delete_red_card(self, player):
         self.get_playing_squad().add_player(player)
