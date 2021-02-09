@@ -10,11 +10,6 @@
 		Carosel
 	</a>
 
-	<a class="nav-link" href="{% url 'dash:managematches' %}">
-		<div class="nav-link-icon"><i class="mdi mdi-soccer-field"></i></div>
-		Manage Matches
-	</a>
-
 	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#league" name="League" icon="soccer" %}
  	<div class="collapse" id="league" data-parent="#accordionSidenav">
 		<nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
@@ -27,6 +22,13 @@
 	<a class="nav-link" href="{% url 'dash:verificationlist' %}">
 		<div class="nav-link-icon"><i class="mdi mdi-clipboard-edit"></i></div>
 		Verification
+	</a>
+{% endif %}
+
+{% if perms.match.add_squad %}
+	<a class="nav-link" href="{% url 'dash:managematches' %}">
+		<div class="nav-link-icon"><i class="mdi mdi-soccer-field"></i></div>
+		Manage Matches
 	</a>
 {% endif %}
 
