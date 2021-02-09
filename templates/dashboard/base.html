@@ -14,12 +14,6 @@
 				<div id="layoutSidenav_content">
 
 					<main class="ml-1">
-						{% if back_url %}
-							<div class="d-flex p-1">
-								<a href="{{ back_url }}" class="btn btn-sm btn-outline-light"><i class="mdi mdi-arrow-left-bold-outline">back</i></a>
-							</div>
-
-						{% endif %}
 						{% block content_main %} {% endblock %}
 					</main>
 

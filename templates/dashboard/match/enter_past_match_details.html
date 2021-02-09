@@ -7,47 +7,28 @@
 
 {% block content_main %}
 	<div class="container-fluid">
-		{% include 'dashboard/match/partials/match_details_head.html' %}
-		<h5 class="text-center"> Enter past-match details </h5>
 
-		{% if not match.get_home_squad.is_finalized %}
-			<div class="d-flex p-1">
-				<a href="{% url 'dash:addfirstteam' match=match.pk club=match.home.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkred;">
-					finalize {{ match.home.abbr|upper }} squad
-				</a>
+		<ul class="nav nav-tabs nav-justified" role="tablist">
+			<li class="nav-item">
+	  	  <a class="nav-link active" data-toggle="tab" href="#home" role="tab" >Home</a>
+	  	</li>
+			{% if match.matchtimeline %}
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#profile" role="tab" >Timeline</a>
+				</li>
+			{% endif %}
+		</ul>	
+
+		<div class="tab-content" id="myTabContent">
+			<div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+				{% include 'dashboard/match/partials/match_entry_panel_full.html' %}
 			</div>
-		{% endif %}
-
-		{% if not match.get_away_squad.is_finalized %}
-			<div class="d-flex p-1">
-				<a href="{% url 'dash:addfirstteam' match=match.pk club=match.away.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkblue;">
-					finalize {{ match.away.abbr|upper }} squad
-				</a>
-			</div>
-		{% endif %}
-
-		{% if match.get_away_squad.is_finalized and match.get_home_squad.is_finalized and not match.matchtimeline.first_half_start %}
-				<a href="{% url 'dash:startmatch' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: green;">
-					Start Match
-				</a>
-		{% endif %}
-		{{ match.started }}
-		{{ match.halftime }}
-		{% if match.matchtimeline.first_half_start and not match.matchtimeline.half_time %}
-				<a href="{% url 'dash:halftime' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: red;">
-					Half Time
-				</a>
-				{% include 'dashboard/match/partials/match_entry_panel.html' %}
-		{% elif match.matchtimeline.half_time and not match.matchtimeline.second_half_start %}
-				<a href="{% url 'dash:secondhalf' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: green;">
-					Second half
-				</a>
-		{% elif match.matchtimeline.second_half_start and not match.matchtimeline.final_time %}
-				<a href="{% url 'dash:finaltime' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: red;">
-					Final Time
-				</a>
-				{% include 'dashboard/match/partials/match_entry_panel.html' %}
-		{% endif %}
+			{% if match.matchtimeline %}
+				<div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+					{% include 'dashboard/match/partials/timeline.html' with timeline=match.matchtimeline %}
+				</div>
+			{% endif %}
+		</div>
 	</div>
 {% endblock %}
 

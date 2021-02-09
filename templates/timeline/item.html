@@ -24,7 +24,7 @@
 		{% else %}
 		<div class="col-2 d-flex flex-column justify-content-center align-items-center border-left border-gray" >
 		{% endif %}
-			<i style='color: {{ icon_color|default:"white" }};' class="flaticon-{{ event.kind }}"></i>
+		<i class="color-{{ event.kind }} flaticon-{{ event.kind }}"></i>
 			{% if event.time_label %}
 				<p class="text-center p-0 m-0" style="color: gray; font-size: small;">{{ event.time_label | safe }}</p>
 			{% endif %}
@@ -32,3 +32,20 @@
 	{% endif %}
 </div>
 
+<style>
+.color-yellow{
+	color: yellow;
+}
+.color-lineup{
+	color: cyan;
+}
+.color-red{
+	color: red;
+}
+.color-goal{
+	color: seagreen;
+}
+.color-sub{
+	color: skyblue;
+}
+</style>

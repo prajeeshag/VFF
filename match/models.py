@@ -137,7 +137,7 @@ class Events(TimeStampedModel):
         return self.label()
 
     def kind(self):
-        return self.content_object.event_kind
+        return self.content_object.get_event_kind()
 
     def side(self):
         return self.content_object.get_event_side()
@@ -202,16 +202,20 @@ class EventModel(models.Model):
                 if timeline:
                     if timeline.second_half_start:
                         tdelta = timeline.second_half_start - self.time
-                        time = tdelta.total_seconds() + halftime
+                        time = max(tdelta.total_seconds(), 1) + halftime
                         self.stime = max(time-fulltime, 0)
                         self.ftime = time - self.stime
                     elif timeline.first_half_start:
                         tdelta = timeline.first_half_start - self.time
-                        time = tdelta.total_seconds()
+                        time = max(tdelta.total_seconds(), 1)
                         self.stime = max(time-halftime, 0)
                         self.ftime = time - self.stime
 
         super().save(*args, **kwargs)
+
+    def get_event_kind(self):
+        if self.event_kind:
+            return self.event_kind
 
     def get_event_label(self):
         if self.event_label:
@@ -299,7 +303,7 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
 
     def get_event_sublabel(self):
         if self.status in [self.STATUS.kickoff, self.STATUS.second_half]:
-            return timezone.localtime(self.time).strftime('%I:%M %P')
+            return timezone.localtime(self.time).strftime('%I:%M %p')
         return Goal.score_as_string(self.match)
 
 
@@ -636,8 +640,12 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
     event_sublabel_field = 'reason'
     color = models.CharField(
         max_length=10, choices=COLOR, default=COLOR.yellow)
-    match = models.ForeignKey(Matches, on_delete=models.PROTECT)
-    player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)
+    match = models.ForeignKey(
+        Matches, on_delete=models.PROTECT, related_name='cards')
+    player = models.ForeignKey(
+        PlayerProfile, on_delete=models.PROTECT, related_name='cards')
+    club = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT, related_name='cards')
     reason = models.ForeignKey(
         CardReason,
         on_delete=models.PROTECT,
@@ -652,8 +660,9 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
     def get_event_kind(self):
         return self.color
 
-    def get_club(self):
-        return self.player.get_club()
+    def save(self, *args, **kwargs):
+        self.club = self.player.get_club()
+        super().save(*args, **kwargs)
 
     @classmethod
     def get_all_reds(cls, match):
@@ -727,7 +736,12 @@ class SubstitutionReason(NoteModel):
 class Substitution(StatusModel, TimeStampedModel, EventModel):
     STATUS = Choices('submitted', 'finalized', 'approved')
     event_kind = 'sub'
-    squad = models.ForeignKey(Squad, on_delete=models.PROTECT)
+    squad = models.ForeignKey(
+        Squad, on_delete=models.PROTECT, related_name='subs')
+    club = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT, related_name='subs')
+    match = models.ForeignKey(
+        Matches, on_delete=models.PROTECT, related_name='subs')
     sub_in = models.ForeignKey(
         PlayerProfile, on_delete=models.PROTECT, related_name='sub_ins')
     sub_out = models.ForeignKey(
@@ -737,11 +751,10 @@ class Substitution(StatusModel, TimeStampedModel, EventModel):
         on_delete=models.PROTECT,
         null=True)
 
-    def get_club(self):
-        return self.sub_in.get_club()
-
-    def get_match(self):
-        return self.squad.match
+    def save(self, *args, **kwargs):
+        self.match = self.squad.match
+        self.club = self.squad.club
+        super().save(*args, **kwargs)
 
     def get_event_label(self):
         return "In: {}".format(self.sub_in)

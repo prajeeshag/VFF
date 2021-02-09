@@ -41,6 +41,7 @@ font-style: normal;
 .flaticon-football-ball-variant-1:before { content: "\f10a"; }
 .flaticon-football-ball-with-thick-outline:before { content: "\f10b"; }
 .flaticon-football-card-with-cross-mark:before { content: "\f10c"; }
+.flaticon-red:before { content: "\f10c"; }
 .flaticon-football-chalice-shaped-trophy:before { content: "\f10d"; }
 .flaticon-football-champion-trophy:before { content: "\f10e"; }
 .flaticon-football-championship-award-variant:before { content: "\f10f"; }
@@ -165,6 +166,7 @@ font-style: normal;
 .flaticon-football-whistle-of-referee:before { content: "\f185"; }
 .flaticon-football-winning-trophy-with-check-mark:before { content: "\f186"; }
 .flaticon-football-yellow-warning-card:before { content: "\f187"; }
+.flaticon-yellow:before { content: "\f187"; }
 .flaticon-game-planning-on-a-football-field:before { content: "\f188"; }
 .flaticon-goal:before { content: "\f189"; }
 .flaticon-goalkeeper-chasing-the-ball:before { content: "\f18a"; }
@@ -180,6 +182,7 @@ font-style: normal;
 .flaticon-sportive-trophy-cup:before { content: "\f194"; }
 .flaticon-sports-badge-recognition:before { content: "\f195"; }
 .flaticon-substitution-of-player:before { content: "\f196"; }
+.flaticon-sub:before { content: "\f196"; }
 .flaticon-timer-clock:before { content: "\f197"; }
 .flaticon-trophy-black-silhouette:before { content: "\f198"; }
 .flaticon-trophy-cup-black-shape:before { content: "\f199"; }

@@ -8,20 +8,25 @@
 {% block content_main %}
 	{% include 'fixture/partials/match_card.html' with match=match %}
 	{% include 'users/partials/club_banner.html' with club=club %}
-	<h6 class=" mt-2 text-center">Finalize Squad</h6>
+	<h4 class=" mt-2 text-center">Finalize Squad</h4>
 	<hr/>
 	<div class="alert alert-warning"> 
 		<h4>{% translate "Attention" %}</h4>
 		{% translate "Once finalized, You won't be able to change the squad for this match! For any further query please contact VFL Match Manager" %} 
 	</div>
+
 	<div class="container-fluid">
-		<div class="mb-4 p-1 text-center rounded" style="background-color: darkgreen;">
+		<div class="mb-4 p-1 text-center" >
 			<h4> First Team ({{ squad.num_players }}) </h4>
+			<div class="d-flex justify-content-around">
+				<span class="badge badge-pill badge-{% if squad.is_nU19 %}success{% else %}danger{% endif %}">U19 ({{ squad.nU19 }})</span>
+				<span class="badge badge-pill badge-{% if squad.is_nU21 %}success{% else %}danger{% endif %}">U21 ({{ squad.nU21 }})</span>
+			</div>
 			<hr class="mt-0"/>
-			<div class="row overflow-auto mb-2" style="max-height: 40vh;">
+			<div class="d-flex flex-column align-items-center mb-2">
 				{% for player in squad.players.all %}
-					<div class="col-md-4 mb-3">
-						<div class="d-flex align-content-center">
+					<div class="col-md-4 mb-1">
+						<div class="d-flex justify-content-center">
 							{% include 'users/partials/player_card_small.html' with player=player %}
 						</div>
 					</div>
@@ -29,19 +34,20 @@
 			</div>
 		</div>
 
-		<div class="mb-4 p-1 text-center rounded" style="background-color: darkred;">
+		<div class="mb-4 p-1 text-center" >
 			<h4> Sub Team ({{ squad_av.num_players }}) </h4>
 			<hr class="mt-0"/>
-			<div class="row overflow-auto mb-2" style="max-height: 40vh;">
+			<div class="d-flex flex-column align-items-center mb-2">
 				{% for player in squad_av.players.all %}
-					<div class="col-md-4 mb-3">
-						<div class="d-flex align-content-center">
+					<div class="col-md-4 mb-1">
+						<div class="d-flex justify-content-center">
 							{% include 'users/partials/player_card_small.html' with player=player %}
 						</div>
 					</div>
 				{% endfor %}
 			</div>
 		</div>
+
 	</div>
 
 		<form method="POST">

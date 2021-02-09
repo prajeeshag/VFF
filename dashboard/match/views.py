@@ -79,6 +79,10 @@ class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
             return redirect(self.backurl)
         return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        return ctx
+
 
 urlpatterns += [path('enterpastmatchdetails/<int:pk>/',
                      EnterPastMatchDetails.as_view(),
@@ -256,10 +260,7 @@ class FinalizeSquad(AddFirstTeam):
         except self.squad.NotEnoughPlayers as e:
             messages.add_message(request, messages.WARNING, e)
             return redirect(self.backurl)
-
-        if request.session.get('add_squad_return_url', None):
-            return redirect(request.session.get('add_squad_return_url'))
-        return redirect(self.squad)
+        return redirect(reverse('dash:enterpastmatchdetails', kwargs={'pk': self.squad.match.pk}))
 
 
 urlpatterns += [path('finalizesquad/<int:match>/<int:club>/',
@@ -331,6 +332,11 @@ class HalfTime(LoginRequiredMixin,
                FormView):
     form_class = MatchTimeForm
     template_name = 'dashboard/match/base_form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['timeline'] = self.match.matchtimeline
+        return kwargs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -423,6 +429,11 @@ class FinalTime(LoginRequiredMixin,
             'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
         return ctx
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['timeline'] = self.match.matchtimeline
+        return kwargs
+
     def form_valid(self, form):
         ftime = form.cleaned_data.get('ftime')*60
         stime = form.cleaned_data.get('stime')*60
@@ -470,11 +481,20 @@ class PlayerSelect(LoginRequiredMixin,
                                  'pk': self.match.pk})
         ctx['kind'] = self.kind
         ctx['club'] = club
+        if self.kind == 'goal':
+            ctx['title'] = 'Goal'
+        elif self.kind == 'own':
+            ctx['title'] = 'Goal(Own)'
+        elif self.kind == 'yellow':
+            ctx['title'] = 'Yellow Card'
+        elif self.kind == 'red':
+            ctx['title'] = 'Red Card'
         return ctx
 
     def get_form_kwargs(self):
         club = self.club
         kwargs = super().get_form_kwargs()
+        kwargs['timeline'] = self.match.matchtimeline
         if self.kind == 'goal':
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, club).get_playing_players()
@@ -557,6 +577,7 @@ class PlayerSelect2(LoginRequiredMixin,
     def get_context_data(self, **kwargs):
         club = self.club
         ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Substitution'
         ctx['backurl'] = reverse('dash:enterpastmatchdetails', kwargs={
                                  'pk': self.match.pk})
         ctx['club'] = club
@@ -570,6 +591,7 @@ class PlayerSelect2(LoginRequiredMixin,
         kwargs['qplayers_in'] = Squad.get_squad(
             self.match, club).get_onbench_players()
         kwargs['qattrs'] = SubstitutionReason.objects.all()
+        kwargs['timeline'] = self.match.matchtimeline
         return kwargs
 
     def form_valid(self, form):

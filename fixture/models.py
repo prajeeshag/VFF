@@ -74,6 +74,33 @@ class Matches(TimeStampedModel, StatusModel):
             return self.away
         return None
 
+    def num_home_goals(self):
+        return self.goals.filter(club=self.home).count()
+
+    def num_away_goals(self):
+        return self.goals.filter(club=self.away).count()
+
+    def num_home_subs(self):
+        return self.subs.filter(club=self.home).count()
+
+    def num_away_subs(self):
+        return self.subs.filter(club=self.away).count()
+
+    def num_home_cards(self):
+        return self.cards.filter(club=self.home).count()
+
+    def num_away_cards(self):
+        return self.cards.filter(club=self.away).count()
+
+    def num_home_subs(self):
+        return self.subs.filter(club=self.home).count()
+
+    def num_away_subs(self):
+        return self.subs.filter(club=self.away).count()
+
+    def score_string(self):
+        return "{} - {}".format(self.num_home_goals(), self.num_away_goals())
+
     def get_opponent_club_of_player(self, player):
         return self.get_opponent_club(player.get_club())
 

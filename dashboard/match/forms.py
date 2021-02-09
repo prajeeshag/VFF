@@ -38,14 +38,14 @@ class MatchTimeForm(forms.Form):
             if ftime > halftime:
                 raise ValidationError(
                     'Wrong Match timings!')
-            if stime > 0 and ftime == halftime:
+            if stime > 0 and ftime < halftime:
                 raise ValidationError(
                     'Wrong Match timings!')
         if not self.first_half:
             if ftime <= halftime or ftime > fulltime:
                 raise ValidationError(
                     'Wrong Match timings!')
-            if stime > 0 and ftime == fulltime:
+            if stime > 0 and ftime < fulltime:
                 raise ValidationError(
                     'Wrong Match timings!')
 

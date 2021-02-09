@@ -1,10 +1,10 @@
 
 {% load thumbnail %}
 <div class="text-light d-flex p-0 mb-2" style="height: 90px;">
-	<div class="col-3 d-flex flex-column justify-content-center align-items-start px-1" style="font-size: small;">
-		<a href="#!" class="text-light">Goals: 0</a>
-		<a href="#!" class="text-light">Cards: 0</a>
-		<a href="#!" class="text-light">Subs: 0</a>
+	<div class="col-3 d-flex flex-column justify-content-center align-items-center px-1" style="font-size: small;">
+		<a href="#!" class="text-light">Goals: {{ match.num_home_goals }}</a>
+		<a href="#!" class="text-light">Cards: {{ match.num_home_cards }}</a>
+		<a href="#!" class="text-light">Subs: {{ match.num_home_subs }}</a>
 	</div>
 	<div class="col-3 d-flex justify-content-end align-content-center px-1 border-right" >
 		<a class="mx-1 my-auto" style="color: red; font-size: x-large; font-weight: bolder" href={{ match.home.get_absolute_url }}> {{ match.home.abbr|upper }} </a>
@@ -12,9 +12,9 @@
 	<div class="col-3 d-flex justify-content-left align-content-center px-1 border-left">
 		<a class="mx-1 my-auto" style="color: blue; font-size: x-large; font-weight: bolder" href={{ match.away.get_absolute_url }}> {{ match.away.abbr|upper }} </a>
 	</div>
-	<div class="col-3 d-flex flex-column justify-content-center align-items-end px-1" style="font-size: small;">
-		<a href="#!" class="text-light">Goals: 0</a>
-		<a href="#!" class="text-light">Cards: 0</a>
-		<a href="#!" class="text-light">Subs: 0</a>
+	<div class="col-3 d-flex flex-column justify-content-center align-items-center px-1" style="font-size: small;">
+		<a href="#!" class="text-light">Goals: {{ match.num_away_goals }}</a>
+		<a href="#!" class="text-light">Cards: {{ match.num_away_cards }}</a>
+		<a href="#!" class="text-light">Subs: {{ match.num_away_subs }}</a>
 	</div>
 </div>
