@@ -39,9 +39,10 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 from league.models import Season
-from match.models import Squad, MatchTimeLine, Goal, Cards, GoalAttr, CardReason
+from match.models import (Squad, MatchTimeLine, Goal, Cards,
+                          GoalAttr, CardReason, SubstitutionReason)
 from users.models import PlayerProfile, ClubProfile
-from .forms import DateTimeForm, MatchTimeForm, PlayerSelectForm
+from .forms import DateTimeForm, MatchTimeForm, PlayerSelectForm, PlayerSelectForm2
 
 LOGIN_URL = reverse_lazy('login')
 
@@ -477,12 +478,14 @@ class PlayerSelect(LoginRequiredMixin,
         if self.kind == 'goal':
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, club).get_playing_players()
-            kwargs['qattrs'] = GoalAttr.objects.all()
+            kwargs['qattrs'] = GoalAttr.objects.exclude(text='own goal')
+            kwargs['attr_required'] = False
         elif self.kind == 'own':
             opclub = self.match.get_opponent_club(club)
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, opclub).get_playing_players()
-            kwargs['qattrs'] = ['Own Goal']
+            kwargs['qattrs'] = ['own goal']
+            kwargs['attr_required'] = False
         elif self.kind == 'yellow':
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, club).get_playing_players()
@@ -537,3 +540,58 @@ urlpatterns += [path('yellowplayersel/<int:pk>/<int:club>/',
 urlpatterns += [path('redplayersel/<int:pk>/<int:club>/',
                      PlayerSelect.as_view(kind='red'),
                      name='redplayersel'), ]
+
+
+class PlayerSelect2(LoginRequiredMixin,
+                    formviewMixins,
+                    MatchLockMixin,
+                    FormView):
+    form_class = PlayerSelectForm2
+    template_name = 'dashboard/match/player_select.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        club_pk = kwargs.get('club')
+        self.club = get_object_or_404(ClubProfile, pk=club_pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        club = self.club
+        ctx = super().get_context_data(**kwargs)
+        ctx['backurl'] = reverse('dash:enterpastmatchdetails', kwargs={
+                                 'pk': self.match.pk})
+        ctx['club'] = club
+        return ctx
+
+    def get_form_kwargs(self):
+        club = self.club
+        kwargs = super().get_form_kwargs()
+        kwargs['qplayers_out'] = Squad.get_squad(
+            self.match, club).get_playing_players()
+        kwargs['qplayers_in'] = Squad.get_squad(
+            self.match, club).get_onbench_players()
+        kwargs['qattrs'] = SubstitutionReason.objects.all()
+        return kwargs
+
+    def form_valid(self, form):
+        player_in = form.cleaned_data.get('player_in')
+        player_out = form.cleaned_data.get('player_out')
+        attr = form.cleaned_data.get('attr')
+        ftime = form.cleaned_data.get('ftime')*60
+        stime = form.cleaned_data.get('stime')*60
+        if attr == 'None':
+            attr = None
+
+        squad = Squad.get_squad(match=self.match, club=self.club)
+
+        squad.substitute(playerin=player_in,
+                         playerout=player_out, user=self.request.user,
+                         ftime=ftime, stime=stime, reason_text=attr)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+
+
+urlpatterns += [path('subplayersel/<int:pk>/<int:club>/',
+                     PlayerSelect2.as_view(),
+                     name='subplayersel'), ]

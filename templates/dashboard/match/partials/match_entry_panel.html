@@ -11,6 +11,9 @@
 		<a class="m-2 switch-btn red" href="{% url 'dash:redplayersel' pk=match.pk club=match.home.pk %}">
 			Red<br><small>card</small>
 		</a>
+		<a class="m-2 switch-btn blue" href="{% url 'dash:subplayersel' pk=match.pk club=match.home.pk %}">
+			Sub<br><small style="font-size: 10px;">(substitution)</small>
+		</a>
 	</div>
 	<div class="col-6 d-flex flex-column align-items-center border-right border-light">
 		<a class="m-2 switch-btn cyan" href="{% url 'dash:goalplayersel' pk=match.pk club=match.away.pk %}">Goal</a>
@@ -22,6 +25,9 @@
 		</a>
 		<a class="m-2 switch-btn red" href="{% url 'dash:redplayersel' pk=match.pk club=match.away.pk %}">
 			Red<br><small>card</small>
+		</a>
+		<a class="m-2 switch-btn blue" href="{% url 'dash:subplayersel' pk=match.pk club=match.away.pk %}">
+			Sub<br><small style="font-size: 10px;">(substitution)</small>
 		</a>
 	</div>
 </div>
@@ -49,6 +55,9 @@
 }
 .switch-btn.red{
 	background-image:linear-gradient(red,black)
+}
+.switch-btn.blue{
+	background-image:linear-gradient(blue,black)
 }
 
 </style>

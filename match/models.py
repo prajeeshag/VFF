@@ -74,7 +74,7 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                                         status=TimeEvents.STATUS.kickoff)
         Events.objects.create(
             matchtimeline=self,
-            event_object=obj,)
+            content_object=obj,)
 
     def start_second_half(self, time=None):
         if time:
@@ -87,7 +87,7 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                                         status=TimeEvents.STATUS.second_half)
         Events.objects.create(
             matchtimeline=self,
-            event_object=obj,)
+            content_object=obj,)
 
     def set_half_time(self, ftime=-1, stime=-1):
         obj = TimeEvents.objects.create(
@@ -97,7 +97,7 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
         self.save()
         Events.objects.create(
             matchtimeline=self,
-            event_object=obj,)
+            content_object=obj,)
 
     def finalize_match(self, ftime=-1, stime=-1):
         with transaction.atomic():
@@ -116,14 +116,14 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
 
             Events.objects.create(
                 matchtimeline=self,
-                event_object=obj,)
+                content_object=obj,)
 
 
 class Events(TimeStampedModel):
     matchtimeline = models.ForeignKey(MatchTimeLine, on_delete=models.PROTECT)
-    event_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    event_object = GenericForeignKey('event_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     event_id = models.IntegerField()
 
     class Meta:
@@ -133,25 +133,25 @@ class Events(TimeStampedModel):
         return self.label()
 
     def kind(self):
-        return self.event_object.event_kind
+        return self.content_object.event_kind
 
     def side(self):
-        return self.event_object.get_event_side()
+        return self.content_object.get_event_side()
 
     def label(self):
-        return self.event_object.get_event_label()
+        return self.content_object.get_event_label()
 
     def sublabel(self):
-        return self.event_object.get_event_sublabel()
+        return self.content_object.get_event_sublabel()
 
     def url(self):
-        return self.event_object.get_event_url()
+        return self.content_object.get_event_url()
 
     def time_label(self):
-        return self.event_object.get_event_time_label()
+        return self.content_object.get_event_time_label()
 
     def save(self, *args, **kwargs):
-        self.event_id = self.event_object.ftime*2 + self.event_object.stime*1
+        self.event_id = self.content_object.ftime*2 + self.content_object.stime*1
         super().save(*args, **kwargs)
 
 
@@ -170,7 +170,7 @@ class EventModel(models.Model):
     stime = models.IntegerField(default=-1)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    # timeline_event = GenericRelation(Events)
+    timeline_event = GenericRelation(Events)
 
     class Meta:
         abstract = True
@@ -188,10 +188,10 @@ class EventModel(models.Model):
         pass
 
     def save(self, *args, **kwargs):
+        halftime = int(MATCHTIME*60/2)  # seconds
+        fulltime = int(MATCHTIME*60)  # seconds
+        match = self.get_match()
         if self.ftime == -1 and self.stime == -1:
-            halftime = int(MATCHTIME*60/2)  # seconds
-            fulltime = int(MATCHTIME*60)  # seconds
-            match = self.get_match()
             if match:
                 timeline = getattr(match, 'matchtimeline', None)
                 if timeline:
@@ -205,6 +205,7 @@ class EventModel(models.Model):
                         time = tdelta.total_seconds()
                         self.stime = max(time-halftime, 0)
                         self.ftime = time - self.stime
+
         super().save(*args, **kwargs)
 
     def get_event_label(self):
@@ -264,16 +265,16 @@ class EventModel(models.Model):
         if not match:
             raise EventMatchNotAvailable
         timeline, created = MatchTimeLine.objects.get_or_create(match=match)
-        return Events.objects.create(matchtimeline=timeline, event_object=self)
+        return Events.objects.create(matchtimeline=timeline, content_object=self)
 
     def get_time_string(self, ftime, stime):
         time = int(ftime/60)
         addl = int(stime/60)
-        time = ftime
-        addl = stime
         if addl > 0:
             return "{}+{}'".format(time, addl)
-        return "{}'".format(time)
+        if time > 0:
+            return "{}'".format(time)
+        return ""
 
 
 class TimeEvents(TimeStampedModel, StatusModel, EventModel):
@@ -293,7 +294,7 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
 
     def get_event_sublabel(self):
         if self.status in [self.STATUS.kickoff, self.STATUS.second_half]:
-            return ""
+            return timezone.localtime(self.time).strftime('%I:%M %P')
         return Goal.score_as_string(self.match)
 
 
@@ -304,7 +305,8 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                    ('first', 'First Team'),
                    ('bench', 'Sub'),
                    ('playing', 'Playing'),
-                   ('onbench', 'Sub'),
+                   ('onbench', 'On bench'),
+                   ('tobench', 'To bench'),
                    ('avail', 'Available'),
                    ('suspen', 'Suspended'),
                    )
@@ -360,15 +362,17 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         return self.KIND[self.kind]
 
     def raise_red_card(self, player):
-        if self.get_playing_squad().players.filter(player).exists():
+        if player in self.get_playing_squad().players.all():
             self.get_playing_squad().remove_player(player)
             if player.get_age() <= 19:
                 self.NU19S = max(0, self.NU19S-1)
             if player.get_age() <= 21:
                 self.NU21S = max(0, self.NU21S-1)
             self.save()
-        elif self.get_onbench_squad().players.filter(player).exists():
+        elif player in self.get_onbench_squad().players.all():
             self.get_onbench_squad().remove_player(player)
+        elif player in self.get_tobench_squad().players.all():
+            self.get_tobench_squad().remove_player(player)
 
     def delete_red_card(self, player):
         self.get_playing_squad().add_player(player)
@@ -394,6 +398,10 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     @ classmethod
     def _create_onbench(cls, parent):
         return cls.objects.create(kind=cls.KIND.onbench, parent=parent)
+
+    @ classmethod
+    def _create_tobench(cls, parent):
+        return cls.objects.create(kind=cls.KIND.tobench, parent=parent)
 
     @ classmethod
     def _create_first(cls, parent):
@@ -425,6 +433,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             cls._create_bench(parent)
             cls._create_playing(parent)
             cls._create_onbench(parent)
+            cls._create_tobench(parent)
             avail = cls._create_avail(parent)
             suspen = cls._create_suspen(parent)
             for player in club.get_players():
@@ -453,6 +462,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def get_onbench_squad(self):
         return self.items.filter(kind=self.KIND.onbench).first()
 
+    def get_tobench_squad(self):
+        return self.items.filter(kind=self.KIND.tobench).first()
+
     def get_playing_squad(self):
         return self.items.filter(kind=self.KIND.playing).first()
 
@@ -470,6 +482,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
 
     def get_onbench_players(self):
         return self.get_onbench_squad().players.all()
+
+    def get_tobench_players(self):
+        return self.get_tobench_squad().players.all()
 
     def get_playing_players(self):
         return self.get_playing_squad().players.all()
@@ -510,6 +525,11 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             raise NotMyMatch
         self.get_onbench_squad().add_player(player)
 
+    def add_player_to_tobench(self, player):
+        if player.get_club() != self.club:
+            raise NotMyMatch
+        self.get_tobench_squad().add_player(player)
+
     def add_player_to_first(self, player):
         if player.get_club() != self.club:
             raise NotMyMatch
@@ -543,6 +563,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def remove_player_from_onbench(self, player):
         self.get_onbench_squad().remove_player(player)
 
+    def remove_player_from_tobench(self, player):
+        self.get_tobench_squad().remove_player(player)
+
     def remove_player_from_first(self, player):
         self.get_first_squad().remove_player(player)
         self.get_playing_squad().remove_player(player)
@@ -572,11 +595,14 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         self.save()
         self.create_timeline_event()
 
-    def substitute(self, playerin, playerout, user, reason_text=None, bypassU=False):
+    def substitute(self, playerin, playerout, user,
+                   ftime=-1, stime=-1, reason_text=None,
+                   bypassU=False):
         with transaction.atomic():
             self.get_playing_squad().add_player(playerin)
             self.get_playing_squad().remove_player(playerout)
             self.get_onbench_squad().remove_player(playerin)
+            self.get_tobench_squad().add_player(playerout)
             if not bypassU:
                 self.check_nU()
             reason = None
@@ -587,7 +613,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             obj = Substitution.objects.create(
                 squad=self, created_by=user,
                 sub_in=playerin, sub_out=playerout,
-                reason=reason)
+                reason=reason, ftime=ftime, stime=stime)
             obj.create_timeline_event()
             return obj
 
@@ -602,9 +628,7 @@ class CardReason(NoteModel):
 class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
     STATUS = Choices('active', 'inactive', 'approved')
     COLOR = Choices('red', 'yellow')
-    event_label_field = 'player'
     event_sublabel_field = 'reason'
-    event_time_field = 'time'
     color = models.CharField(
         max_length=10, choices=COLOR, default=COLOR.yellow)
     match = models.ForeignKey(Matches, on_delete=models.PROTECT)
@@ -614,11 +638,11 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
         on_delete=models.PROTECT,
         null=True)
 
-    class Meta:
-        unique_together = ['player', 'match']
-
     class GotRedAlready(Exception):
         pass
+
+    def get_event_label(self):
+        return self.player.__str__().capitalize()
 
     def get_event_kind(self):
         return self.color
@@ -666,27 +690,29 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
 
     @classmethod
     def raise_yellow_card(cls, match, player, reason_text, ftime=-1, stime=-1):
-        red = cls.objects.filter(
-            match=match, player=player, color=cls.COLOR.red).first()
-        if red:
-            raise cls.GotRedAlready
+        with transaction.atomic():
+            red = cls.objects.filter(
+                match=match, player=player, color=cls.COLOR.red).first()
+            if red:
+                raise cls.GotRedAlready
 
-        yellow1 = cls.objects.filter(
-            match=match, player=player, color=cls.COLOR.yellow).first()
+            yellow1 = cls.objects.filter(
+                match=match, player=player, color=cls.COLOR.yellow).first()
 
-        reason, created = CardReason.objects.get_or_create(text=reason_text)
-        obj = cls.objects.create(
-            match=match, player=player,
-            color=cls.COLOR.yellow, reason=reason,
-            ftime=ftime, stime=stime)
+            reason, created = CardReason.objects.get_or_create(
+                text=reason_text)
+            obj = cls.objects.create(
+                match=match, player=player,
+                color=cls.COLOR.yellow, reason=reason,
+                ftime=ftime, stime=stime)
 
-        obj.create_timeline_event()
+            obj.create_timeline_event()
 
-        if yellow1:
-            reason1, created = CardReason.objects.get_or_create(
-                text='second yellow')
-            cls.raise_red_card(match, player, reason1,
-                               ftime=ftime, stime=stime)
+            if yellow1:
+                reason1, created = CardReason.objects.get_or_create(
+                    text='second yellow')
+                cls.raise_red_card(match, player, reason1,
+                                   ftime=ftime, stime=stime)
 
 
 class SubstitutionReason(NoteModel):

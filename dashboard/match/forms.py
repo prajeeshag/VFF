@@ -21,6 +21,9 @@ class MatchTimeForm(forms.Form):
         min_value=0, max_value=200, initial=0,
         label='Additional time (in minutes)')
 
+    def __init__(self, timeline=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         data = super().clean()
         ftime = data.get('ftime')
@@ -31,11 +34,29 @@ class MatchTimeForm(forms.Form):
 
 
 class PlayerSelectForm(MatchTimeForm):
-    attr = forms.CharField(label='Attributes', max_length=100)
     player = forms.ModelChoiceField(queryset=None, required=True)
+    attr = forms.CharField(label='Attributes', max_length=100)
 
-    def __init__(self, qattrs, qplayers, *args, **kwargs):
+    def __init__(self, qattrs, qplayers, attr_required=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['player'].queryset = qplayers
         self.fields['attr'].widget = ListTextWidget(
-            data_list=qattrs, name='attr-list')
+            data_list=qattrs, name='attr-list',
+            attrs={'autocomplete': 'off'})
+        self.fields['attr'].required = attr_required
+
+
+class PlayerSelectForm2(MatchTimeForm):
+    player_in = forms.ModelChoiceField(
+        label='Sub in', queryset=None, required=True)
+    player_out = forms.ModelChoiceField(
+        label='Sub out', queryset=None, required=True)
+    attr = forms.CharField(label='Attributes', max_length=100, required=False)
+
+    def __init__(self, qattrs, qplayers_in, qplayers_out, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['player_in'].queryset = qplayers_in
+        self.fields['player_out'].queryset = qplayers_out
+        self.fields['attr'].widget = ListTextWidget(
+            data_list=qattrs, name='attr-list',
+            attrs={'autocomplete': 'off'})
