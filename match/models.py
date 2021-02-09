@@ -128,7 +128,7 @@ class Events(TimeStampedModel):
     matchtimeline = models.ForeignKey(MatchTimeLine, on_delete=models.PROTECT)
     event_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    event_object = GenericForeignKey('event_id', 'object_id')
+    event_object = GenericForeignKey('event_type', 'object_id')
     event_id = models.IntegerField()
 
     class Meta:

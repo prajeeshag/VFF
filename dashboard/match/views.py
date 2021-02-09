@@ -127,6 +127,8 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
                                      'club': self.club.pk, 'match': self.match.pk})
         ctx['club'] = self.club
         ctx['match'] = self.match
+        request.session['add_squad_return_url'] = request.session.get(
+            'previous_page', None)
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
@@ -253,6 +255,9 @@ class FinalizeSquad(AddFirstTeam):
         except self.squad.NotEnoughPlayers as e:
             messages.add_message(request, messages.WARNING, e)
             return redirect(self.backurl)
+
+        if request.session.get('add_squad_return_url', None):
+            return redirect(request.session.get('add_squad_return_url'))
         return redirect(self.squad)
 
 
