@@ -608,9 +608,14 @@ class PlayerSelect2(LoginRequiredMixin,
 
         squad = Squad.get_squad(match=self.match, club=self.club)
 
-        squad.substitute(playerin=player_in,
-                         playerout=player_out, user=self.request.user,
-                         ftime=ftime, stime=stime, reason_text=attr)
+        try:
+            squad.substitute(playerin=player_in,
+                             playerout=player_out, user=self.request.user,
+                             ftime=ftime, stime=stime, reason_text=attr)
+        except squad.NotEnoughPlayers as e:
+            messages.add_message(request, messages.WARNING, e)
+            return self.form_invalid(form)
+
         return super().form_valid(form)
 
     def get_success_url(self):
