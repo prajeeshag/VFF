@@ -149,6 +149,10 @@ class Matches(TimeStampedModel, StatusModel):
         return cls.get_matches_of_club(club).filter(date__lt=date)
 
     @classmethod
+    def get_done_matches_of_club(cls, club):
+        return cls.get_matches_of_club(club).filter(status=self.STATUS.done)
+
+    @classmethod
     def get_upcoming_matches_of_club(cls, club):
         date = timezone.now()
         return cls.get_matches_of_club(club).filter(date__gte=date)

@@ -783,6 +783,8 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
         PlayerProfile, on_delete=models.SET_NULL, null=True, related_name='goals')
     club = models.ForeignKey(
         ClubProfile, on_delete=models.PROTECT, related_name='goals')
+    against = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT, related_name='goals_against')
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, related_name='goals')
     attr = models.ForeignKey(
@@ -833,6 +835,7 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
             self.club = self.match.get_opponent_club_of_player(self.player)
         else:
             self.club = self.player.get_club()
+        self.against = self.match.get_opponent_club(self.club)
         super().save(*args, **kwargs)
 
     @ classmethod
@@ -844,6 +847,86 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
     def score_as_string(cls, match):
         home, away = cls.score(match)
         return "{} - {}".format(home, away)
+
+
+class Result(StatusModel):
+    STATUS = ('not_completed', 'result', 'draw')
+    winner = models.ForeignKey(
+        ClubProfile,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name='wins')
+    loser = models.ForeignKey(
+        ClubProfile,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name='losses')
+    draws = models.ManyToManyField(
+        ClubProfile,
+        null=True,
+        related_name='draws')
+    match = models.OneToOneField(
+        Matches, on_delete=models.PROTECT,
+        name='result')
+
+    @classmethod
+    def create(cls, match):
+        obj = cls.objects.get_or_create(match=match)
+        obj.update()
+        return obj
+
+    def update(self):
+        if not self.match.is_done():
+            self.status = self.STATUS.not_completed
+            self.save()
+
+        score = Goal.score(self.match)
+        if score[0] > score[1]:
+            self.status = self.STATUS.result
+            self.winner = self.match.home
+            self.loser = self.match.away
+            self.draws.clear()
+            self.save()
+        elif score[0] < score[1]:
+            self.status = self.STATUS.result
+            self.winner = self.match.away
+            self.loser = self.match.home
+            self.draws.clear()
+            self.save()
+        else:
+            self.status = self.STATUS.draw
+            self.winner = None
+            self.loser = None
+            self.save()
+            self.draws.add(self.match.away, self.match.home)
+
+
+class Lose(models.Model):
+    club = models.ForeignKey(
+        ClubProfile,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name='losses')
+    match = models.OneToOneField(
+        Matches, on_delete=models.PROTECT,
+        name='lose')
+
+    class Meta:
+        unique_together = ['match', 'club']
+
+
+class Draw(models.Model):
+    club = models.ForeignKey(
+        ClubProfile,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name='losses')
+    match = models.OneToOneField(
+        Matches, on_delete=models.PROTECT,
+        name='lose')
+
+    class Meta:
+        unique_together = ['match', 'club']
 
 
 class SuspensionReason(NoteModel):
