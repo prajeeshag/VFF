@@ -424,7 +424,7 @@ class FinalTime(LoginRequiredMixin,
     template_name = 'dashboard/match/base_form.html'
 
     def get_success_url(self):
-        return self.match.matchtimeline.get_success_url()
+        return self.match.matchtimeline.get_absolute_url()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -442,7 +442,7 @@ class FinalTime(LoginRequiredMixin,
         stime = form.cleaned_data.get('stime')*60
         if self.match.matchtimeline.final_time:
             messages.add_message(
-                self.request, messages.DANGER,
+                self.request, messages.WARNING,
                 "Match already in Final Time!!")
         else:
             self.match.matchtimeline.finalize_match(ftime=ftime, stime=stime)
@@ -452,7 +452,7 @@ class FinalTime(LoginRequiredMixin,
         if self.request.POST.get('time') == 'now':
             if self.match.matchtimeline.final_time:
                 messages.add_message(
-                    self.request, messages.DANGER,
+                    self.request, messages.WARNING,
                     "Match already in Final Time!!")
             else:
                 self.match.matchtimeline.finalize_match()
