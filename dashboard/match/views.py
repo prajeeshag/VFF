@@ -423,6 +423,9 @@ class FinalTime(LoginRequiredMixin,
     form_class = MatchTimeForm
     template_name = 'dashboard/match/base_form.html'
 
+    def get_success_url(self):
+        return self.match.matchtimeline.get_success_url()
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Final Time'
