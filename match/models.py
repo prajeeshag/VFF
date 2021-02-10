@@ -121,6 +121,8 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 matchtimeline=self,
                 content_object=obj,)
 
+            self.match.set_done()
+
 
 class Events(TimeStampedModel):
     matchtimeline = models.ForeignKey(MatchTimeLine, on_delete=models.PROTECT)

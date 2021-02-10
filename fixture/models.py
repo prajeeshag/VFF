@@ -177,3 +177,7 @@ class Matches(TimeStampedModel, StatusModel):
             return cls.get_next_match_of_club(club)
         else:
             return prev_match
+
+    def set_done(self):
+        self.status = self.STATUS.done
+        self.save()
