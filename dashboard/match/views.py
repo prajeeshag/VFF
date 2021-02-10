@@ -342,7 +342,8 @@ class HalfTime(LoginRequiredMixin,
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Half Time'
         ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.match.pk})
         return ctx
 
     def form_valid(self, form):
@@ -425,8 +426,7 @@ class FinalTime(LoginRequiredMixin,
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Final Time'
-        ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+        ctx['return_url'] = self.match.matchtimeline.get_absolute_url()
         return ctx
 
     def get_form_kwargs(self):
