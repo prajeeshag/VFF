@@ -109,7 +109,8 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         except Squad.DoesNotExist:
             squad = Squad.create(match, club, user)
 
-        if not squad.is_pre():
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not squad.is_pre() and not is_match_manager:
             messages.add_message(
                 request, messages.INFO,
                 "Squad Finalized")
