@@ -342,7 +342,8 @@ class HalfTime(LoginRequiredMixin,
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Half Time'
         ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.match.pk})
         return ctx
 
     def form_valid(self, form):
@@ -422,11 +423,13 @@ class FinalTime(LoginRequiredMixin,
     form_class = MatchTimeForm
     template_name = 'dashboard/match/base_form.html'
 
+    def get_success_url(self):
+        return self.match.matchtimeline.get_absolute_url()
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Final Time'
-        ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+        ctx['return_url'] = self.match.matchtimeline.get_absolute_url()
         return ctx
 
     def get_form_kwargs(self):
@@ -439,7 +442,7 @@ class FinalTime(LoginRequiredMixin,
         stime = form.cleaned_data.get('stime')*60
         if self.match.matchtimeline.final_time:
             messages.add_message(
-                self.request, messages.DANGER,
+                self.request, messages.WARNING,
                 "Match already in Final Time!!")
         else:
             self.match.matchtimeline.finalize_match(ftime=ftime, stime=stime)
@@ -449,7 +452,7 @@ class FinalTime(LoginRequiredMixin,
         if self.request.POST.get('time') == 'now':
             if self.match.matchtimeline.final_time:
                 messages.add_message(
-                    self.request, messages.DANGER,
+                    self.request, messages.WARNING,
                     "Match already in Final Time!!")
             else:
                 self.match.matchtimeline.finalize_match()
@@ -605,9 +608,14 @@ class PlayerSelect2(LoginRequiredMixin,
 
         squad = Squad.get_squad(match=self.match, club=self.club)
 
-        squad.substitute(playerin=player_in,
-                         playerout=player_out, user=self.request.user,
-                         ftime=ftime, stime=stime, reason_text=attr)
+        try:
+            squad.substitute(playerin=player_in,
+                             playerout=player_out, user=self.request.user,
+                             ftime=ftime, stime=stime, reason_text=attr)
+        except squad.NotEnoughPlayers as e:
+            messages.add_message(request, messages.WARNING, e)
+            return self.form_invalid(form)
+
         return super().form_valid(form)
 
     def get_success_url(self):
