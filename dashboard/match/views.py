@@ -19,8 +19,6 @@ from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import PermissionDenied
 
 import rules
-from lock_tokens.exceptions import AlreadyLockedError, UnlockForbiddenError
-from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
 
 from django.http import (
     HttpResponseForbidden, HttpResponseRedirect,
@@ -117,14 +115,6 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *arg, **kwargs):
-        try:
-            lock_for_session(self.squad, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!!")
-            return redirect(self.backurl)
-
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
@@ -138,12 +128,6 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        if not check_for_session(self.squad, request.session):
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!")
-            return redirect(self.backurl)
-
         action = request.POST.get('action')
         pk = request.POST.get('pk', None)
 
@@ -177,14 +161,6 @@ class AddSubTeam(AddFirstTeam):
     template_name = 'dashboard/match/add_team.html'
 
     def get(self, request, *arg, **kwargs):
-        try:
-            lock_for_session(self.squad, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!!")
-            return redirect(self.backurl)
-
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_bench_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
@@ -199,11 +175,6 @@ class AddSubTeam(AddFirstTeam):
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        if not check_for_session(self.squad, request.session):
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!")
-            return redirect(self.backurl)
         action = request.POST.get('action')
         pk = request.POST.get('pk')
         player = get_object_or_404(PlayerProfile, pk=pk)
@@ -235,14 +206,6 @@ class FinalizeSquad(AddFirstTeam):
     template_name = 'dashboard/match/finalize_squad.html'
 
     def get(self, request, *arg, **kwargs):
-        try:
-            lock_for_session(self.squad, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!!")
-            return redirect(self.backurl)
-
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_bench_squad()
@@ -254,11 +217,6 @@ class FinalizeSquad(AddFirstTeam):
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        if not check_for_session(self.squad, request.session):
-            messages.add_message(
-                request, messages.WARNING,
-                "Someone else has locked squad editing!")
-            return redirect(self.backurl)
         try:
             self.squad.finalize()
         except self.squad.NotEnoughPlayers as e:
@@ -282,13 +240,6 @@ class MatchLockMixin:
         pk = kwargs.get('pk')
         match = get_object_or_404(Matches, pk=pk)
         self.match = match
-        try:
-            lock_for_session(match, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked the match!!")
-            return redirect(self.backurl)
         return super().dispatch(request, *args, **kwargs)
 
 
