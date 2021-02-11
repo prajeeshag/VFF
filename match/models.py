@@ -508,22 +508,26 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         return self.get_avail_squad().players.all()
 
     def add_player(self, player):
-        self.players.add(player)
-        if player.get_age() <= 21:
-            self.nU21 += 1
-        if player.get_age() <= 19:
-            self.nU19 += 1
-        self.num_players += 1
-        self.save()
+        with transaction.atomic():
+            if player not in self.players.all():
+                if player.get_age() <= 21:
+                    self.nU21 += 1
+                if player.get_age() <= 19:
+                    self.nU19 += 1
+                self.players.add(player)
+                self.num_players += 1
+                self.save()
 
     def remove_player(self, player):
-        self.players.remove(player)
-        if player.get_age() <= 21:
-            self.nU21 -= 1
-        if player.get_age() <= 19:
-            self.nU19 -= 1
-        self.num_players -= 1
-        self.save()
+        with transaction.atomic():
+            if player in self.players.all():
+                if player.get_age() <= 21:
+                    self.nU21 -= 1
+                if player.get_age() <= 19:
+                    self.nU19 -= 1
+                self.players.remove(player)
+                self.num_players -= 1
+                self.save()
 
     def add_player_to_playing(self, player):
         if self.get_playing_players().count() >= NFIRST:
@@ -568,11 +572,10 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                 raise self.GotSuspension
             if not self.match.is_player_playing(player):
                 raise NotMyMatch
-            with transaction.atomic():
-                if player in self.get_avail_players():
-                    self.get_avail_squad().remove_player(player)
-                    self.get_bench_squad().add_player(player)
-                    self.get_onbench_squad().add_player(player)
+            if player in self.get_avail_players():
+                self.get_avail_squad().remove_player(player)
+                self.get_bench_squad().add_player(player)
+                self.get_onbench_squad().add_player(player)
 
     def remove_player_from_playing(self, player):
         self.get_playing_squad().remove_player(player)
@@ -584,14 +587,16 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         self.get_tobench_squad().remove_player(player)
 
     def remove_player_from_first(self, player):
-        self.get_first_squad().remove_player(player)
-        self.get_playing_squad().remove_player(player)
-        self.get_avail_squad().add_player(player)
+        if player in self.get_first_players():
+            self.get_first_squad().remove_player(player)
+            self.get_playing_squad().remove_player(player)
+            self.get_avail_squad().add_player(player)
 
     def remove_player_from_bench(self, player):
-        self.get_bench_squad().remove_player(player)
-        self.get_onbench_squad().remove_player(player)
-        self.get_avail_squad().add_player(player)
+        if player in self.get_bench_players():
+            self.get_bench_squad().remove_player(player)
+            self.get_onbench_squad().remove_player(player)
+            self.get_avail_squad().add_player(player)
 
     def get_available_players(self):
         return self.get_avail_players()
