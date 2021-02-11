@@ -11,6 +11,17 @@
 
 {% if can_manage_match %}
 
+		<div class="d-flex p-1 justify-content-center">
+			<form method="POST" action="{% url 'dash:activatepast' match.pk %}">
+				{% include 'snippets/form_common.html' %}
+				{% if onspot %}
+					<button class="btn btn-lg btn-block btn-primary text-light" type="submit" name="action" value="past">Switch to Past Panel</button>
+				{% else %}
+					<button class="btn btn-lg btn-block btn-primary text-light" type="submit" name="action" value="onspot"> Switch to Onspot Panel</button>
+				{% endif %}
+			</form>
+		</div>
+
 		{% if not match.get_home_squad %}
 			<div class="d-flex p-1">
 				<form method="POST" action="{% url 'dash:startmatchtimeline' match.pk %}">

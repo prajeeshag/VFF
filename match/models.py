@@ -24,6 +24,16 @@ NU21 = 3
 NPLAYERS = 7
 
 
+def get_time_string(ftime, stime):
+    time = math.ceil(ftime/60)
+    addl = math.ceil(stime/60)
+    if addl > 0:
+        return "{}+{}'".format(time, addl)
+    if time > 0:
+        return "{}'".format(time)
+    return ""
+
+
 class NotMyMatch(Exception):
     pass
 
@@ -269,7 +279,7 @@ class EventModel(models.Model):
         if self.event_time_label:
             return self.event_time_label
         elif hasattr(self, 'ftime') and hasattr(self, 'stime'):
-            return self.get_time_string(self.ftime, self.stime)
+            return get_time_string(self.ftime, self.stime)
         else:
             return None
 
@@ -279,15 +289,6 @@ class EventModel(models.Model):
             raise EventMatchNotAvailable
         timeline, created = MatchTimeLine.objects.get_or_create(match=match)
         return Events.objects.create(matchtimeline=timeline, content_object=self)
-
-    def get_time_string(self, ftime, stime):
-        time = math.ceil(ftime/60)
-        addl = math.ceil(stime/60)
-        if addl > 0:
-            return "{}+{}'".format(time, addl)
-        if time > 0:
-            return "{}'".format(time)
-        return ""
 
 
 class TimeEvents(TimeStampedModel, StatusModel, EventModel):
@@ -310,7 +311,7 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
     def get_event_sublabel(self):
         if self.status in [self.STATUS.kickoff, self.STATUS.second_half]:
             return timezone.localtime(self.time).strftime('%I:%M %p')
-        return self.sublabel
+        return "{} ( {} )".format(self.sublabel, get_time_string(self.ftime, self.stime))
 
 
 class Squad(StatusModel, TimeStampedModel, EventModel):

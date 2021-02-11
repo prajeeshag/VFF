@@ -67,12 +67,15 @@ urlpatterns += [path('managematches/',
 
 
 class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
-    template_name = 'dashboard/match/enter_past_match_details.html'
+    template_name = 'dashboard/match/enter_match_details.html'
     model = Matches
     context_object_name = 'match'
 
     def get(self, request, *args, **kwargs):
         match = self.get_object()
+        self.match = match
+        if request.session.get('onspot_'+str(match.pk), None) is None:
+            request.session['onspot_'+str(match.pk)] = True
         if match.is_tentative():
             messages.add_message(
                 request, messages.WARNING,
@@ -82,6 +85,7 @@ class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx['onspot'] = self.request.session.get('onspot_'+str(self.match.pk))
         return ctx
 
 
@@ -122,8 +126,8 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
         ctx['stepnexturl'] = reverse('dash:addsubteam', kwargs={
-                                     'club': self.club.pk,
-                                     'match': self.match.pk})
+            'club': self.club.pk,
+            'match': self.match.pk})
         ctx['club'] = self.club
         ctx['match'] = self.match
         request.session['add_squad_return_url'] = request.session.get(
@@ -176,11 +180,11 @@ class AddSubTeam(AddFirstTeam):
         ctx['squad'] = self.squad.get_bench_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
         ctx['stepnexturl'] = reverse('dash:finalizesquad', kwargs={
-                                     'club': self.club.pk,
-                                     'match': self.match.pk})
+            'club': self.club.pk,
+            'match': self.match.pk})
         ctx['stepbackurl'] = reverse('dash:addfirstteam', kwargs={
-                                     'club': self.club.pk,
-                                     'match': self.match.pk})
+            'club': self.club.pk,
+            'match': self.match.pk})
         ctx['club'] = self.club
         ctx['match'] = self.match
         return render(request, self.template_name, ctx)
@@ -221,8 +225,8 @@ class FinalizeSquad(AddFirstTeam):
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_bench_squad()
         ctx['stepbackurl'] = reverse('dash:addsubteam', kwargs={
-                                     'club': self.club.pk,
-                                     'match': self.match.pk})
+            'club': self.club.pk,
+            'match': self.match.pk})
         ctx['club'] = self.club
         ctx['match'] = self.match
         return render(request, self.template_name, ctx)
@@ -276,6 +280,22 @@ class StartMatchTimeLine(LoginRequiredMixin,
 urlpatterns += [path('startmatchtimeline/<int:pk>/',
                      StartMatchTimeLine.as_view(),
                      name='startmatchtimeline'), ]
+
+
+class ActivatePast(LoginRequiredMixin, MatchLockMixin, View):
+
+    def post(self, request, *args, **kwargs):
+        val = request.POST.get('action')
+        if val == 'onspot':
+            request.session['onspot_'+str(self.match.pk)] = True
+        elif val == 'past':
+            request.session['onspot_'+str(self.match.pk)] = False
+        return redirect(reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk}))
+
+
+urlpatterns += [path('activatepast/<int:pk>/',
+                     ActivatePast.as_view(),
+                     name='activatepast'), ]
 
 
 class StartMatch(LoginRequiredMixin,
@@ -685,7 +705,7 @@ class PlayerSelect2(LoginRequiredMixin,
                              playerout=player_out, user=self.request.user,
                              ftime=ftime, stime=stime, reason_text=attr)
         except squad.NotEnoughPlayers as e:
-            messages.add_message(request, messages.WARNING, e)
+            messages.add_message(self.request, messages.WARNING, e)
             return self.form_invalid(form)
 
         return super().form_valid(form)

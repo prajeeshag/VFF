@@ -8,6 +8,7 @@
 {% block content_main %}
 	<div class="container-fluid">
 		<ul class="nav nav-tabs nav-justified" role="tablist">
+
 			<li class="nav-item">
 				{% if match.matchtimeline.first_half_start %}
 					<a class="nav-link" data-toggle="tab" href="#main" role="tab" >Main</a>
@@ -16,13 +17,19 @@
 				{% endif %}
 	  	</li>
 
-			<li class="nav-item">
-				{% if match.matchtimeline.first_half_start %}
-					<a class="nav-link active" data-toggle="tab" href="#events" role="tab" >Events</a>
-				{% else %}
-					<a class="nav-link" data-toggle="tab" href="#events" role="tab" >Events</a>
-				{% endif %}
-	  	</li>
+			{% if onspot %}
+				<li class="nav-item">
+					{% if match.matchtimeline.first_half_start %}
+						<a class="nav-link active" data-toggle="tab" href="#events" role="tab" >Events</a>
+					{% else %}
+						<a class="nav-link" data-toggle="tab" href="#events" role="tab" >Events</a>
+					{% endif %}
+	  		</li>
+			{% else %}
+				<li class="nav-item">
+	  		  <a class="nav-link" data-toggle="tab" href="#pastevents" role="tab" >Events(past)</a>
+	  		</li>
+			{% endif %}
 
 			{% if match.matchtimeline %}
 				<li class="nav-item">
@@ -30,10 +37,6 @@
 				</li>
 			{% endif %}
 
-
-			<li class="nav-item">
-	  	  <a class="nav-link" data-toggle="tab" href="#pastevents" role="tab" >Events(past)</a>
-	  	</li>
 		</ul>	
 
 		<div class="tab-content" id="myTabContent">
