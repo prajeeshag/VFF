@@ -9,6 +9,10 @@ from core.forms import ListTextWidget
 from match.models import MATCHTIME
 
 
+class EmptyForm(forms.Form):
+    pass
+
+
 class DateTimeForm(forms.Form):
     time = forms.DateTimeField(label='Date and Time')
 
@@ -50,7 +54,7 @@ class MatchTimeForm(forms.Form):
                     'Wrong Match timings!')
 
 
-class PlayerSelectForm(MatchTimeForm):
+class PlayerSelectFormOnspot(forms.Form):
     player = forms.ModelChoiceField(queryset=None, required=True)
     attr = forms.CharField(label='Attributes', max_length=100)
 
@@ -63,7 +67,11 @@ class PlayerSelectForm(MatchTimeForm):
         self.fields['attr'].required = attr_required
 
 
-class PlayerSelectForm2(MatchTimeForm):
+class PlayerSelectForm(MatchTimeForm, PlayerSelectFormOnspot):
+    pass
+
+
+class PlayerSelectForm2Onspot(forms.Form):
     player_in = forms.ModelChoiceField(
         label='Sub in', queryset=None, required=True)
     player_out = forms.ModelChoiceField(
@@ -77,3 +85,7 @@ class PlayerSelectForm2(MatchTimeForm):
         self.fields['attr'].widget = ListTextWidget(
             data_list=qattrs, name='attr-list',
             attrs={'autocomplete': 'off'})
+
+
+class PlayerSelectForm2(MatchTimeForm, PlayerSelectForm2Onspot):
+    pass

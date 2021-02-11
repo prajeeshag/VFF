@@ -93,9 +93,10 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
 
     def set_half_time(self, ftime=-1, stime=-1):
         with transaction.atomic():
+            score = Goal.score_as_string(self.match)
             obj = TimeEvents.objects.create(
                 match=self.match, status=TimeEvents.STATUS.half_time,
-                ftime=ftime, stime=stime)
+                ftime=ftime, stime=stime, sublabel=score)
             self.half_time = True
             self.save()
             Events.objects.create(
@@ -104,10 +105,11 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
 
     def finalize_match(self, ftime=-1, stime=-1):
         with transaction.atomic():
+            score = Goal.score_as_string(self.match)
             obj = TimeEvents.objects.create(
                 match=self.match,
                 status=TimeEvents.STATUS.final_time,
-                ftime=ftime, stime=stime)
+                ftime=ftime, stime=stime, sublabel=score)
             self.final_time = True
             self.save()
 
@@ -279,8 +281,8 @@ class EventModel(models.Model):
         return Events.objects.create(matchtimeline=timeline, content_object=self)
 
     def get_time_string(self, ftime, stime):
-        time = int(ftime/60)
-        addl = int(stime/60)
+        time = math.ceil(ftime/60)
+        addl = math.ceil(stime/60)
         if addl > 0:
             return "{}+{}'".format(time, addl)
         if time > 0:
@@ -294,6 +296,8 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
                      ('half_time', 'Half Time'),
                      ('second_half', 'Second Half'),
                      ('final_time', 'Final Time'))
+
+    sublabel = models.CharField(max_length=50, blank=True)
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, related_name='timeevents')
 
@@ -306,7 +310,7 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
     def get_event_sublabel(self):
         if self.status in [self.STATUS.kickoff, self.STATUS.second_half]:
             return timezone.localtime(self.time).strftime('%I:%M %p')
-        return Goal.score_as_string(self.match)
+        return self.sublabel
 
 
 class Squad(StatusModel, TimeStampedModel, EventModel):
@@ -456,7 +460,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
 
         return parent
 
-    def reset(self):
+    def reset(self, hard=False):
         with transaction.atomic():
             for squad in (self.get_avail_squad(),
                           self.get_first_squad(),
@@ -465,11 +469,12 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                           self.get_onbench_squad(),
                           self.get_tobench_squad(),
                           self.get_suspen_squad()):
-                squad.players.clear()
-                squad.num_players = 0
-                squad.nU21 = 0
-                squad.nU19 = 0
-                squad.save()
+                if squad:
+                    squad.players.clear()
+                    squad.num_players = 0
+                    squad.nU21 = 0
+                    squad.nU19 = 0
+                    squad.save()
 
             suspen = self.get_suspen_squad()
             avail = self.get_avail_squad()
@@ -533,9 +538,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def add_player(self, player):
         with transaction.atomic():
             if player not in self.players.all():
-                if player.get_age() <= 21:
+                if player.get_age() <= 21 and player.get_age() != 0:
                     self.nU21 += 1
-                if player.get_age() <= 19:
+                if player.get_age() <= 19 and player.get_age() != 0:
                     self.nU19 += 1
                 self.players.add(player)
                 self.num_players += 1
@@ -544,9 +549,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def remove_player(self, player):
         with transaction.atomic():
             if player in self.players.all():
-                if player.get_age() <= 21:
+                if player.get_age() <= 21 and player.get_age() != 0:
                     self.nU21 -= 1
-                if player.get_age() <= 19:
+                if player.get_age() <= 19 and player.get_age() != 0:
                     self.nU19 -= 1
                 self.players.remove(player)
                 self.num_players -= 1

@@ -19,9 +19,6 @@ from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import PermissionDenied
 
 import rules
-from lock_tokens.exceptions import AlreadyLockedError, UnlockForbiddenError
-from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
-
 from django.http import (
     HttpResponseForbidden, HttpResponseRedirect,
     HttpResponse, HttpResponseNotFound
@@ -42,7 +39,11 @@ from league.models import Season
 from match.models import (Squad, MatchTimeLine, Goal, Cards,
                           GoalAttr, CardReason, SubstitutionReason)
 from users.models import PlayerProfile, ClubProfile
-from .forms import DateTimeForm, MatchTimeForm, PlayerSelectForm, PlayerSelectForm2
+from .forms import (
+    DateTimeForm, MatchTimeForm, EmptyForm,
+    PlayerSelectForm, PlayerSelectForm2,
+    PlayerSelectFormOnspot, PlayerSelectForm2Onspot,
+)
 
 LOGIN_URL = reverse_lazy('login')
 
@@ -117,13 +118,6 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *arg, **kwargs):
-        try:
-            lock_for_session(self.squad, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!!")
-            return redirect(self.backurl)
 
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_first_squad()
@@ -138,12 +132,6 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        if not check_for_session(self.squad, request.session):
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!")
-            return redirect(self.backurl)
-
         action = request.POST.get('action')
         pk = request.POST.get('pk', None)
 
@@ -164,6 +152,14 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
             self.squad.remove_player_from_first(player)
         elif action == 'reset':
             self.squad.reset()
+        elif action == 'hardreset':
+            try:
+                self.squad.items.all().delete()
+                self.squad.delete()
+                Squad.create(self.match, self.club, user=request.user)
+            except Exception as e:
+                messages.add_message(
+                    request, messages.WARNING, e)
 
         return redirect(self.backurl)
 
@@ -177,14 +173,6 @@ class AddSubTeam(AddFirstTeam):
     template_name = 'dashboard/match/add_team.html'
 
     def get(self, request, *arg, **kwargs):
-        try:
-            lock_for_session(self.squad, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!!")
-            return redirect(self.backurl)
-
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_bench_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
@@ -199,11 +187,6 @@ class AddSubTeam(AddFirstTeam):
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        if not check_for_session(self.squad, request.session):
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!")
-            return redirect(self.backurl)
         action = request.POST.get('action')
         pk = request.POST.get('pk')
         player = get_object_or_404(PlayerProfile, pk=pk)
@@ -235,14 +218,6 @@ class FinalizeSquad(AddFirstTeam):
     template_name = 'dashboard/match/finalize_squad.html'
 
     def get(self, request, *arg, **kwargs):
-        try:
-            lock_for_session(self.squad, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked squad editing!!")
-            return redirect(self.backurl)
-
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_bench_squad()
@@ -254,11 +229,6 @@ class FinalizeSquad(AddFirstTeam):
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        if not check_for_session(self.squad, request.session):
-            messages.add_message(
-                request, messages.WARNING,
-                "Someone else has locked squad editing!")
-            return redirect(self.backurl)
         try:
             self.squad.finalize()
         except self.squad.NotEnoughPlayers as e:
@@ -266,10 +236,10 @@ class FinalizeSquad(AddFirstTeam):
             return redirect(self.backurl)
 
         if rules.test_rule('manage_match', self.request.user):
-            return reverse('dash:enterpastmatchdetails',
-                           kwargs={'pk': self.match.pk})
+            return redirect(reverse('dash:enterpastmatchdetails',
+                                    kwargs={'pk': self.match.pk}))
         else:
-            return redirect(self.squad.get_absolute_url())
+            return redirect(squad)
 
 
 urlpatterns += [path('finalizesquad/<int:match>/<int:club>/',
@@ -282,13 +252,6 @@ class MatchLockMixin:
         pk = kwargs.get('pk')
         match = get_object_or_404(Matches, pk=pk)
         self.match = match
-        try:
-            lock_for_session(match, request.session)
-        except AlreadyLockedError:
-            messages.add_message(
-                request, messages.INFO,
-                "Someone else has locked the match!!")
-            return redirect(self.backurl)
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -322,6 +285,12 @@ class StartMatch(LoginRequiredMixin,
                  FormView):
     form_class = DateTimeForm
     template_name = 'dashboard/match/base_form.html'
+    onspot = False
+
+    def get_form_class(self):
+        if self.onspot:
+            return EmptyForm
+        return DateTimeForm
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
@@ -330,14 +299,14 @@ class StartMatch(LoginRequiredMixin,
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Start Match'
         ctx['return_url'] = reverse(
-            EnterPastMatchDetails, kwargs={'pk': self.match.pk})
+            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
         return ctx
 
     def get_initial(self):
         return {'time': self.match.date}
 
     def form_valid(self, form):
-        time = form.cleaned_data.get('time')
+        time = form.cleaned_data.get('time', None)
         if self.match.matchtimeline.first_half_start:
             messages.add_message(
                 self.request, messages.DANGER,
@@ -346,20 +315,13 @@ class StartMatch(LoginRequiredMixin,
             self.match.matchtimeline.start_match(time=time)
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        if self.request.POST.get('time') == 'now':
-            if self.match.matchtimeline.first_half_start:
-                messages.add_message(
-                    self.request, messages.DANGER,
-                    "Match already started!!")
-            else:
-                self.match.matchtimeline.start_match()
-        return super().form_invalid(form)
-
 
 urlpatterns += [path('startmatch/<int:pk>/',
                      StartMatch.as_view(),
                      name='startmatch'), ]
+urlpatterns += [path('startmatchonspot/<int:pk>/',
+                     StartMatch.as_view(onspot=True),
+                     name='startmatchonspot'), ]
 
 
 class HalfTime(LoginRequiredMixin,
@@ -368,26 +330,43 @@ class HalfTime(LoginRequiredMixin,
                FormView):
     form_class = MatchTimeForm
     template_name = 'dashboard/match/base_form.html'
+    onspot = False
+
+    def get_form_class(self):
+        if self.onspot:
+            return EmptyForm
+        return MatchTimeForm
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['timeline'] = self.match.matchtimeline
+        if not self.onspot:
+            kwargs['timeline'] = self.match.matchtimeline
         return kwargs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Half Time'
         ctx['return_url'] = reverse(
-            EnterPastMatchDetails,
+            'dash:enterpastmatchdetails',
             kwargs={'pk': self.match.pk})
         return ctx
 
     def form_valid(self, form):
-        ftime = form.cleaned_data.get('ftime')*60
-        stime = form.cleaned_data.get('stime')*60
+        ftime = form.cleaned_data.get('ftime', None)
+        if ftime:
+            ftime = ftime*60
+        else:
+            ftime = -1
+
+        stime = form.cleaned_data.get('stime', None)
+        if stime:
+            stime = stime*60
+        else:
+            stime = -1
+
         if self.match.matchtimeline.half_time:
             messages.add_message(
                 self.request, messages.DANGER,
@@ -396,20 +375,13 @@ class HalfTime(LoginRequiredMixin,
             self.match.matchtimeline.set_half_time(ftime=ftime, stime=stime)
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        if self.request.POST.get('time') == 'now':
-            if self.match.matchtimeline.half_time:
-                messages.add_message(
-                    self.request, messages.DANGER,
-                    "Match already in halftime!!")
-            else:
-                self.match.matchtimeline.set_half_time()
-        return super().form_invalid(form)
-
 
 urlpatterns += [path('halftime/<int:pk>/',
                      HalfTime.as_view(),
                      name='halftime'), ]
+urlpatterns += [path('halftimeonspot/<int:pk>/',
+                     HalfTime.as_view(onspot=True),
+                     name='halftimeonspot'), ]
 
 
 class SecondHalf(LoginRequiredMixin,
@@ -418,6 +390,12 @@ class SecondHalf(LoginRequiredMixin,
                  FormView):
     form_class = DateTimeForm
     template_name = 'dashboard/match/base_form.html'
+    onspot = False
+
+    def get_form_class(self):
+        if self.onspot:
+            return EmptyForm
+        return DateTimeForm
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
@@ -426,14 +404,15 @@ class SecondHalf(LoginRequiredMixin,
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Second Half'
         ctx['return_url'] = reverse(
-            EnterPastMatchDetails, kwargs={'pk': self.match.pk})
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.match.pk})
         return ctx
 
     def get_initial(self):
         return {'time': self.match.date+dt.timedelta(hours=1)}
 
     def form_valid(self, form):
-        time = form.cleaned_data.get('time')
+        time = form.cleaned_data.get('time', None)
         if self.match.matchtimeline.second_half_start:
             messages.add_message(
                 self.request, messages.DANGER,
@@ -442,28 +421,27 @@ class SecondHalf(LoginRequiredMixin,
             self.match.matchtimeline.start_second_half(time=time)
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        if self.request.POST.get('time') == 'now':
-            if self.match.matchtimeline.second_half_start:
-                messages.add_message(
-                    self.request, messages.DANGER,
-                    "Match already started!!")
-            else:
-                self.match.matchtimeline.start_second_half()
-        return super().form_invalid(form)
-
 
 urlpatterns += [path('secondhalf/<int:pk>/',
                      SecondHalf.as_view(),
                      name='secondhalf'), ]
+urlpatterns += [path('secondhalfonspot/<int:pk>/',
+                     SecondHalf.as_view(onspot=True),
+                     name='secondhalfonspot'), ]
 
 
 class FinalTime(LoginRequiredMixin,
                 formviewMixins,
                 MatchLockMixin,
                 FormView):
+    onspot = True
     form_class = MatchTimeForm
     template_name = 'dashboard/match/base_form.html'
+
+    def get_form_class(self):
+        if self.onspot:
+            return EmptyForm
+        return MatchTimeForm
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
@@ -475,12 +453,21 @@ class FinalTime(LoginRequiredMixin,
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['timeline'] = self.match.matchtimeline
+        if not self.onspot:
+            kwargs['timeline'] = self.match.matchtimeline
         return kwargs
 
     def form_valid(self, form):
-        ftime = form.cleaned_data.get('ftime')*60
-        stime = form.cleaned_data.get('stime')*60
+        ftime = form.cleaned_data.get('ftime', None)
+        if ftime:
+            ftime = ftime*60
+        else:
+            ftime = -1
+        stime = form.cleaned_data.get('stime', None)
+        if stime:
+            stime = stime*60
+        else:
+            stime = -1
         if self.match.matchtimeline.final_time:
             messages.add_message(
                 self.request, messages.WARNING,
@@ -489,20 +476,14 @@ class FinalTime(LoginRequiredMixin,
             self.match.matchtimeline.finalize_match(ftime=ftime, stime=stime)
         return super().form_valid(form)
 
-    def form_invalid(self, form):
-        if self.request.POST.get('time') == 'now':
-            if self.match.matchtimeline.final_time:
-                messages.add_message(
-                    self.request, messages.WARNING,
-                    "Match already in Final Time!!")
-            else:
-                self.match.matchtimeline.finalize_match()
-        return super().form_invalid(form)
-
 
 urlpatterns += [path('finaltime/<int:pk>/',
                      FinalTime.as_view(),
                      name='finaltime'), ]
+
+urlpatterns += [path('finaltimeonspot/<int:pk>/',
+                     FinalTime.as_view(onspot=True),
+                     name='finaltimeonspot'), ]
 
 
 class PlayerSelect(LoginRequiredMixin,
@@ -512,6 +493,13 @@ class PlayerSelect(LoginRequiredMixin,
     form_class = PlayerSelectForm
     template_name = 'dashboard/match/player_select.html'
     kind = 'goal'
+    onspot = False
+
+    def get_form_class(self):
+        if self.onspot:
+            return PlayerSelectFormOnspot
+        else:
+            return PlayerSelectForm
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
@@ -541,7 +529,8 @@ class PlayerSelect(LoginRequiredMixin,
     def get_form_kwargs(self):
         club = self.club
         kwargs = super().get_form_kwargs()
-        kwargs['timeline'] = self.match.matchtimeline
+        if not self.onspot:
+            kwargs['timeline'] = self.match.matchtimeline
         if self.kind == 'goal':
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, club).get_playing_players()
@@ -566,8 +555,19 @@ class PlayerSelect(LoginRequiredMixin,
     def form_valid(self, form):
         player = form.cleaned_data.get('player')
         attr = form.cleaned_data.get('attr')
-        ftime = form.cleaned_data.get('ftime')*60
-        stime = form.cleaned_data.get('stime')*60
+
+        ftime = form.cleaned_data.get('ftime', None)
+        if ftime:
+            ftime = ftime*60
+        else:
+            ftime = -1
+
+        stime = form.cleaned_data.get('stime', None)
+        if stime:
+            stime = stime*60
+        else:
+            stime = -1
+
         if attr == 'None':
             attr = None
 
@@ -604,6 +604,18 @@ urlpatterns += [path('yellowplayersel/<int:pk>/<int:club>/',
 urlpatterns += [path('redplayersel/<int:pk>/<int:club>/',
                      PlayerSelect.as_view(kind='red'),
                      name='redplayersel'), ]
+urlpatterns += [path('goalplayerselonspot/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='goal', onspot=True),
+                     name='goalplayerselonspot'), ]
+urlpatterns += [path('ownplayerselonspot/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='own', onspot=True),
+                     name='ownplayerselonspot'), ]
+urlpatterns += [path('yellowplayerselonspot/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='yellow', onspot=True),
+                     name='yellowplayerselonspot'), ]
+urlpatterns += [path('redplayerselonspot/<int:pk>/<int:club>/',
+                     PlayerSelect.as_view(kind='red', onspot=True),
+                     name='redplayerselonspot'), ]
 
 
 class PlayerSelect2(LoginRequiredMixin,
@@ -612,6 +624,12 @@ class PlayerSelect2(LoginRequiredMixin,
                     FormView):
     form_class = PlayerSelectForm2
     template_name = 'dashboard/match/player_select.html'
+    onspot = False
+
+    def get_form_class(self):
+        if self.onspot:
+            return PlayerSelectForm2Onspot
+        return PlayerSelectForm2
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
@@ -638,15 +656,26 @@ class PlayerSelect2(LoginRequiredMixin,
         kwargs['qplayers_in'] = Squad.get_squad(
             self.match, club).get_onbench_players()
         kwargs['qattrs'] = SubstitutionReason.objects.all()
-        kwargs['timeline'] = self.match.matchtimeline
+        if not self.onspot:
+            kwargs['timeline'] = self.match.matchtimeline
         return kwargs
 
     def form_valid(self, form):
         player_in = form.cleaned_data.get('player_in')
         player_out = form.cleaned_data.get('player_out')
         attr = form.cleaned_data.get('attr')
-        ftime = form.cleaned_data.get('ftime')*60
-        stime = form.cleaned_data.get('stime')*60
+        ftime = form.cleaned_data.get('ftime', None)
+        if ftime:
+            ftime = ftime*60
+        else:
+            ftime = -1
+
+        stime = form.cleaned_data.get('stime', None)
+        if stime:
+            stime = stime*60
+        else:
+            stime = -1
+
         if attr == 'None':
             attr = None
 
@@ -666,3 +695,7 @@ class PlayerSelect2(LoginRequiredMixin,
 urlpatterns += [path('subplayersel/<int:pk>/<int:club>/',
                      PlayerSelect2.as_view(),
                      name='subplayersel'), ]
+
+urlpatterns += [path('subplayerselonspot/<int:pk>/<int:club>/',
+                     PlayerSelect2.as_view(onspot=True),
+                     name='subplayerselonspot'), ]

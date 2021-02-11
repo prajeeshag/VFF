@@ -3,6 +3,7 @@
 {% load thumbnail %}
 {% load static %}
 {% load my_tags %}
+{% load rules %}
 
 {% block content_main %}
 	{% include 'fixture/partials/match_card.html' with match=match %}
@@ -59,6 +60,15 @@
 			<input type="hidden" name="pk" value="None" />
 			<button type="submit" class="btn btn-sm btn-danger">Reset</button>
 		</form>
+		{% test_rule 'manage_match' user as can_manage_match %}
+		{% if can_manage_match %}
+		<form method="POST">
+			{% include 'snippets/form_common.html' %}
+			<input type="hidden" name="action" value="hardreset" />
+			<input type="hidden" name="pk" value="None" />
+			<button type="submit" class="btn btn-sm btn-danger">Hard Reset</button>
+		</form>
+		{% endif %}
 		{% if stepnexturl %}
 		<a href="{{ stepnexturl }}" class="btn btn-lg btn-warning">Next </a>
 		{% endif %}
