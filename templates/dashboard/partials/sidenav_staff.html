@@ -1,3 +1,4 @@
+{% load rules %}
 
 {% if user.is_staff %}
 
@@ -25,7 +26,8 @@
 	</a>
 {% endif %}
 
-{% if perms.match.add_squad %}
+{% test_rule 'manage_match' user as can_manage_match %}
+{% if can_manage_match %}
 	<a class="nav-link" href="{% url 'dash:managematches' %}">
 		<div class="nav-link-icon"><i class="mdi mdi-soccer-field"></i></div>
 		Manage Matches

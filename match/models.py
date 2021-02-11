@@ -326,7 +326,8 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         max_length=10, choices=KIND, default=KIND.parent)
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, null=True, related_name='squad')
-    club = models.ForeignKey(ClubProfile, on_delete=models.PROTECT, null=True)
+    club = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT, null=True, related_name='squads')
     players = models.ManyToManyField(PlayerProfile, related_name='squads')
     parent = models.ForeignKey(
         'self', on_delete=models.PROTECT, null=True, related_name='items')
@@ -542,31 +543,36 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         self.get_tobench_squad().add_player(player)
 
     def add_player_to_first(self, player):
-        if player.get_club() != self.club:
-            raise NotMyMatch
-        if self.get_first_players().count() >= NFIRST:
-            raise self.LimitReached
-        if Suspension.has_suspension(player):
-            raise self.GotSuspension
-        if not self.match.is_player_playing(player):
-            raise NotMyMatch
+        with transaction.atomic():
+            if player.get_club() != self.club:
+                raise NotMyMatch
+            if self.get_first_players().count() >= NFIRST:
+                raise self.LimitReached
+            if Suspension.has_suspension(player):
+                raise self.GotSuspension
+            if not self.match.is_player_playing(player):
+                raise NotMyMatch
 
-        self.get_first_squad().add_player(player)
-        self.get_playing_squad().add_player(player)
-        self.get_avail_squad().remove_player(player)
+            if player in self.get_avail_players():
+                self.get_avail_squad().remove_player(player)
+                self.get_first_squad().add_player(player)
+                self.get_playing_squad().add_player(player)
 
     def add_player_to_bench(self, player):
-        if player.get_club() != self.club:
-            raise NotMyMatch
-        if self.get_bench_players().count() >= NSUB:
-            raise self.LimitReached
-        if Suspension.has_suspension(player):
-            raise self.GotSuspension
-        if not self.match.is_player_playing(player):
-            raise NotMyMatch
-        self.get_bench_squad().add_player(player)
-        self.get_onbench_squad().add_player(player)
-        self.get_avail_squad().remove_player(player)
+        with transaction.atomic():
+            if player.get_club() != self.club:
+                raise NotMyMatch
+            if self.get_bench_players().count() >= NSUB:
+                raise self.LimitReached
+            if Suspension.has_suspension(player):
+                raise self.GotSuspension
+            if not self.match.is_player_playing(player):
+                raise NotMyMatch
+            with transaction.atomic():
+                if player in self.get_avail_players():
+                    self.get_avail_squad().remove_player(player)
+                    self.get_bench_squad().add_player(player)
+                    self.get_onbench_squad().add_player(player)
 
     def remove_player_from_playing(self, player):
         self.get_playing_squad().remove_player(player)

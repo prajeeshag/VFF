@@ -1,4 +1,3 @@
-
 import datetime as dt
 
 from django.utils.decorators import method_decorator
@@ -19,6 +18,7 @@ from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import PermissionDenied
 
+import rules
 from lock_tokens.exceptions import AlreadyLockedError, UnlockForbiddenError
 from lock_tokens.sessions import check_for_session, lock_for_session, unlock_for_session
 
@@ -72,10 +72,10 @@ class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
 
     def get(self, request, *args, **kwargs):
         match = self.get_object()
-        if not match.is_fixed():
+        if match.is_tentative():
             messages.add_message(
                 request, messages.WARNING,
-                "Cannot Enter match details. This match is either tentative or finalized!")
+                "Cannot Enter match details. This match is tentative!")
             return redirect(self.backurl)
         return super().get(request, *args, **kwargs)
 
@@ -107,7 +107,7 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         if not squad.is_pre():
             messages.add_message(
                 request, messages.INFO,
-                "Already finalized the squad")
+                "Squad Finalized")
             return redirect(squad)
 
         self.squad = squad
@@ -129,7 +129,8 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
         ctx['stepnexturl'] = reverse('dash:addsubteam', kwargs={
-                                     'club': self.club.pk, 'match': self.match.pk})
+                                     'club': self.club.pk,
+                                     'match': self.match.pk})
         ctx['club'] = self.club
         ctx['match'] = self.match
         request.session['add_squad_return_url'] = request.session.get(
@@ -188,9 +189,11 @@ class AddSubTeam(AddFirstTeam):
         ctx['squad'] = self.squad.get_bench_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
         ctx['stepnexturl'] = reverse('dash:finalizesquad', kwargs={
-                                     'club': self.club.pk, 'match': self.match.pk})
+                                     'club': self.club.pk,
+                                     'match': self.match.pk})
         ctx['stepbackurl'] = reverse('dash:addfirstteam', kwargs={
-                                     'club': self.club.pk, 'match': self.match.pk})
+                                     'club': self.club.pk,
+                                     'match': self.match.pk})
         ctx['club'] = self.club
         ctx['match'] = self.match
         return render(request, self.template_name, ctx)
@@ -243,8 +246,9 @@ class FinalizeSquad(AddFirstTeam):
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_bench_squad()
-        ctx['stepbackurl'] = reverse('dash:addfirstteam', kwargs={
-                                     'club': self.club.pk, 'match': self.match.pk})
+        ctx['stepbackurl'] = reverse('dash:addsubteam', kwargs={
+                                     'club': self.club.pk,
+                                     'match': self.match.pk})
         ctx['club'] = self.club
         ctx['match'] = self.match
         return render(request, self.template_name, ctx)
@@ -260,7 +264,12 @@ class FinalizeSquad(AddFirstTeam):
         except self.squad.NotEnoughPlayers as e:
             messages.add_message(request, messages.WARNING, e)
             return redirect(self.backurl)
-        return redirect(reverse('dash:enterpastmatchdetails', kwargs={'pk': self.squad.match.pk}))
+
+        if rules.test_rule('manage_match', self.request.user):
+            return reverse('dash:enterpastmatchdetails',
+                           kwargs={'pk': self.match.pk})
+        else:
+            return redirect(self.squad.get_absolute_url())
 
 
 urlpatterns += [path('finalizesquad/<int:match>/<int:club>/',
@@ -283,6 +292,30 @@ class MatchLockMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
+class StartMatchTimeLine(LoginRequiredMixin,
+                         MatchLockMixin,
+                         View):
+    model = Matches
+
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.get_object().pk})
+
+    def post(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        match = get_object_or_404(Matches, pk=pk)
+        for club in [match.home, match.away]:
+            try:
+                obj = Squad.objects.get(match=match, club=club)
+            except Squad.DoesNotExist:
+                Squad.create(match, club, request.user)
+        return redirect(reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk}))
+
+
+urlpatterns += [path('startmatchtimeline/<int:pk>/',
+                     StartMatchTimeLine.as_view(),
+                     name='startmatchtimeline'), ]
+
+
 class StartMatch(LoginRequiredMixin,
                  formviewMixins,
                  MatchLockMixin,
@@ -290,11 +323,14 @@ class StartMatch(LoginRequiredMixin,
     form_class = DateTimeForm
     template_name = 'dashboard/match/base_form.html'
 
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Start Match'
         ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+            EnterPastMatchDetails, kwargs={'pk': self.match.pk})
         return ctx
 
     def get_initial(self):
@@ -333,6 +369,9 @@ class HalfTime(LoginRequiredMixin,
     form_class = MatchTimeForm
     template_name = 'dashboard/match/base_form.html'
 
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['timeline'] = self.match.matchtimeline
@@ -342,7 +381,7 @@ class HalfTime(LoginRequiredMixin,
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Half Time'
         ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails',
+            EnterPastMatchDetails,
             kwargs={'pk': self.match.pk})
         return ctx
 
@@ -380,11 +419,14 @@ class SecondHalf(LoginRequiredMixin,
     form_class = DateTimeForm
     template_name = 'dashboard/match/base_form.html'
 
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Second Half'
         ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+            EnterPastMatchDetails, kwargs={'pk': self.match.pk})
         return ctx
 
     def get_initial(self):
@@ -424,12 +466,11 @@ class FinalTime(LoginRequiredMixin,
     template_name = 'dashboard/match/base_form.html'
 
     def get_success_url(self):
-        return self.match.matchtimeline.get_absolute_url()
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Final Time'
-        ctx['return_url'] = self.match.matchtimeline.get_absolute_url()
         return ctx
 
     def get_form_kwargs(self):
@@ -471,6 +512,9 @@ class PlayerSelect(LoginRequiredMixin,
     form_class = PlayerSelectForm
     template_name = 'dashboard/match/player_select.html'
     kind = 'goal'
+
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
 
     def dispatch(self, request, *args, **kwargs):
         club_pk = kwargs.get('club')
@@ -547,9 +591,6 @@ class PlayerSelect(LoginRequiredMixin,
 
         return super().form_valid(form)
 
-    def get_success_url(self):
-        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
-
 
 urlpatterns += [path('goalplayersel/<int:pk>/<int:club>/',
                      PlayerSelect.as_view(kind='goal'),
@@ -571,6 +612,9 @@ class PlayerSelect2(LoginRequiredMixin,
                     FormView):
     form_class = PlayerSelectForm2
     template_name = 'dashboard/match/player_select.html'
+
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
 
     def dispatch(self, request, *args, **kwargs):
         club_pk = kwargs.get('club')
@@ -617,9 +661,6 @@ class PlayerSelect2(LoginRequiredMixin,
             return self.form_invalid(form)
 
         return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
 
 
 urlpatterns += [path('subplayersel/<int:pk>/<int:club>/',
