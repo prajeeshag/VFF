@@ -15,7 +15,7 @@ class DateTimeForm(forms.Form):
 
 class MatchTimeForm(forms.Form):
     ftime = forms.IntegerField(
-        min_value=0, max_value=200, initial=0,
+        min_value=1, max_value=200, initial=0,
         label='Match time (in minutes)')
     stime = forms.IntegerField(
         min_value=0, max_value=200, initial=0,
