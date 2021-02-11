@@ -118,7 +118,6 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *arg, **kwargs):
-
         ctx = self.get_context_data(**kwargs)
         ctx['squad'] = self.squad.get_first_squad()
         ctx['squad_av'] = self.squad.get_avail_squad()
