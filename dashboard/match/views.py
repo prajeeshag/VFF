@@ -145,10 +145,10 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
             return redirect(self.backurl)
 
         action = request.POST.get('action')
-        pk = request.POST.get('pk')
-        player = get_object_or_404(PlayerProfile, pk=pk)
+        pk = request.POST.get('pk', None)
 
         if action == 'add':
+            player = get_object_or_404(PlayerProfile, pk=pk)
             try:
                 self.squad.add_player_to_first(player)
             except self.squad.LimitReached:
@@ -159,11 +159,11 @@ class AddFirstTeam(LoginRequiredMixin, viewMixins, View):
                 messages.add_message(
                     request, messages.WARNING,
                     "Cannot add this player, player got pending suspension")
-
         elif action == 'rm':
+            player = get_object_or_404(PlayerProfile, pk=pk)
             self.squad.remove_player_from_first(player)
-        else:
-            return HttpResponseNotFound('<h1>Unknown action</h1>')
+        elif action == 'reset':
+            self.squad.reset()
 
         return redirect(self.backurl)
 

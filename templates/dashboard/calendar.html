@@ -23,13 +23,22 @@
 
 {% block scripts_extra %}
 	<script>
-$(document).ready(function() {
-	$('#fixtureTable').DataTable({
-		"ordering": false,
-		"order":[],
-		"pageLength": 10,
+	$(document).ready(function() {
+		console.log('something')
+		$('.fixture-table').each(function(){
+			console.log(this);
+			$(this).DataTable({
+				"ordering": false,
+				"pageLength": 10,
+				"order":[],
+			})
+		})
+		{% comment %}$('#fixtureTable').DataTable({{% endcomment %}
+			{% comment %}"ordering": false,{% endcomment %}
+			{% comment %}"order":[],{% endcomment %}
+			{% comment %}"pageLength": 10,{% endcomment %}
+		{% comment %}});{% endcomment %}
 	});
-});
 	</script>
 {% endblock %}
 

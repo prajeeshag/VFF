@@ -456,11 +456,34 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
 
         return parent
 
+    def reset(self):
+        with transaction.atomic():
+            for squad in (self.get_avail_squad(),
+                          self.get_first_squad(),
+                          self.get_playing_squad(),
+                          self.get_bench_squad(),
+                          self.get_onbench_squad(),
+                          self.get_tobench_squad(),
+                          self.get_suspen_squad()):
+                squad.players.clear()
+                squad.num_players = 0
+                squad.nU21 = 0
+                squad.nU19 = 0
+                squad.save()
+
+            suspen = self.get_suspen_squad()
+            avail = self.get_avail_squad()
+            for player in self.club.get_players():
+                if Suspension.has_suspension(player):
+                    suspen.add_player(player)
+                else:
+                    avail.add_player(player)
+
     @ classmethod
     def get_squad(cls, match, club):
         return cls.objects.get(match=match, club=club)
 
-    @classmethod
+    @ classmethod
     def get_squad_player(cls, match, player):
         club = player.get_club()
         return cls.get_squad(match, club)
@@ -677,15 +700,15 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
         self.club = self.player.get_club()
         super().save(*args, **kwargs)
 
-    @classmethod
+    @ classmethod
     def get_all_reds(cls, match):
         return cls.objects.filter(match=match, color=cls.COLOR.red)
 
-    @classmethod
+    @ classmethod
     def get_all_yellow(cls, match):
         return cls.objects.filter(match=match, color=cls.COLOR.yellow)
 
-    @classmethod
+    @ classmethod
     def finalize_match(cls, match):
         # Red cards
         for card in cls.get_all_reds(match):
@@ -700,7 +723,7 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
                 player=player)
             accu.add_yellow()
 
-    @classmethod
+    @ classmethod
     def raise_red_card(cls, match, player, reason_text, ftime=-1, stime=-1):
         with transaction.atomic():
             cls.objects.filter(match=match, player=player).update(
@@ -715,7 +738,7 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
                 ftime=ftime, stime=stime)
             obj.create_timeline_event()
 
-    @classmethod
+    @ classmethod
     def raise_yellow_card(cls, match, player, reason_text, ftime=-1, stime=-1):
         with transaction.atomic():
             red = cls.objects.filter(
@@ -806,7 +829,7 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
             return "Goal(own): {}".format(self.player)
         return "Goal: {}".format(self.player)
 
-    @classmethod
+    @ classmethod
     def create(cls, match, player, created_by=None,
                ftime=-1, stime=-1, own=False, attr=None):
         goalattr = None

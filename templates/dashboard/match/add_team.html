@@ -53,6 +53,12 @@
 		{% if stepbackurl %}
 			<a href="{{ stepbackurl }}" class="btn btn-lg btn-info"> Previous</a>
 		{% endif %}
+		<form method="POST">
+			{% include 'snippets/form_common.html' %}
+			<input type="hidden" name="action" value="reset" />
+			<input type="hidden" name="pk" value="None" />
+			<button type="submit" class="btn btn-sm btn-danger">Reset</button>
+		</form>
 		{% if stepnexturl %}
 		<a href="{{ stepnexturl }}" class="btn btn-lg btn-warning">Next </a>
 		{% endif %}
