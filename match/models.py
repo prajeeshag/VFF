@@ -34,6 +34,33 @@ def get_time_string(ftime, stime):
     return ""
 
 
+def add_num_side_event(side, eventcls):
+    """ Add num of events method in a match for a side """
+    eventname = eventcls.__name__.lower()
+    fn_name = "_".join(['num', side, eventname])
+
+    def fn(self):
+        club = getattr(self, side)
+        return eventcls.objects.filter(club=club, match=self).count()
+
+    setattr(Matches, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Get # of {} for {} side in {}".format(eventname, side, self)
+
+
+def add_num_club_event(eventcls):
+    """ Add num of events method for club """
+    eventname = eventcls.__name__.lower()
+    fn_name = "_".join(['num', eventname])
+
+    def fn(self):
+        return eventcls.objects.filter(club=self).count()
+
+    setattr(ClubProfile, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Get # of {}".format(eventname)
+
+
 class NotMyMatch(Exception):
     pass
 
@@ -211,10 +238,10 @@ class EventModel(models.Model):
         fulltime = int(MATCHTIME*60)  # seconds
         match = self.get_match()
         if not match:
-            return 
+            return
         timeline = getattr(match, 'matchtimeline', None)
         if not timeline:
-            return 
+            return
 
         if self.time >= timeline.first_half_start:
             tdelta = self.time - timeline.first_half_start
@@ -223,13 +250,12 @@ class EventModel(models.Model):
             self.ftime = time - self.stime
 
         if self.time >= timeline.second_half_start:
-            tdelta = self.time - timeline.second_half_start 
+            tdelta = self.time - timeline.second_half_start
             time = max(tdelta.total_seconds(), 1) + halftime
             self.stime = max(time-fulltime, 0)
             self.ftime = time - self.stime
 
         self.save()
-
 
     def save(self, *args, **kwargs):
         halftime = int(MATCHTIME*60/2)  # seconds
@@ -251,7 +277,7 @@ class EventModel(models.Model):
                 self.ftime = time - self.stime
 
             if self.time >= timeline.second_half_start:
-                tdelta = self.time - timeline.second_half_start 
+                tdelta = self.time - timeline.second_half_start
                 time = max(tdelta.total_seconds(), 1) + halftime
                 self.stime = max(time-fulltime, 0)
                 self.ftime = time - self.stime

@@ -46,57 +46,29 @@ class fixMatches(LoginRequiredMixin, viewMixins, View):
         return render(request, self.template_name, ctx)
 
     def post(self, request, *args, **kwargs):
-        obj_pks_fix = request.POST.getlist('checksFix')
-        obj_pks_unfix = request.POST.getlist('checksUnFix')
-        if obj_pks_fix:
-            Matches.objects.filter(pk__in=obj_pks_fix).update(
-                status=Matches.STATUS.fixed)
-        if obj_pks_unfix:
-            Matches.objects.filter(pk__in=obj_pks_unfix).update(
-                status=Matches.STATUS.tentative)
+        fix_pk = request.POST.get('fix_pk', None)
+        ten_pk = request.POST.get('ten_pk', None)
+        cancel_pk = request.POST.get('cancel_pk', None)
+        post_pk = request.POST.get('post_pk', None)
+        dicts = {
+            fix_pk: Matches.STATUS.fixed,
+            ten_pk: Matches.STATUS.tentative,
+            post_pk: Matches.STATUS.postponed,
+            cancel_pk: Matches.STATUS.canceled,
+        }
 
-        fix_pk = request.POST.get('fix_pk')
-        unfix_pk = request.POST.get('unfix_pk')
-        if fix_pk:
-            Matches.objects.filter(pk=fix_pk).update(
-                status=Matches.STATUS.fixed)
+        for pk, status in dicts.items():
+            if pk:
+                match = get_object_or_404(Matches, pk=pk)
+                match.status = status
+                match.save()
+                msg = "Match {} marked {}".format(match, status)
+                messages.add_message(
+                    self.request, messages.WARNING, msg)
 
-        if unfix_pk:
-            Matches.objects.filter(pk=unfix_pk).update(
-                status=Matches.STATUS.tentative)
         return redirect(self.backurl)
 
 
 urlpatterns += [path('fixmatches/',
                      fixMatches.as_view(),
                      name='fixmatches'), ]
-
-
-class finalizeMatches(LoginRequiredMixin, View):
-    template_name = 'dashboard/fixture/finalize_matches.html'
-
-    def get(self, request, *arg, **kwargs):
-        ctx = {}
-        ctx['finalized_matches'] = Matches.get_done_matches()
-        ctx['fixed_matches'] = Matches.get_fixed_matches()
-        return render(request, self.template_name, ctx)
-
-    def post(self, request, *args, **kwargs):
-        obj_pks_fix = request.POST.getlist('checksFix')
-        obj_pks_unfix = request.POST.getlist('checksUnFix')
-        if obj_pks_fix:
-            Matches.objects.filter(pk__in=obj_pks_fix).update(
-                status=Matches.DONE)
-        if obj_pks_unfix:
-            Matches.objects.filter(pk__in=obj_pks_unfix).update(
-                status=Matches.FIXED)
-
-        ctx = {}
-        ctx['finalized_matches'] = Matches.get_done_matches()
-        ctx['fixed_matches'] = Matches.get_fixed_matches()
-        return render(request, self.template_name, ctx)
-
-
-urlpatterns += [path('finalizematches/',
-                     finalizeMatches.as_view(),
-                     name='finalizematches'), ]

@@ -55,9 +55,8 @@ class ManageMatchList(LoginRequiredMixin, viewMixins, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['fixed_matches'] = Matches.fixed.all()
-        ctx['tentative_matches'] = Matches.tentative.all()
-        ctx['done_matches'] = Matches.done.all()
+        ctx['matches'] = Matches.objects.exclude(
+            status=Matches.STATUS.done).order_by('date')
         return ctx
 
 
