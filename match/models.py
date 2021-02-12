@@ -206,24 +206,55 @@ class EventModel(models.Model):
     class EventClubNotAvailable(Exception):
         pass
 
+    def recalc_time(self):
+        halftime = int(MATCHTIME*60/2)  # seconds
+        fulltime = int(MATCHTIME*60)  # seconds
+        match = self.get_match()
+        if not match:
+            return 
+        timeline = getattr(match, 'matchtimeline', None)
+        if not timeline:
+            return 
+
+        if self.time >= timeline.first_half_start:
+            tdelta = self.time - timeline.first_half_start
+            time = max(tdelta.total_seconds(), 1)
+            self.stime = max(time-halftime, 0)
+            self.ftime = time - self.stime
+
+        if self.time >= timeline.second_half_start:
+            tdelta = self.time - timeline.second_half_start 
+            time = max(tdelta.total_seconds(), 1) + halftime
+            self.stime = max(time-fulltime, 0)
+            self.ftime = time - self.stime
+
+        self.save()
+
+
     def save(self, *args, **kwargs):
         halftime = int(MATCHTIME*60/2)  # seconds
         fulltime = int(MATCHTIME*60)  # seconds
         match = self.get_match()
         if self.ftime == -1 and self.stime == -1:
-            if match:
-                timeline = getattr(match, 'matchtimeline', None)
-                if timeline:
-                    if timeline.second_half_start:
-                        tdelta = timeline.second_half_start - self.time
-                        time = max(tdelta.total_seconds(), 1) + halftime
-                        self.stime = max(time-fulltime, 0)
-                        self.ftime = time - self.stime
-                    elif timeline.first_half_start:
-                        tdelta = timeline.first_half_start - self.time
-                        time = max(tdelta.total_seconds(), 1)
-                        self.stime = max(time-halftime, 0)
-                        self.ftime = time - self.stime
+            if not match:
+                super().save(*args, **kwargs)
+                return
+            timeline = getattr(match, 'matchtimeline', None)
+            if not timeline:
+                super().save(*args, **kwargs)
+                return
+
+            if self.time >= timeline.first_half_start:
+                tdelta = self.time - timeline.first_half_start
+                time = max(tdelta.total_seconds(), 1)
+                self.stime = max(time-halftime, 0)
+                self.ftime = time - self.stime
+
+            if self.time >= timeline.second_half_start:
+                tdelta = self.time - timeline.second_half_start 
+                time = max(tdelta.total_seconds(), 1) + halftime
+                self.stime = max(time-fulltime, 0)
+                self.ftime = time - self.stime
 
         super().save(*args, **kwargs)
 
@@ -296,7 +327,7 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
     STATUS = Choices(('kickoff', 'Kickoff'),
                      ('half_time', 'Half Time'),
                      ('second_half', 'Second Half'),
-                     ('final_time', 'Final Time'))
+                     ('final_time', 'Full Time'))
 
     sublabel = models.CharField(max_length=50, blank=True)
     match = models.ForeignKey(
@@ -377,6 +408,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
 
     def title(self):
         return self.KIND[self.kind]
+
+    def get_event_time_label(self):
+        return ""
 
     def raise_red_card(self, player):
         if player in self.get_playing_squad().players.all():
@@ -637,14 +671,16 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             raise self.NotEnoughPlayers('Not enough U21 players')
 
     def finalize(self, bypassU=False):
-        if not bypassU:
-            self.check_nU()
-        if self.get_playing_squad().num_players < NPLAYERS:
-            raise self.NotEnoughPlayers('Not enough players')
+        with transaction.atomic():
+            if not bypassU:
+                self.check_nU()
+            if self.get_playing_squad().num_players < NPLAYERS:
+                raise self.NotEnoughPlayers('Not enough players')
 
-        self.status = self.STATUS.finalized
-        self.save()
-        self.create_timeline_event()
+            if not self.is_finalized():
+                self.create_timeline_event()
+            self.status = self.STATUS.finalized
+            self.save()
 
     def substitute(self, playerin, playerout, user,
                    ftime=-1, stime=-1, reason_text=None,
