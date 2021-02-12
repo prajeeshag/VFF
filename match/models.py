@@ -216,13 +216,13 @@ class EventModel(models.Model):
         if not timeline:
             return 
 
-        if self.time >= timeline.first_half_start:
+        if timeline.first_half_start and self.time >= timeline.first_half_start:
             tdelta = self.time - timeline.first_half_start
             time = max(tdelta.total_seconds(), 1)
             self.stime = max(time-halftime, 0)
             self.ftime = time - self.stime
 
-        if self.time >= timeline.second_half_start:
+        if timeline.second_half_start and self.time >= timeline.second_half_start:
             tdelta = self.time - timeline.second_half_start 
             time = max(tdelta.total_seconds(), 1) + halftime
             self.stime = max(time-fulltime, 0)
@@ -244,13 +244,13 @@ class EventModel(models.Model):
                 super().save(*args, **kwargs)
                 return
 
-            if self.time >= timeline.first_half_start:
+            if timeline.first_half_start and self.time >= timeline.first_half_start:
                 tdelta = self.time - timeline.first_half_start
                 time = max(tdelta.total_seconds(), 1)
                 self.stime = max(time-halftime, 0)
                 self.ftime = time - self.stime
 
-            if self.time >= timeline.second_half_start:
+            if timeline.second_half_start and self.time >= timeline.second_half_start:
                 tdelta = self.time - timeline.second_half_start 
                 time = max(tdelta.total_seconds(), 1) + halftime
                 self.stime = max(time-fulltime, 0)

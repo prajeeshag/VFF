@@ -243,7 +243,7 @@ class FinalizeSquad(AddFirstTeam):
             return redirect(reverse('dash:enterpastmatchdetails',
                                     kwargs={'pk': self.match.pk}))
         else:
-            return redirect(squad)
+            return redirect(self.squad)
 
 
 urlpatterns += [path('finalizesquad/<int:match>/<int:club>/',
