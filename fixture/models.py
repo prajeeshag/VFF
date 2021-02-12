@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Q
 from django.core.validators import MinValueValidator
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.models import Group
 
 from model_utils.models import StatusModel, TimeStampedModel
 from model_utils import Choices
@@ -22,7 +23,8 @@ class Fixture(models.Model):
 
 
 class Matches(TimeStampedModel, StatusModel):
-    STATUS = Choices('done', 'fixed', 'tentative', 'canceled')
+    STATUS = Choices('done', 'fixed', 'tentative', 'canceled', 'postponed')
+
     num = models.PositiveIntegerField(
         _('Match Number'), validators=[MinValueValidator(1), ],
         default=1)
@@ -37,6 +39,7 @@ class Matches(TimeStampedModel, StatusModel):
         Fixture, on_delete=models.PROTECT, null=True, related_name='matches')
     status = models.CharField(
         max_length=20, choices=STATUS, default=STATUS.tentative)
+    note = models.CharField(max_length=200, blank=True)
 
     class Meta:
         unique_together = ['fixture', 'home', 'away', 'num']
@@ -54,9 +57,6 @@ class Matches(TimeStampedModel, StatusModel):
         if hasattr(self, 'squad'):
             return self.squad.filter(club=self.away).first()
         return None
-
-    def is_fixed(self):
-        return self.status == self.STATUS.fixed
 
     def is_playing(self, club):
         if club == self.home or club == self.away:
@@ -109,9 +109,6 @@ class Matches(TimeStampedModel, StatusModel):
 
     def get_time(self):
         return self.date.strftime('%H:%M %p')
-
-    def is_tentative(self):
-        return self.status == self.STATUS.tentative
 
     @classmethod
     def get_tentative_matches(cls):
@@ -170,9 +167,6 @@ class Matches(TimeStampedModel, StatusModel):
         date = timezone.now()
         return cls.get_home_matches_of_club(club).filter(date__gte=date)
 
-    def is_done(self):
-        return self.status == self.STATUS.done
-
     @classmethod
     def get_current_next_match_of_club(cls, club):
         """ Get next including ongoing match """
@@ -185,3 +179,17 @@ class Matches(TimeStampedModel, StatusModel):
     def set_done(self):
         self.status = self.STATUS.done
         self.save()
+
+
+def add_is_status(status):
+    fn_name = 'is_' + status
+
+    def fn(self):
+        return self.status == getattr(self.STATUS, status)
+    setattr(Matches, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Returns True if status is {}".format(status)
+
+
+for stat in Matches.STATUS:
+    add_is_status(stat[0])

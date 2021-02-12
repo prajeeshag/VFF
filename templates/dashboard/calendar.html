@@ -23,13 +23,15 @@
 
 {% block scripts_extra %}
 	<script>
-$(document).ready(function() {
-	$('#fixtureTable').DataTable({
-		"ordering": false,
-		"order":[],
-		"pageLength": 10,
+	$(document).ready(function() {
+		$('.fixture-table').each(function(){
+			$(this).DataTable({
+				"ordering": false,
+				"pageLength": 10,
+				"order":[],
+			})
+		})
 	});
-});
 	</script>
 {% endblock %}
 

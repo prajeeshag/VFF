@@ -1,15 +1,19 @@
 
 {% load i18n %}
+{% load rules %}
+
 {% if msgs %}
-<h2> Important! </h2>
-<div class="overflow-auto" style="height: 200px;">
-	{% for msg in msgs %}
-	<div class="mb-2">
-		<p>{{ msg.info }} <a class="btn btn-link" href="{{ msg.url }}"> {{ msg.url_name }}</a></p>
+	<h2> Important! </h2>
+	<div class="overflow-auto" style="height: 200px;">
+		{% for msg in msgs %}
+		<div class="mb-2">
+			<p>{{ msg.info }} <a class="btn btn-link" href="{{ msg.url }}"> {{ msg.url_name }}</a></p>
+		</div>
+		{% endfor %}
 	</div>
-	{% endfor %}
-</div>
 {% endif %}
+
+{% include 'dashboard/partials/add_squad_messages.html' %}
 
 {% if user.get_profile.verification.need_review %}
 	{% with ver=user.get_profile.verification %}

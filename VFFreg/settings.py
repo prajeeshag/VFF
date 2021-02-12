@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'formtools',
     'guardian',
+    'rules.apps.AutodiscoverRulesConfig',
     'lock_tokens.apps.LockTokensConfig',
 
     # Local
@@ -218,8 +219,10 @@ HIJACK_USE_BOOTSTRAP = True
 
 AUTH_USER_MODEL = "users.User"
 AUTHENTICATION_BACKENDS = (
-    "users.backends.AuthBackend",
+    'users.backends.AuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
     'guardian.backends.ObjectPermissionBackend',
+    'rules.permissions.ObjectPermissionBackend',
 )
 
 THUMBNAIL_ENGINE = 'myapp.thumbnail.pil_engine.Engine'

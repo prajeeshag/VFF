@@ -7,5 +7,4 @@ app_name = 'public'
 
 urlpatterns = [
     path('', views.LandingPageView.as_view(), name='home'),
-    path('calendar/', views.Calendar.as_view(), name='calendar'),
 ]

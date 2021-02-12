@@ -1,0 +1,18 @@
+
+{% load rules %}
+{% load i18n %}
+
+{% test_rule 'is_a_club_admin' user as is_a_club_admin %}
+{% if is_a_club_admin %}
+	{% for squad in user.get_club.squads.all %}
+		{% if squad.is_pre %}
+			<div class="mb-1">
+				<h3 class="text-center text-danger">{% translate 'Attention' %}: {% translate "Finalize your squad for your next match" %}</h3>
+				{% include 'fixture/partials/match_card.html' with match=squad.match %}
+				<div class="d-flex p-1 justify-content-center">
+					<a class="btn btn-primary" href="{% url 'dash:addfirstteam' match=squad.match.pk club=squad.club.pk %}">Finalize Squad</a>
+				</div>
+			</div>
+		{% endif %}
+	{% endfor %}
+{% endif %}

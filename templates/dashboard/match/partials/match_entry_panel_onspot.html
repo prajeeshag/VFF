@@ -1,0 +1,63 @@
+
+<div class="d-flex mt-2">
+	<div class="col-6 d-flex flex-column align-items-center border-right border-light">
+		<a class="m-2 switch-btn cyan" href="{% url 'dash:goalplayerselonspot' pk=match.pk club=match.home.pk %}">Goal</a>
+		<a class="m-2 switch-btn grey" href="{% url 'dash:ownplayerselonspot' pk=match.pk club=match.home.pk %}">
+			Goal<br><small>(own)</small>
+		</a>
+		<a class="m-2 switch-btn yellow" href="{% url 'dash:yellowplayerselonspot' pk=match.pk club=match.home.pk %}">
+			Yellow<br><small>card</small>
+		</a>
+		<a class="m-2 switch-btn red" href="{% url 'dash:redplayerselonspot' pk=match.pk club=match.home.pk %}">
+			Red<br><small>card</small>
+		</a>
+		<a class="m-2 switch-btn blue" href="{% url 'dash:subplayerselonspot' pk=match.pk club=match.home.pk %}">
+			Sub<br><small style="font-size: 10px;">(substitution)</small>
+		</a>
+	</div>
+	<div class="col-6 d-flex flex-column align-items-center border-right border-light">
+		<a class="m-2 switch-btn cyan" href="{% url 'dash:goalplayerselonspot' pk=match.pk club=match.away.pk %}">Goal</a>
+		<a class="m-2 switch-btn grey" href="{% url 'dash:ownplayerselonspot' pk=match.pk club=match.away.pk %}">
+			Goal<br><small>(own)</small>
+		</a>
+		<a class="m-2 switch-btn yellow" href="{% url 'dash:yellowplayerselonspot' pk=match.pk club=match.away.pk %}">
+			Yellow<br><small>card</small>
+		</a>
+		<a class="m-2 switch-btn red" href="{% url 'dash:redplayerselonspot' pk=match.pk club=match.away.pk %}">
+			Red<br><small>card</small>
+		</a>
+		<a class="m-2 switch-btn blue" href="{% url 'dash:subplayerselonspot' pk=match.pk club=match.away.pk %}">
+			Sub<br><small style="font-size: 10px;">(substitution)</small>
+		</a>
+	</div>
+</div>
+
+<style>
+.switch-btn{
+	width: 120px;
+	height: 90px;
+	font-size: 32px;
+	font-weight: bold;
+	text-align: center;
+	color: white;
+	padding-top: 20px;
+	border-radius: 10px;
+	line-height: .75em;
+}
+.switch-btn.cyan{
+	background-image:linear-gradient(cyan,black)
+}
+.switch-btn.grey{
+	background-image:linear-gradient(grey,black)
+}
+.switch-btn.yellow{
+	background-image:linear-gradient(yellow,black)
+}
+.switch-btn.red{
+	background-image:linear-gradient(red,black)
+}
+.switch-btn.blue{
+	background-image:linear-gradient(blue,black)
+}
+
+</style>
