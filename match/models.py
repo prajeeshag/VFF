@@ -184,6 +184,7 @@ class EventModel(models.Model):
     event_url = None
     event_kind = 'other'
 
+    time = models.DateTimeField(default=timezone.now)
     ftime = models.IntegerField(default=-1)
     stime = models.IntegerField(default=-1)
     created_by = models.ForeignKey(
