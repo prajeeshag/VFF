@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group
 from model_utils.models import StatusModel, TimeStampedModel
 from model_utils import Choices
 
-from users.models import ClubProfile as Club, Grounds
+from users.models import ClubProfile, Grounds
 
 LEAGUE_NAME = 'VFL'
 
@@ -29,9 +29,9 @@ class Matches(TimeStampedModel, StatusModel):
         _('Match Number'), validators=[MinValueValidator(1), ],
         default=1)
     home = models.ForeignKey(
-        Club, on_delete=models.PROTECT, related_name='home_matches')
+        ClubProfile, on_delete=models.PROTECT, related_name='home_matches')
     away = models.ForeignKey(
-        Club, on_delete=models.PROTECT, related_name='away_matches')
+        ClubProfile, on_delete=models.PROTECT, related_name='away_matches')
     date = models.DateTimeField(_('Date'))
     ground = models.ForeignKey(
         Grounds, on_delete=models.PROTECT, null=True, related_name='matches')
@@ -73,30 +73,6 @@ class Matches(TimeStampedModel, StatusModel):
         elif club == self.home:
             return self.away
         return None
-
-    def num_home_goals(self):
-        return self.goals.filter(club=self.home).count()
-
-    def num_away_goals(self):
-        return self.goals.filter(club=self.away).count()
-
-    def num_home_subs(self):
-        return self.subs.filter(club=self.home).count()
-
-    def num_away_subs(self):
-        return self.subs.filter(club=self.away).count()
-
-    def num_home_cards(self):
-        return self.cards.filter(club=self.home).count()
-
-    def num_away_cards(self):
-        return self.cards.filter(club=self.away).count()
-
-    def num_home_subs(self):
-        return self.subs.filter(club=self.home).count()
-
-    def num_away_subs(self):
-        return self.subs.filter(club=self.away).count()
 
     def score_string(self):
         return "{} - {}".format(self.num_home_goals(), self.num_away_goals())
@@ -193,3 +169,18 @@ def add_is_status(status):
 
 for stat in Matches.STATUS:
     add_is_status(stat[0])
+
+
+def num_played(self, against):
+    if against:
+        return Matches.objects.filter(
+            Q(home=self) | Q(away=self),
+            Q(home__in=against) | Q(away__in=against),
+            status=Matches.STATUS.done)
+    else:
+        return Matches.objects.filter(
+            Q(home=self) | Q(away=self),
+            status=Matches.STATUS.done)
+
+
+setattr(ClubProfile, 'num_played', num_played)

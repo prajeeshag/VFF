@@ -34,33 +34,6 @@ def get_time_string(ftime, stime):
     return ""
 
 
-def add_num_side_event(side, eventcls):
-    """ Add num of events method in a match for a side """
-    eventname = eventcls.__name__.lower()
-    fn_name = "_".join(['num', side, eventname])
-
-    def fn(self):
-        club = getattr(self, side)
-        return eventcls.objects.filter(club=club, match=self).count()
-
-    setattr(Matches, fn_name, fn)
-    fn.__name__ = fn_name
-    fn.__doc__ = "Get # of {} for {} side in {}".format(eventname, side, self)
-
-
-def add_num_club_event(eventcls):
-    """ Add num of events method for club """
-    eventname = eventcls.__name__.lower()
-    fn_name = "_".join(['num', eventname])
-
-    def fn(self):
-        return eventcls.objects.filter(club=self).count()
-
-    setattr(ClubProfile, fn_name, fn)
-    fn.__name__ = fn_name
-    fn.__doc__ = "Get # of {}".format(eventname)
-
-
 class NotMyMatch(Exception):
     pass
 
@@ -211,7 +184,6 @@ class EventModel(models.Model):
     event_url = None
     event_kind = 'other'
 
-    time = models.DateTimeField(default=timezone.now)
     ftime = models.IntegerField(default=-1)
     stime = models.IntegerField(default=-1)
     created_by = models.ForeignKey(
@@ -261,10 +233,16 @@ class EventModel(models.Model):
         halftime = int(MATCHTIME*60/2)  # seconds
         fulltime = int(MATCHTIME*60)  # seconds
         match = self.get_match()
+        if not match:
+            super().save(*args, **kwargs)
+            return
+
+        # set against
+        if self.club:
+            self.against = match.get_opponent_club(self.club)
+
+        # Calculate match time
         if self.ftime == -1 and self.stime == -1:
-            if not match:
-                super().save(*args, **kwargs)
-                return
             timeline = getattr(match, 'matchtimeline', None)
             if not timeline:
                 super().save(*args, **kwargs)
@@ -390,6 +368,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         Matches, on_delete=models.PROTECT, null=True, related_name='squad')
     club = models.ForeignKey(
         ClubProfile, on_delete=models.PROTECT, null=True, related_name='squads')
+    against = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT,
+        null=True, related_name='squads_against')
     players = models.ManyToManyField(PlayerProfile, related_name='squads')
     parent = models.ForeignKey(
         'self', on_delete=models.PROTECT, null=True, related_name='items')
@@ -749,7 +730,11 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
     player = models.ForeignKey(
         PlayerProfile, on_delete=models.PROTECT, related_name='cards')
     club = models.ForeignKey(
-        ClubProfile, on_delete=models.PROTECT, related_name='cards')
+        ClubProfile, on_delete=models.PROTECT,
+        null=True, related_name='cards')
+    against = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT,
+        null=True, related_name='cards_against')
     reason = models.ForeignKey(
         CardReason,
         on_delete=models.PROTECT,
@@ -765,7 +750,8 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
         return self.color
 
     def save(self, *args, **kwargs):
-        self.club = self.player.get_club()
+        if not self.club:
+            self.club = self.player.get_club()
         super().save(*args, **kwargs)
 
     @ classmethod
@@ -844,6 +830,9 @@ class Substitution(StatusModel, TimeStampedModel, EventModel):
         Squad, on_delete=models.PROTECT, related_name='subs')
     club = models.ForeignKey(
         ClubProfile, on_delete=models.PROTECT, related_name='subs')
+    against = models.ForeignKey(
+        ClubProfile, on_delete=models.PROTECT,
+        null=True, related_name='subs_against')
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, related_name='subs')
     sub_in = models.ForeignKey(
@@ -886,7 +875,8 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
     club = models.ForeignKey(
         ClubProfile, on_delete=models.PROTECT, related_name='goals')
     against = models.ForeignKey(
-        ClubProfile, on_delete=models.PROTECT, related_name='goals_against')
+        ClubProfile, on_delete=models.PROTECT,
+        null=True, related_name='goals_against')
     match = models.ForeignKey(
         Matches, on_delete=models.PROTECT, related_name='goals')
     attr = models.ForeignKey(
@@ -937,6 +927,7 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
             self.club = self.match.get_opponent_club_of_player(self.player)
         else:
             self.club = self.player.get_club()
+
         self.against = self.match.get_opponent_club(self.club)
         super().save(*args, **kwargs)
 
@@ -952,7 +943,7 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
 
 
 class Result(StatusModel):
-    STATUS = ('not_completed', 'result', 'draw')
+    STATUS = Choices('not_done', 'result', 'draw')
     winner = models.ForeignKey(
         ClubProfile,
         on_delete=models.PROTECT,
@@ -965,7 +956,6 @@ class Result(StatusModel):
         related_name='losses')
     draws = models.ManyToManyField(
         ClubProfile,
-        null=True,
         related_name='draws')
     match = models.OneToOneField(
         Matches, on_delete=models.PROTECT,
@@ -981,6 +971,7 @@ class Result(StatusModel):
         if not self.match.is_done():
             self.status = self.STATUS.not_completed
             self.save()
+            return
 
         score = Goal.score(self.match)
         if score[0] > score[1]:
@@ -1001,34 +992,6 @@ class Result(StatusModel):
             self.loser = None
             self.save()
             self.draws.add(self.match.away, self.match.home)
-
-
-class Lose(models.Model):
-    club = models.ForeignKey(
-        ClubProfile,
-        on_delete=models.PROTECT,
-        null=True,
-        related_name='losses')
-    match = models.OneToOneField(
-        Matches, on_delete=models.PROTECT,
-        name='lose')
-
-    class Meta:
-        unique_together = ['match', 'club']
-
-
-class Draw(models.Model):
-    club = models.ForeignKey(
-        ClubProfile,
-        on_delete=models.PROTECT,
-        null=True,
-        related_name='losses')
-    match = models.OneToOneField(
-        Matches, on_delete=models.PROTECT,
-        name='lose')
-
-    class Meta:
-        unique_together = ['match', 'club']
 
 
 class SuspensionReason(NoteModel):
@@ -1078,3 +1041,68 @@ class AccumulatedCards(TimeStampedModel):
             Suspension.create(player, reason)
             self.yellow = 0
         self.save()
+
+
+# Adding methods
+SIDES = ('home', 'away')
+EVENTS = {'goals': Goal,
+          'cards': Cards,
+          'subs': Substitution}
+
+
+def add_num_side_event(side, eventname, eventcls):
+    """ Add num of events method in a match for a side
+        for class: Matches
+    """
+    fn_name = "_".join(['num', side, eventname])
+
+    def fn(self):
+        club = getattr(self, side)
+        return eventcls.objects.filter(club=club, match=self).count()
+
+    setattr(Matches, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Get # of {} for {} side in Match".format(eventname, side)
+
+
+def add_num_club_event(eventname, eventcls):
+    """ Add num_{event} method
+        for class: ClubProfile
+    """
+    fn_name = "_".join(['num', eventname])
+
+    def fn(self, against=None):
+        if against:
+            return eventcls.objects.filter(club=self, against__in=against).count()
+        else:
+            return eventcls.objects.filter(club=self).count()
+
+    setattr(ClubProfile, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Get # of {}".format(eventname)
+
+
+for evname, evclass in EVENTS.items():
+    add_num_club_event(evname, evclass)
+    for side in SIDES:
+        add_num_side_event(side, evname, evclass)
+
+
+def num_wins(self, against=None):
+    if against:
+        return Result.objects.filter(winner=self, loser__in=against).count()
+    else:
+        return Result.objects.filter(winner=self).count()
+
+
+setattr(ClubProfile, 'num_wins', num_wins)
+
+
+def num_losses(self, against=None):
+    if against:
+        return Result.objects.filter(loser=self, winner__in=against).count()
+    else:
+        return Result.objects.filter(loser=self).count()
+
+
+setattr(ClubProfile, 'num_losses', num_losses)
