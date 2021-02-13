@@ -145,7 +145,7 @@ class Events(TimeStampedModel):
     stime = models.IntegerField(default=-1)
 
     class Meta:
-        ordering = ['ftime', 'stime']
+        ordering = ['-ftime', '-stime']
 
     def __str__(self):
         return self.label()
