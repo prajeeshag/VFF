@@ -29,6 +29,14 @@ class ClubStat(models.Model):
     goal_difference = models.IntegerField(default=0)
     points = models.PositiveIntegerField(default=0)
 
+    def __str__(self):
+        'Stat of {}'.format(self.club)
+
+    @classmethod
+    def update_match(cls, match):
+        cls.create(match.home)
+        cls.create(match.away)
+
     @classmethod
     def create(cls, club):
         obj, created = cls.objects.get_or_create(club=club)

@@ -39,6 +39,7 @@ from league.models import Season
 from match.models import (Squad, MatchTimeLine, Goal, Cards,
                           GoalAttr, CardReason, SubstitutionReason)
 from users.models import PlayerProfile, ClubProfile
+from stats.models import ClubStat
 from .forms import (
     DateTimeForm, MatchTimeForm, EmptyForm,
     PlayerSelectForm, PlayerSelectForm2,
@@ -367,6 +368,7 @@ class TimeEvent(LoginRequiredMixin,
                     "Match already in Final Time!!")
             else:
                 self.match.matchtimeline.finalize_match(time=time)
+                ClubStat.update_match(match)
 
         return super().form_valid(form)
 
