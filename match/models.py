@@ -101,25 +101,29 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 matchtimeline=self,
                 content_object=obj,)
 
-    def set_half_time(self, ftime=-1, stime=-1):
+    def set_half_time(self, time=None):
         with transaction.atomic():
+            if not time:
+                time = timezone.now()
             score = Goal.score_as_string(self.match)
             obj = TimeEvents.objects.create(
                 match=self.match, status=TimeEvents.STATUS.half_time,
-                ftime=ftime, stime=stime, sublabel=score)
+                time=time, sublabel=score)
             self.half_time = True
             self.save()
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
 
-    def finalize_match(self, ftime=-1, stime=-1):
+    def finalize_match(self, time=None):
         with transaction.atomic():
+            if not time:
+                time = timezone.now()
             score = Goal.score_as_string(self.match)
             obj = TimeEvents.objects.create(
                 match=self.match,
                 status=TimeEvents.STATUS.final_time,
-                ftime=ftime, stime=stime, sublabel=score)
+                time=time, sublabel=score)
             self.final_time = True
             self.save()
 
@@ -129,14 +133,14 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
             # Finalize Cards
             Cards.finalize_match(self.match)
 
-            #Result
-            Result.create(match=self.match)
-
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
 
             self.match.set_done()
+
+            #Result
+            Result.create(match=self.match)
 
 
 class Events(TimeStampedModel):
@@ -148,7 +152,7 @@ class Events(TimeStampedModel):
     stime = models.IntegerField(default=-1)
 
     class Meta:
-        ordering = ['-ftime', '-stime']
+        ordering = ['-ftime', '-stime', '-pk']
 
     def __str__(self):
         return self.label()
@@ -694,8 +698,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             self.save()
 
     def substitute(self, playerin, playerout, user,
-                   ftime=-1, stime=-1, reason_text=None,
-                   bypassU=False, time=None):
+                   reason_text=None, bypassU=False, time=None):
         with transaction.atomic():
             self.get_playing_squad().add_player(playerin)
             self.get_playing_squad().remove_player(playerout)
@@ -712,8 +715,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             obj = Substitution.objects.create(
                 squad=self, created_by=user,
                 sub_in=playerin, sub_out=playerout,
-                reason=reason, ftime=ftime, stime=stime,
-                time=time)
+                reason=reason, time=time)
             obj.create_timeline_event()
             return obj
 
@@ -785,7 +787,7 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
                 accu.add_yellow()
 
     @ classmethod
-    def raise_red_card(cls, match, player, reason_text, ftime=-1, stime=-1, time=None):
+    def raise_red_card(cls, match, player, reason_text, time=None):
         with transaction.atomic():
             cls.objects.filter(match=match, player=player).update(
                 is_removed=True)
@@ -798,11 +800,11 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
             obj = cls.objects.create(
                 match=match, player=player,
                 color=cls.COLOR.red, reason=reason,
-                ftime=ftime, stime=stime, time=time)
+                time=time)
             obj.create_timeline_event()
 
     @ classmethod
-    def raise_yellow_card(cls, match, player, reason_text, ftime=-1, stime=-1, time=None):
+    def raise_yellow_card(cls, match, player, reason_text, time=None):
         with transaction.atomic():
             red = cls.objects.filter(
                 match=match, player=player, color=cls.COLOR.red).first()
@@ -814,20 +816,21 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
 
             reason, created = CardReason.objects.get_or_create(
                 text=reason_text)
+
             if not time:
                 time = timezone.now()
+
             obj = cls.objects.create(
                 match=match, player=player,
                 color=cls.COLOR.yellow, reason=reason,
-                ftime=ftime, stime=stime, time=time)
+                time=time)
 
             obj.create_timeline_event()
 
             if yellow1:
                 reason1, created = CardReason.objects.get_or_create(
                     text='second yellow')
-                cls.raise_red_card(match, player, reason1,
-                                   ftime=ftime, stime=stime, time=time)
+                cls.raise_red_card(match, player, reason1, time=time)
 
 
 class SubstitutionReason(NoteModel):
@@ -902,8 +905,7 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
 
     @ classmethod
     def create(cls, match, player, created_by=None,
-               ftime=-1, stime=-1, own=False, attr=None,
-               time=None):
+               own=False, attr=None, time=None):
         goalattr = None
         if attr:
             goalattr, created = GoalAttr.objects.get_or_create(text=attr)
@@ -915,8 +917,6 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
             match=match,
             player=player,
             created_by=created_by,
-            ftime=ftime,
-            stime=stime,
             own=own,
             attr=goalattr,
             time=time)

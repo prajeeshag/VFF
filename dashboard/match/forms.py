@@ -70,7 +70,7 @@ class PlayerSelectFormOnspot(forms.Form):
         self.fields['attr'].required = attr_required
 
 
-class PlayerSelectForm(MatchTimeForm, PlayerSelectFormOnspot):
+class PlayerSelectForm(DateTimeForm, PlayerSelectFormOnspot):
     pass
 
 
@@ -90,5 +90,5 @@ class PlayerSelectForm2Onspot(forms.Form):
             attrs={'autocomplete': 'off'})
 
 
-class PlayerSelectForm2(MatchTimeForm, PlayerSelectForm2Onspot):
+class PlayerSelectForm2(DateTimeForm, PlayerSelectForm2Onspot):
     pass

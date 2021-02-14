@@ -298,13 +298,14 @@ urlpatterns += [path('activatepast/<int:pk>/',
                      name='activatepast'), ]
 
 
-class StartMatch(LoginRequiredMixin,
-                 formviewMixins,
-                 MatchLockMixin,
-                 FormView):
+class TimeEvent(LoginRequiredMixin,
+                formviewMixins,
+                MatchLockMixin,
+                FormView):
     form_class = DateTimeForm
     template_name = 'dashboard/match/base_form.html'
     onspot = False
+    kind = 'start'
 
     def get_form_class(self):
         if self.onspot:
@@ -316,192 +317,83 @@ class StartMatch(LoginRequiredMixin,
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Start Match'
+        if self.kind == 'start':
+            ctx['title'] = 'Start Match'
+        elif self.kind == 'halftime':
+            ctx['title'] = 'Half Time'
+        elif self.kind == 'secondhalf':
+            ctx['title'] = 'Second Half'
+        elif self.kind == 'fulltime':
+            ctx['title'] = 'Full time'
         ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.match.pk})
         return ctx
 
     def get_initial(self):
+        timeline = getattr(self.match, 'matchtimeline', None)
+        if timeline and timeline.first_half_start:
+            return {'time': timeline.first_half_start}
         return {'time': self.match.date}
 
     def form_valid(self, form):
         time = form.cleaned_data.get('time', None)
-        if self.match.matchtimeline.first_half_start:
-            messages.add_message(
-                self.request, messages.DANGER,
-                "Match already started!!")
-        else:
-            self.match.matchtimeline.start_match(time=time)
+
+        if self.kind == 'start':
+            if self.match.matchtimeline.first_half_start:
+                messages.add_message(
+                    self.request, messages.DANGER,
+                    "Match already started!!")
+            else:
+                self.match.matchtimeline.start_match(time=time)
+        elif self.kind == 'halftime':
+            if self.match.matchtimeline.half_time:
+                messages.add_message(
+                    self.request, messages.DANGER,
+                    "Match already in half time!!")
+            else:
+                self.match.matchtimeline.set_half_time(time=time)
+        elif self.kind == 'secondhalf':
+            if self.match.matchtimeline.second_half_start:
+                messages.add_message(
+                    self.request, messages.DANGER,
+                    "Second half already started!!")
+            else:
+                self.match.matchtimeline.start_second_half(time=time)
+        elif self.kind == 'fulltime':
+            if self.match.matchtimeline.final_time:
+                messages.add_message(
+                    self.request, messages.WARNING,
+                    "Match already in Final Time!!")
+            else:
+                self.match.matchtimeline.finalize_match(time=time)
+
         return super().form_valid(form)
 
 
 urlpatterns += [path('startmatch/<int:pk>/',
-                     StartMatch.as_view(),
+                     TimeEvent.as_view(kind='start'),
                      name='startmatch'), ]
 urlpatterns += [path('startmatchonspot/<int:pk>/',
-                     StartMatch.as_view(onspot=True),
+                     TimeEvent.as_view(kind='start', onspot=True),
                      name='startmatchonspot'), ]
-
-
-class HalfTime(LoginRequiredMixin,
-               formviewMixins,
-               MatchLockMixin,
-               FormView):
-    form_class = MatchTimeForm
-    template_name = 'dashboard/match/base_form.html'
-    onspot = False
-
-    def get_form_class(self):
-        if self.onspot:
-            return EmptyForm
-        return MatchTimeForm
-
-    def get_success_url(self):
-        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        if not self.onspot:
-            kwargs['timeline'] = self.match.matchtimeline
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Half Time'
-        ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails',
-            kwargs={'pk': self.match.pk})
-        return ctx
-
-    def form_valid(self, form):
-        ftime = form.cleaned_data.get('ftime', None)
-        if ftime:
-            ftime = ftime*60
-        else:
-            ftime = -1
-
-        stime = form.cleaned_data.get('stime', None)
-        if stime:
-            stime = stime*60
-        else:
-            stime = -1
-
-        if self.match.matchtimeline.half_time:
-            messages.add_message(
-                self.request, messages.DANGER,
-                "Match already in halftime!!")
-        else:
-            self.match.matchtimeline.set_half_time(ftime=ftime, stime=stime)
-        return super().form_valid(form)
-
-
 urlpatterns += [path('halftime/<int:pk>/',
-                     HalfTime.as_view(),
+                     TimeEvent.as_view(kind='halftime'),
                      name='halftime'), ]
 urlpatterns += [path('halftimeonspot/<int:pk>/',
-                     HalfTime.as_view(onspot=True),
+                     TimeEvent.as_view(kind='halftime', onspot=True),
                      name='halftimeonspot'), ]
-
-
-class SecondHalf(LoginRequiredMixin,
-                 formviewMixins,
-                 MatchLockMixin,
-                 FormView):
-    form_class = DateTimeForm
-    template_name = 'dashboard/match/base_form.html'
-    onspot = False
-
-    def get_form_class(self):
-        if self.onspot:
-            return EmptyForm
-        return DateTimeForm
-
-    def get_success_url(self):
-        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Second Half'
-        ctx['return_url'] = reverse(
-            'dash:enterpastmatchdetails',
-            kwargs={'pk': self.match.pk})
-        return ctx
-
-    def get_initial(self):
-        return {'time': self.match.date+dt.timedelta(hours=1)}
-
-    def form_valid(self, form):
-        time = form.cleaned_data.get('time', None)
-        if self.match.matchtimeline.second_half_start:
-            messages.add_message(
-                self.request, messages.DANGER,
-                "Match already started!!")
-        else:
-            self.match.matchtimeline.start_second_half(time=time)
-        return super().form_valid(form)
-
-
 urlpatterns += [path('secondhalf/<int:pk>/',
-                     SecondHalf.as_view(),
+                     TimeEvent.as_view(kind='secondhalf'),
                      name='secondhalf'), ]
 urlpatterns += [path('secondhalfonspot/<int:pk>/',
-                     SecondHalf.as_view(onspot=True),
+                     TimeEvent.as_view(kind='secondhalf', onspot=True),
                      name='secondhalfonspot'), ]
-
-
-class FinalTime(LoginRequiredMixin,
-                formviewMixins,
-                MatchLockMixin,
-                FormView):
-    onspot = False
-    form_class = MatchTimeForm
-    template_name = 'dashboard/match/base_form.html'
-
-    def get_form_class(self):
-        if self.onspot:
-            return EmptyForm
-        return MatchTimeForm
-
-    def get_success_url(self):
-        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Final Time'
-        return ctx
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        if not self.onspot:
-            kwargs['timeline'] = self.match.matchtimeline
-        return kwargs
-
-    def form_valid(self, form):
-        ftime = form.cleaned_data.get('ftime', None)
-        if ftime:
-            ftime = ftime*60
-        else:
-            ftime = -1
-        stime = form.cleaned_data.get('stime', None)
-        if stime:
-            stime = stime*60
-        else:
-            stime = -1
-        if self.match.matchtimeline.final_time:
-            messages.add_message(
-                self.request, messages.WARNING,
-                "Match already in Final Time!!")
-        else:
-            self.match.matchtimeline.finalize_match(ftime=ftime, stime=stime)
-        return super().form_valid(form)
-
-
 urlpatterns += [path('finaltime/<int:pk>/',
-                     FinalTime.as_view(),
+                     TimeEvent.as_view(kind='fulltime'),
                      name='finaltime'), ]
-
 urlpatterns += [path('finaltimeonspot/<int:pk>/',
-                     FinalTime.as_view(onspot=True),
+                     TimeEvent.as_view(kind='fulltime', onspot=True),
                      name='finaltimeonspot'), ]
 
 
@@ -519,6 +411,12 @@ class PlayerSelect(LoginRequiredMixin,
             return PlayerSelectFormOnspot
         else:
             return PlayerSelectForm
+
+    def get_initial(self):
+        timeline = getattr(self.match, 'matchtimeline', None)
+        if timeline and timeline.first_half_start:
+            return {'time': timeline.first_half_start}
+        return {'time': self.match.date}
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
@@ -548,8 +446,6 @@ class PlayerSelect(LoginRequiredMixin,
     def get_form_kwargs(self):
         club = self.club
         kwargs = super().get_form_kwargs()
-        if not self.onspot:
-            kwargs['timeline'] = self.match.matchtimeline
         if self.kind == 'goal':
             kwargs['qplayers'] = Squad.get_squad(
                 self.match, club).get_playing_players()
@@ -574,39 +470,27 @@ class PlayerSelect(LoginRequiredMixin,
     def form_valid(self, form):
         player = form.cleaned_data.get('player')
         attr = form.cleaned_data.get('attr')
-
-        ftime = form.cleaned_data.get('ftime', None)
-        if ftime:
-            ftime = ftime*60
-        else:
-            ftime = -1
-
-        stime = form.cleaned_data.get('stime', None)
-        if stime:
-            stime = stime*60
-        else:
-            stime = -1
-
+        time = form.cleaned_data.get('time', None)
         if attr == 'None':
             attr = None
 
         if self.kind == 'goal':
             Goal.create(match=self.match, player=player,
-                        created_by=self.request.user, ftime=ftime,
-                        stime=stime, attr=attr)
+                        created_by=self.request.user, time=time,
+                        attr=attr)
         elif self.kind == 'own':
             attr = 'own goal'
             Goal.create(match=self.match, player=player,
-                        created_by=self.request.user, ftime=ftime,
-                        stime=stime, attr=attr, own=True)
+                        created_by=self.request.user, time=time,
+                        attr=attr, own=True)
         elif self.kind == 'yellow':
             Cards.raise_yellow_card(
                 match=self.match, player=player,
-                reason_text=attr, ftime=ftime, stime=stime)
+                reason_text=attr, time=time)
         elif self.kind == 'red':
             Cards.raise_red_card(
                 match=self.match, player=player,
-                reason_text=attr, ftime=ftime, stime=stime)
+                reason_text=attr, time=time)
 
         return super().form_valid(form)
 
@@ -645,6 +529,12 @@ class PlayerSelect2(LoginRequiredMixin,
     template_name = 'dashboard/match/player_select.html'
     onspot = False
 
+    def get_initial(self):
+        timeline = getattr(self.match, 'matchtimeline', None)
+        if timeline and timeline.first_half_start:
+            return {'time': timeline.first_half_start}
+        return {'time': self.match.date}
+
     def get_form_class(self):
         if self.onspot:
             return PlayerSelectForm2Onspot
@@ -675,26 +565,13 @@ class PlayerSelect2(LoginRequiredMixin,
         kwargs['qplayers_in'] = Squad.get_squad(
             self.match, club).get_onbench_players()
         kwargs['qattrs'] = SubstitutionReason.objects.all()
-        if not self.onspot:
-            kwargs['timeline'] = self.match.matchtimeline
         return kwargs
 
     def form_valid(self, form):
         player_in = form.cleaned_data.get('player_in')
         player_out = form.cleaned_data.get('player_out')
         attr = form.cleaned_data.get('attr')
-        ftime = form.cleaned_data.get('ftime', None)
-        if ftime:
-            ftime = ftime*60
-        else:
-            ftime = -1
-
-        stime = form.cleaned_data.get('stime', None)
-        if stime:
-            stime = stime*60
-        else:
-            stime = -1
-
+        time = form.cleaned_data.get('time', None)
         if attr == 'None':
             attr = None
 
@@ -703,7 +580,7 @@ class PlayerSelect2(LoginRequiredMixin,
         try:
             squad.substitute(playerin=player_in,
                              playerout=player_out, user=self.request.user,
-                             ftime=ftime, stime=stime, reason_text=attr)
+                             time=time,  reason_text=attr)
         except squad.NotEnoughPlayers as e:
             messages.add_message(self.request, messages.WARNING, e)
             return self.form_invalid(form)

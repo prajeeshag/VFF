@@ -28,7 +28,7 @@
 			</a>
 	{% elif match.matchtimeline.second_half_start and not match.matchtimeline.final_time %}
 			<a href="{% url 'dash:finaltime' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: red;">
-				Final Time
+				Full Time
 			</a>
 			{% include 'dashboard/match/partials/match_entry_panel.html' %}
 	{% endif %}
