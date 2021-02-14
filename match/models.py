@@ -239,7 +239,7 @@ class EventModel(models.Model):
             return
 
         # set against
-        if self.club:
+        if hasattr(self,'club') and self.club:
             self.against = match.get_opponent_club(self.club)
 
         # Calculate match time
