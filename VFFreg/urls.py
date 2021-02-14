@@ -31,6 +31,7 @@ urlpatterns += i18n_patterns(
     path('', include('registration.urls')),
     path('', include('public.urls')),
     path('', include('account.urls')),
+    path('stats/', include('stats.urls')),
     path('fixture/', include('fixture.urls')),
     path('match/', include('match.urls')),
     path('users/', include('users.urls')),

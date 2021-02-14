@@ -7,6 +7,13 @@
 	<div class="container-flex mt-2">
 		{% include 'public/partials/carosel.html' %}
 		<hr/>
+		{% if stats %}
+			<div class="mb-4">
+				<h4 class="text-center">Standings</h4>
+				<hr class="mt-0 mb-2">
+				{% include 'stats/partials/point_table.html' %}
+			</div>
+		{% endif %}
 		<div class="overflow-auto" style="height: 250px;">
 			<h4 class="text-center">Calendar</h4>
 			{% include 'fixture/partials/calendar.html' %}

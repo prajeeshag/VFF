@@ -1,0 +1,15 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+{% load i18n %}
+
+{% block content_main %}
+<h2 class="p-3"> Table </h2>
+<hr/>
+<div class="container-fluid">
+	{% include 'stats/partials/point_table.html' %}
+</div>
+{% endblock %}
+

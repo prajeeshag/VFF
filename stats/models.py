@@ -5,9 +5,21 @@ from fixture.models import Matches
 from match.models import Result
 
 
+def get_points(self, against=None):
+    nplayed = self.num_played(against)
+    nwins = self.num_wins(against)
+    nlosses = self.num_losses(against)
+    ndraws = nplayed-(nwins+nlosses)
+    return nwins*3+ndraws
+
+
+setattr(ClubProfile, 'get_points', get_points)
+
+
 class ClubStat(models.Model):
     club = models.OneToOneField(
-        ClubProfile, on_delete=models.PROTECT, related_name='stats')
+        ClubProfile, on_delete=models.CASCADE,
+        related_name='stats')
     played = models.PositiveIntegerField(default=0)
     win = models.PositiveIntegerField(default=0)
     draw = models.PositiveIntegerField(default=0)
@@ -16,37 +28,32 @@ class ClubStat(models.Model):
     goals_against = models.PositiveIntegerField(default=0)
     goal_difference = models.IntegerField(default=0)
     points = models.PositiveIntegerField(default=0)
-    standing_points = models.DecimalField(default=0)
 
     @classmethod
     def create(cls, club):
-        obj = cls.objects.get_or_create(club=club)
+        obj, created = cls.objects.get_or_create(club=club)
         obj.update()
         return obj
 
     def update(self):
         club = self.club
-        self.played = Matches.get_done_matches_of_club(club).count()
-        self.win = club.wins.all().count()
-        self.loss = club.losses.all().count()
-        self.draw = club.draws.all().count()
-        self.goals_for = club.goals.all().count()
-        self.goals_against = club.goals_against.all().count()
+        self.played = club.num_played()
+        self.win = club.num_wins()
+        self.loss = club.num_losses()
+        self.draw = self.played - self.win - self.loss
+        self.goals_for = club.num_goals()
+        self.goals_against = club.num_goals_against()
         self.goal_difference = self.goals_for - self.goals_against
-        self.points = int(self.win * 3 + self.draw)
+        self.points = self.win * 3 + self.draw
         self.save()
-
-    def get_points_in_group(self, group):
-        club = self.club
-        grp = [g.club for g in group]
-        played = Matches.objects.filter(Q(home__in=grp) | Q(
-            away__in=grp)).filter(Q(home=club) | Q(away=club))
-        win = club.wins.filter(loser__in=grp).count()
-        loss = club.losses.filter(winner__in=grp).count()
-        draw = played-win-loss
-        points = int(win*3 + draw)
-        return points
 
     @classmethod
     def update_standings(self):
+        pass
+
+    def do_sort(self, inp):
+        """
+        inp is a list, return will be a list if completely sorted
+        else will be list of list.
+        """
         pass

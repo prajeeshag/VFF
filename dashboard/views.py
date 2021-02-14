@@ -1,7 +1,6 @@
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
-
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
@@ -82,7 +81,8 @@ class Calendar(viewMixins, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.get_upcoming_matches()
-        ctx['done_matches'] = Matches.objects.filter(status=Matches.STATUS.done).order_by('-date')
+        ctx['done_matches'] = Matches.objects.filter(
+            status=Matches.STATUS.done).order_by('-date')
         return ctx
 
 

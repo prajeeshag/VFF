@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'verification',
     'dashboard',
     'match',
+    'stats',
 ]
 
 

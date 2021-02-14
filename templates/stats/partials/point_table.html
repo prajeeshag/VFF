@@ -1,0 +1,35 @@
+
+{% if stats %}
+<table class="table table-dark table-sm" style="font-size: 12px;">
+	<thead>
+		<tr>
+			<th scope="col">#</th>
+			<th scope="col">club</th>
+			<th scope="col" class="text-center">MP</th>
+			<th scope="col" class="text-center">W</th>
+			<th scope="col" class="text-center">D</th>
+			<th scope="col" class="text-center">L</th>
+			<th scope="col" class="text-center">GF</th>
+			<th scope="col" class="text-center">GA</th>
+			<th scope="col" class="text-center">GD</th>
+			<th scope="col" class="text-center">Pts</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for stat in stats %}
+			<tr>
+				<th scope="row"> {{ forloop.counter }} </td>
+				<th scope="row"> {{ stat.club.abbr|upper }} </td>
+				<td class="text-center">{{ stat.played }}</td>
+				<td class="text-center">{{ stat.win }}</td>
+				<td class="text-center">{{ stat.draw }}</td>
+				<td class="text-center">{{ stat.loss }}</td>
+				<td class="text-center">{{ stat.goals_for }}</td>
+				<td class="text-center">{{ stat.goals_against }}</td>
+				<td class="text-center">{{ stat.goal_difference }}</td>
+				<td class="text-center">{{ stat.points }}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+{% endif %}

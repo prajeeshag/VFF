@@ -171,16 +171,16 @@ for stat in Matches.STATUS:
     add_is_status(stat[0])
 
 
-def num_played(self, against):
+def num_played(self, against=None):
     if against:
         return Matches.objects.filter(
             Q(home=self) | Q(away=self),
             Q(home__in=against) | Q(away__in=against),
-            status=Matches.STATUS.done)
+            status=Matches.STATUS.done).count()
     else:
         return Matches.objects.filter(
             Q(home=self) | Q(away=self),
-            status=Matches.STATUS.done)
+            status=Matches.STATUS.done).count()
 
 
 setattr(ClubProfile, 'num_played', num_played)

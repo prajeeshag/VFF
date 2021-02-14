@@ -958,19 +958,19 @@ class Result(StatusModel):
     draws = models.ManyToManyField(
         ClubProfile,
         related_name='draws')
-    match = models.OneToOneField(
-        Matches, on_delete=models.PROTECT,
-        name='result')
+    match = models.OneToOneField(Matches, 
+            on_delete=models.PROTECT, 
+            related_name='result')
 
     @classmethod
     def create(cls, match):
-        obj = cls.objects.get_or_create(match=match)
+        obj, created = cls.objects.get_or_create(match=match)
         obj.update()
         return obj
 
     def update(self):
         if not self.match.is_done():
-            self.status = self.STATUS.not_completed
+            self.status = self.STATUS.not_done
             self.save()
             return
 
@@ -1083,8 +1083,26 @@ def add_num_club_event(eventname, eventcls):
     fn.__doc__ = "Get # of {}".format(eventname)
 
 
+def add_num_club_event_against(eventname, eventcls):
+    """ Add num_{event} method
+        for class: ClubProfile
+    """
+    fn_name = "_".join(['num', eventname, 'against'])
+
+    def fn(self, against=None):
+        if against:
+            return eventcls.objects.filter(against=self, club__in=against).count()
+        else:
+            return eventcls.objects.filter(against=self).count()
+
+    setattr(ClubProfile, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Get # of {} against".format(eventname)
+
+
 for evname, evclass in EVENTS.items():
     add_num_club_event(evname, evclass)
+    add_num_club_event_against(evname, evclass)
     for side in SIDES:
         add_num_side_event(side, evname, evclass)
 
@@ -1107,3 +1125,5 @@ def num_losses(self, against=None):
 
 
 setattr(ClubProfile, 'num_losses', num_losses)
+
+
