@@ -453,7 +453,7 @@ class FinalTime(LoginRequiredMixin,
                 formviewMixins,
                 MatchLockMixin,
                 FormView):
-    onspot = True
+    onspot = False
     form_class = MatchTimeForm
     template_name = 'dashboard/match/base_form.html'
 
