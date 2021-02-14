@@ -35,6 +35,8 @@
 											<a class="dropdown-item" href="{% url 'dash:enterpastmatchdetails' match.pk %}">Enter match details</a>							
 										{% endif %}
 
+										<a class="dropdown-item" href="{% url 'dash:editmatch' match.pk %}">Edit match time</a>
+
 										{% if not match.is_fixed %}
 											<form method="POST" action={% url 'dash:fixmatches' %}>
 												{% include 'snippets/form_common.html' %}

@@ -65,6 +65,30 @@ urlpatterns += [path('managematches/',
                      ManageMatchList.as_view(),
                      name='managematches'), ]
 
+class EditMatch(LoginRequiredMixin, UpdateView):
+    template_name = 'dashboard/base_form.html'
+    model = Matches
+    fields = ['date', ]
+
+    def dispatch(self, request, *args, **kwargs):
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not is_match_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = self.get_object()
+        return ctx
+
+    def get_success_url(self):
+        return reverse('dash:managematches')
+
+
+urlpatterns += [path('editmatch/<int:pk>/',
+                     EditMatch.as_view(),
+                     name='editmatch'), ]
+
 
 class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
     template_name = 'dashboard/match/enter_match_details.html'

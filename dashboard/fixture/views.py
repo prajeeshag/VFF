@@ -22,6 +22,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
 from guardian.shortcuts import get_objects_for_user
+import rules
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
