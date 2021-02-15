@@ -1,5 +1,6 @@
 import humanize
 import math
+from itertools import chain
 
 from django.db import models, transaction
 from django.conf import settings
@@ -139,7 +140,7 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
 
             self.match.set_done()
 
-            #Result
+            # Result
             Result.create(match=self.match)
 
 
@@ -246,7 +247,7 @@ class EventModel(models.Model):
             return
 
         # set against
-        if hasattr(self,'club') and self.club:
+        if hasattr(self, 'club') and self.club:
             self.against = match.get_opponent_club(self.club)
 
         # Calculate match time
@@ -462,55 +463,24 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         )
 
     @ classmethod
-    def _create_onbench(cls, parent):
-        return cls.objects.create(kind=cls.KIND.onbench, parent=parent)
-
-    @ classmethod
-    def _create_tobench(cls, parent):
-        return cls.objects.create(kind=cls.KIND.tobench, parent=parent)
-
-    @ classmethod
-    def _create_first(cls, parent):
-        return cls.objects.create(kind=cls.KIND.first, parent=parent)
-
-    @ classmethod
-    def _create_playing(cls, parent):
-        return cls.objects.create(kind=cls.KIND.playing, parent=parent)
-
-    @ classmethod
-    def _create_bench(cls, parent):
-        return cls.objects.create(kind=cls.KIND.bench, parent=parent)
-
-    @ classmethod
-    def _create_avail(cls, parent):
-        return cls.objects.create(kind=cls.KIND.avail, parent=parent)
-
-    @ classmethod
-    def _create_suspen(cls, parent):
-        return cls.objects.create(kind=cls.KIND.suspen, parent=parent)
-
-    @ classmethod
     def create(cls, match, club, user):
         parent = None
         with transaction.atomic():
             parent = cls._create_parent(
                 created_by=user, club=club, match=match)
-            cls._create_first(parent)
-            cls._create_bench(parent)
-            cls._create_playing(parent)
-            cls._create_onbench(parent)
-            cls._create_tobench(parent)
-            avail = cls._create_avail(parent)
-            suspen = cls._create_suspen(parent)
+            for kind in cls.KIND:
+                if kind[0] != cls.KIND.parent:
+                    cls.objects.create(kind=kind, parent=parent)
+            avail = parent.get_avail_squad()
+            suspen = parent.get_suspen_squad()
             for player in club.get_players():
                 if Suspension.has_suspension(player):
                     suspen.add_player(player)
                 else:
                     avail.add_player(player)
-
         return parent
 
-    def reset(self, hard=False):
+    def reset(self):
         with transaction.atomic():
             for squad in (self.get_avail_squad(),
                           self.get_first_squad(),
@@ -542,48 +512,6 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def get_squad_player(cls, match, player):
         club = player.get_club()
         return cls.get_squad(match, club)
-
-    def get_first_squad(self):
-        return self.items.filter(kind=self.KIND.first).first()
-
-    def get_bench_squad(self):
-        return self.items.filter(kind=self.KIND.bench).first()
-
-    def get_onbench_squad(self):
-        return self.items.filter(kind=self.KIND.onbench).first()
-
-    def get_tobench_squad(self):
-        return self.items.filter(kind=self.KIND.tobench).first()
-
-    def get_playing_squad(self):
-        return self.items.filter(kind=self.KIND.playing).first()
-
-    def get_avail_squad(self):
-        return self.items.filter(kind=self.KIND.avail).first()
-
-    def get_suspen_squad(self):
-        return self.items.filter(kind=self.KIND.suspen).first()
-
-    def get_first_players(self):
-        return self.get_first_squad().players.all()
-
-    def get_bench_players(self):
-        return self.get_bench_squad().players.all()
-
-    def get_onbench_players(self):
-        return self.get_onbench_squad().players.all()
-
-    def get_tobench_players(self):
-        return self.get_tobench_squad().players.all()
-
-    def get_playing_players(self):
-        return self.get_playing_squad().players.all()
-
-    def get_suspen_players(self):
-        return self.get_suspen_squad().players.all()
-
-    def get_avail_players(self):
-        return self.get_avail_squad().players.all()
 
     def add_player(self, player):
         with transaction.atomic():
@@ -723,6 +651,28 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         return reverse('match:squad', kwargs={'pk': self.pk})
 
 
+def add_get_child_squad(child):
+    fn_name = '_'.join(['get', child, 'squad'])
+
+    def fn(self):
+        return self.items.filter(kind=child).first().prefetch_related('players')
+    setattr(Squad, fn_name, fn)
+
+
+def add_get_child_players(child):
+    fn_name = '_'.join(['get', child, 'players'])
+
+    def fn(self):
+        attr_name = '_'.join(['get', child, 'squad'])
+        return getattr(self, attr_name).players.all()
+    setattr(Squad, fn_name, fn)
+
+
+for child in Squad.KIND:
+    add_get_child_squad(child[0])
+    add_get_child_players(child[0])
+
+
 class CardReason(NoteModel):
     pass
 
@@ -852,7 +802,8 @@ class Substitution(StatusModel, TimeStampedModel, EventModel):
     sub_in = models.ForeignKey(
         PlayerProfile, on_delete=models.PROTECT, related_name='sub_ins')
     sub_out = models.ForeignKey(
-        PlayerProfile, on_delete=models.PROTECT, related_name='sub_outs')
+        PlayerProfile, on_delete=models.PROTECT,
+        related_name='sub_outs')
     reason = models.ForeignKey(
         SubstitutionReason,
         on_delete=models.PROTECT,
@@ -885,7 +836,8 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
     STATUS = Choices('submitted', 'finalized', 'approved')
     own = models.BooleanField(default=False)
     player = models.ForeignKey(
-        PlayerProfile, on_delete=models.SET_NULL, null=True, related_name='goals')
+        PlayerProfile, on_delete=models.PROTECT,
+        null=True, related_name='goals')
     club = models.ForeignKey(
         ClubProfile, on_delete=models.PROTECT, related_name='goals')
     against = models.ForeignKey(
@@ -974,9 +926,9 @@ class Result(StatusModel):
     draws = models.ManyToManyField(
         ClubProfile,
         related_name='draws')
-    match = models.OneToOneField(Matches, 
-            on_delete=models.PROTECT, 
-            related_name='result')
+    match = models.OneToOneField(Matches,
+                                 on_delete=models.PROTECT,
+                                 related_name='result')
 
     @classmethod
     def create(cls, match):
@@ -1017,8 +969,9 @@ class SuspensionReason(NoteModel):
 
 class Suspension(StatusModel, TimeStampedModel):
     STATUS = Choices('pending', 'completed', 'canceled')
-    player = models.ForeignKey(PlayerProfile, on_delete=models.CASCADE)
+    player = models.ForeignKey(PlayerProfile, on_delete=models.PROTECT)
     reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
+    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT)
 
     class SuspensionExist(Exception):
         pass
@@ -1143,3 +1096,38 @@ def num_losses(self, against=None):
 setattr(ClubProfile, 'num_losses', num_losses)
 
 
+def add_num_player_event(eventname, eventcls):
+    """ Add num_{event} method
+        for class: PlayerProfile
+    """
+    fn_name = "_".join(['num', eventname])
+
+    def fn(self, against=None):
+        if against:
+            return eventcls.objects.filter(player=self, against__in=against).count()
+        else:
+            return eventcls.objects.filter(player=self).count()
+
+    setattr(PlayerProfile, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Get # of {}".format(eventname)
+
+
+for evname, evclass in EVENTS.items():
+    add_num_player_event(evname, evclass)
+
+
+def get_played_players(self):
+    """
+    get all players who played a match
+    """
+    players = []
+    for club in (self.home, self.away):
+        sqd = Squad.get_squad(match=self, club=club)
+        p1 = sqd.get_playing_players()
+        p2 = sqd.get_tobench_players()
+        players += list(chain(p1, p2))
+    return players
+
+
+setattr(Matches, 'get_played_players', get_played_players)

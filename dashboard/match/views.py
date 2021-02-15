@@ -39,7 +39,7 @@ from league.models import Season
 from match.models import (Squad, MatchTimeLine, Goal, Cards,
                           GoalAttr, CardReason, SubstitutionReason)
 from users.models import PlayerProfile, ClubProfile
-from stats.models import ClubStat
+from stats.models import ClubStat, PlayerStat
 from .forms import (
     DateTimeForm, MatchTimeForm, EmptyForm,
     PlayerSelectForm, PlayerSelectForm2,
@@ -64,6 +64,7 @@ class ManageMatchList(LoginRequiredMixin, viewMixins, TemplateView):
 urlpatterns += [path('managematches/',
                      ManageMatchList.as_view(),
                      name='managematches'), ]
+
 
 class EditMatch(LoginRequiredMixin, UpdateView):
     template_name = 'dashboard/base_form.html'
@@ -393,6 +394,7 @@ class TimeEvent(LoginRequiredMixin,
             else:
                 self.match.matchtimeline.finalize_match(time=time)
                 ClubStat.update_match(match)
+                PlayerStat.update_match(match)
 
         return super().form_valid(form)
 

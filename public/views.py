@@ -3,7 +3,7 @@ from django.views.generic.base import TemplateView
 
 from fixture.models import Matches
 from .models import CarouselItem
-from stats.models import ClubStat
+from stats.models import ClubStat, PlayerStat
 
 
 class LandingPageView(TemplateView):
@@ -16,6 +16,7 @@ class LandingPageView(TemplateView):
         ctx['stats'] = ClubStat.objects.all().order_by(
             '-points', '-goal_difference',
             '-goals_for', 'goals_against')
+        ctx['topscorers'] = PlayerStat.objects.all().order_by('-goals')[:10]
         return ctx
 
 

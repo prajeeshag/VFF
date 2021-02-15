@@ -1,8 +1,8 @@
 from django.db import models
 
-from users.models import ClubProfile
+from users.models import ClubProfile, PlayerProfile
 from fixture.models import Matches
-from match.models import Result
+from match.models import Result, Cards
 
 
 def get_points(self, against=None):
@@ -65,3 +65,30 @@ class ClubStat(models.Model):
         else will be list of list.
         """
         pass
+
+
+class PlayerStat(models.Model):
+    player = models.OneToOneField(
+        PlayerProfile,
+        on_delete=models.CASCADE,
+        related_name='stats')
+    goals = models.PositiveIntegerField(default=0)
+    yellow = models.PositiveIntegerField(default=0)
+    red = models.PositiveIntegerField(default=0)
+
+    def update(self):
+        self.goals = self.player.num_goals()
+        self.yellow = Cards.objects.filter(
+            color=Cards.COLOR.yellow,
+            player=self.player).count()
+        self.red = Cards.objects.filter(
+            color=Cards.COLOR.red,
+            player=self.player).count()
+        self.save()
+
+    @classmethod
+    def update_match(cls, match):
+        for club in [match.home, match.away]:
+            for player in club.get_players():
+                obj, created = cls.objects.get_or_create(player=player)
+                obj.update()
