@@ -971,7 +971,8 @@ class Suspension(StatusModel, TimeStampedModel):
     STATUS = Choices('pending', 'completed', 'canceled')
     player = models.ForeignKey(PlayerProfile, on_delete=models.PROTECT)
     reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
-    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT)
+    completed_in = models.ForeignKey(
+        Matches, on_delete=models.PROTECT, null=True)
 
     class SuspensionExist(Exception):
         pass
@@ -985,18 +986,24 @@ class Suspension(StatusModel, TimeStampedModel):
         return cls.pending.create(player=player, reason=reason)
 
     @ classmethod
-    def set_completed(cls, player):
-        susp = cls.pending.filter(player).first()
+    def set_completed(cls, player, match):
+        if cls.completed.filter(player=player, match=match).exists():
+            # Only one suspension is completed in one match for a player
+            return
+        susp = cls.pending.filter(player=player).first()
         if susp:
             susp.status = cls.STATUS.completed
+            susp.match = match
             susp.save()
 
     @ classmethod
     def set_completed_for_match(cls, match):
-        for players in Squad.get_squad(match, match.home).get_suspen_players():
-            cls.set_completed(player)
-        for players in Squad.get_squad(match, match.away).get_suspen_players():
-            cls.set_completed(player)
+        with transaction.atomic():
+            for club in [match.home, match.away]:
+                sqd = Squad.get_squad(match, club).get_suspen_squad()
+                players = sqd.players.all()
+                for player in players:
+                    cls.set_completed(player, match)
 
 
 class AccumulatedCards(TimeStampedModel):

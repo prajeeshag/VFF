@@ -11,20 +11,14 @@ from core.utils import disable_for_loaddata
 @receiver(post_save, sender=ClubProfile)
 @disable_for_loaddata
 def create_club_stat(sender, instance, created, **kwargs):
-    if not hasattr(instance, 'stats'):
+    if not ClubStat.objects.filter(club=instance).exists():
         ClubStat.create(instance)
-
-
-@receiver(post_save, sender=Matches)
-def update_club_stat(sender, instance, created, **kwargs):
-    if instance.is_done():
-        instance.home.stats.update()
-        instance.away.stats.update()
+        obj.update()
 
 
 @receiver(post_save, sender=PlayerProfile)
 @disable_for_loaddata
 def create_club_stat(sender, instance, created, **kwargs):
-    if not hasattr(instance, 'stats'):
+    if not PlayerStat.objects.filter(player=instance).exists():
         obj = PlayerStat.objects.create(player=instance)
         obj.update()
