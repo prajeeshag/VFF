@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'guardian',
     'rules.apps.AutodiscoverRulesConfig',
     'lock_tokens.apps.LockTokensConfig',
+    'debug_toolbar',
 
     # Local
     'league',
@@ -94,6 +95,7 @@ INSTALLED_APPS = [
 
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
@@ -104,6 +106,8 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "maintenance_mode.middleware.MaintenanceModeMiddleware",
 ]
+
+INTERNAL_IPS = ['127.0.0.1', ]
 
 ROOT_URLCONF = "VFFreg.urls"
 

@@ -1,5 +1,6 @@
 import datetime as dt
 
+from django import forms
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
@@ -89,6 +90,46 @@ class EditMatch(LoginRequiredMixin, UpdateView):
 urlpatterns += [path('editmatch/<int:pk>/',
                      EditMatch.as_view(),
                      name='editmatch'), ]
+
+
+class SomeFunctions(LoginRequiredMixin, FormView):
+    template_name = 'dashboard/base_form.html'
+    form_class = forms.Form
+    kind = 'upstats'
+
+    def dispatch(self, request, *args, **kwargs):
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not is_match_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        if self.kind == 'upstats':
+            ctx['title'] = 'Update All Statistics'
+        elif self.kind == 'upstatsclub':
+            ctx['title'] = 'Update Club Statistics'
+        elif self.kind == 'upstatsplayer':
+            ctx['title'] = 'Update Player Statistics'
+
+        return ctx
+
+    def form_valid(self, form):
+        if self.kind == 'upstats':
+            ClubStat.update_all()
+            PlayerStat.update_all()
+        elif self.kind == 'upstatsclub':
+            ClubStat.update_all()
+        elif self.kind == 'upstatsplayer':
+            PlayerStat.update_all()
+
+    def get_success_url(self):
+        return reverse('dash:managematches')
+
+
+urlpatterns += [path('upstats/<int:pk>/',
+                     SomeFunctions.as_view(kind='upstats'),
+                     name='upstats'), ]
 
 
 class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):

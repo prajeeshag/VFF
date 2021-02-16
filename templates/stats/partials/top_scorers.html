@@ -1,24 +1,23 @@
 
 {% if topscorers %}
-<table class="table table-dark table-sm" style="font-size: 12px;">
-	<thead>
-		<tr>
-			<th scope="col">#</th>
-			<th scope="col">Name</th>
-			<th scope="col">Club</th>
-			<th scope="col">MP</th>
-			<th scope="col">Goals</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for stat in topscorers %}
+	<table class="table table-dark table-sm" style="font-size: 12px;">
+		<thead>
 			<tr>
-				<th scope="row"> {{ forloop.counter }} </td>
-				<th scope="row"> {{ stat.player|capfirst }} </td>
-				<td class="text-center">{{ stat.played }}</td>
-				<td class="text-center">{{ stat.goals }}</td>
+				<th scope="col">#</th>
+				<th scope="col">Name</th>
+				<th scope="col">Club</th>
+				<th class="text-center" scope="col">Goals</th>
 			</tr>
-		{% endfor %}
-	</tbody>
-</table>
+		</thead>
+		<tbody>
+			{% for stat in topscorers %}
+				<tr>
+					<th scope="row"> {{ forloop.counter }} </td>
+					<th scope="row"> {{ stat.player|capfirst }} </td>
+					<th scope="row"> {{ stat.player.get_club.abbr|upper }} </td>
+					<td class="text-center">{{ stat.goals }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endif %}

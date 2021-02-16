@@ -20,6 +20,7 @@ django-bootstrap4==2.3.1
 django-cleanup==5.1.0
 django-compat==1.0.15
 django-crispy-forms==1.10.0
+django-debug-toolbar==3.2
 django-email-verification==0.0.7
 django-exiffield==3.0.0
 django-extra-views==0.13.0

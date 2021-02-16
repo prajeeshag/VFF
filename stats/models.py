@@ -2,7 +2,7 @@ from django.db import models
 
 from users.models import ClubProfile, PlayerProfile
 from fixture.models import Matches
-from match.models import Result, Cards
+from match.models import Result, Cards, Goal
 
 
 def get_points(self, against=None):
@@ -34,14 +34,21 @@ class ClubStat(models.Model):
 
     @classmethod
     def update_match(cls, match):
-        cls.create(match.home)
-        cls.create(match.away)
+        for club in [match.home, match.away]:
+            obj, created = cls.objects.get_or_create(club=club)
+            obj.update()
 
     @classmethod
     def create(cls, club):
         obj, created = cls.objects.get_or_create(club=club)
-        obj.update()
         return obj
+
+    @classmethod
+    def create_all(cls):
+        clubs = ClubProfile.objects.select_related('stats').all()
+        for club in clubs:
+            if not hasattr(club, 'stats'):
+                obj, created = cls.objects.get_or_create(club=club)
 
     def update(self):
         club = self.club
@@ -54,6 +61,17 @@ class ClubStat(models.Model):
         self.goal_difference = self.goals_for - self.goals_against
         self.points = self.win * 3 + self.draw
         self.save()
+
+    def save(self, *args, **kwargs):
+        self.draw = self.played - self.win - self.loss
+        self.goal_difference = self.goals_for - self.goals_against
+        self.points = self.win * 3 + self.draw
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def update_all(cls):
+        for stat in cls.objects.all():
+            stat.update()
 
     @classmethod
     def update_standings(self):
@@ -76,12 +94,19 @@ class PlayerStat(models.Model):
     yellow = models.PositiveIntegerField(default=0)
     red = models.PositiveIntegerField(default=0)
 
+    @classmethod
+    def create(cls, player):
+        obj, created = cls.objects.get_or_create(player=player)
+        return obj
+
     def update(self):
         self.goals = self.player.num_goals()
         self.yellow = Cards.objects.filter(
+            is_removed=False,
             color=Cards.COLOR.yellow,
             player=self.player).count()
         self.red = Cards.objects.filter(
+            is_removed=False,
             color=Cards.COLOR.red,
             player=self.player).count()
         self.save()
@@ -90,5 +115,36 @@ class PlayerStat(models.Model):
     def update_match(cls, match):
         for club in [match.home, match.away]:
             for player in club.get_players():
-                obj, created = cls.objects.get_or_create(player=player)
+                obj = cls.create(player)
                 obj.update()
+
+    @classmethod
+    def create_all(cls):
+        players = PlayerProfile.objects.all()
+        for player in players:
+            cls.create(player)
+
+    @classmethod
+    def update_all(cls):
+        for player in PlayerProfile.objects.all():
+            obj, created = cls.objects.get_or_create(player=player)
+            obj.update()
+        #PlayerStat.objects.all().update(goals=0, yellow=0, red=0)
+        # for player in PlayerProfile.objects.all():
+        #goals = Goal.objects.filter(own=False).select_related('player__stats')
+        # reds = Cards.objects.filter(
+        #    is_removed=False, color=Cards.COLOR.red).select_related('player__stats')
+        # yellows = Cards.objects.filter(
+        #    is_removed=False, color=Cards.COLOR.yellow).select_related('player__stats')
+        #stats = set()
+        # for goal in goals:
+        #    goal.player.stats.goals += 1
+        #    stats.add(goal.player.stats)
+        # for red in reds:
+        #    red.player.stats.red += 1
+        #    stats.add(red.player.stats)
+        # for yellow in yellows:
+        #    yellow.player.stats.yellow += 1
+        #    stats.add(yellow.player.stats)
+        # for stat in stats:
+        #    stat.save()
