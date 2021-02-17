@@ -655,7 +655,7 @@ def add_get_child_squad(child):
     fn_name = '_'.join(['get', child, 'squad'])
 
     def fn(self):
-        return self.items.filter(kind=child).first().prefetch_related('players')
+        return self.items.filter(kind=child).prefetch_related('players').first()
     setattr(Squad, fn_name, fn)
 
 
@@ -664,7 +664,7 @@ def add_get_child_players(child):
 
     def fn(self):
         attr_name = '_'.join(['get', child, 'squad'])
-        return getattr(self, attr_name).players.all()
+        return getattr(self, attr_name)().players.all()
     setattr(Squad, fn_name, fn)
 
 
