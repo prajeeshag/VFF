@@ -390,7 +390,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     NU21S = models.PositiveIntegerField(default=NU21)
 
     class Meta:
-        unique_together = ['club', 'match']
+        unique_together = ['club', 'match', 'kind']
 
     class LimitReached(Exception):
         pass
