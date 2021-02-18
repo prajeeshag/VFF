@@ -37,7 +37,7 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 from league.models import Season
-from match.models import (Squad, MatchTimeLine, Goal, Cards,
+from match.models import (Squad, MatchTimeLine, Goal, Cards, Suspension,
                           GoalAttr, CardReason, SubstitutionReason)
 from users.models import PlayerProfile, ClubProfile
 from stats.models import ClubStat, PlayerStat
@@ -52,7 +52,17 @@ LOGIN_URL = reverse_lazy('login')
 urlpatterns = []
 
 
-class ManageMatchList(LoginRequiredMixin, viewMixins, TemplateView):
+class MatchManagerRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not is_match_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ManageMatchList(viewMixins,
+                      MatchManagerRequiredMixin,
+                      TemplateView):
     template_name = 'dashboard/match/manage_match_list.html'
 
     def get_context_data(self, **kwargs):
@@ -67,16 +77,11 @@ urlpatterns += [path('managematches/',
                      name='managematches'), ]
 
 
-class EditMatch(LoginRequiredMixin, UpdateView):
+class EditMatch(MatchManagerRequiredMixin,
+                UpdateView):
     template_name = 'dashboard/base_form.html'
     model = Matches
     fields = ['date', ]
-
-    def dispatch(self, request, *args, **kwargs):
-        is_match_manager = rules.test_rule('manage_match', request.user)
-        if not is_match_manager:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -92,7 +97,7 @@ urlpatterns += [path('editmatch/<int:pk>/',
                      name='editmatch'), ]
 
 
-class SomeFunctions(LoginRequiredMixin, FormView):
+class SomeFunctions(MatchManagerRequiredMixin, FormView):
     template_name = 'dashboard/base_form.html'
     form_class = forms.Form
     kind = 'upstats'
@@ -132,7 +137,7 @@ urlpatterns += [path('upstats/<int:pk>/',
                      name='upstats'), ]
 
 
-class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
+class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
     template_name = 'dashboard/match/enter_match_details.html'
     model = Matches
     context_object_name = 'match'
@@ -325,7 +330,7 @@ class MatchLockMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class StartMatchTimeLine(LoginRequiredMixin,
+class StartMatchTimeLine(MatchManagerRequiredMixin,
                          MatchLockMixin,
                          View):
     model = Matches
@@ -349,7 +354,8 @@ urlpatterns += [path('startmatchtimeline/<int:pk>/',
                      name='startmatchtimeline'), ]
 
 
-class ActivatePast(LoginRequiredMixin, MatchLockMixin, View):
+class ActivatePast(MatchManagerRequiredMixin,
+                   MatchLockMixin, View):
 
     def post(self, request, *args, **kwargs):
         val = request.POST.get('action')
@@ -365,7 +371,7 @@ urlpatterns += [path('activatepast/<int:pk>/',
                      name='activatepast'), ]
 
 
-class TimeEvent(LoginRequiredMixin,
+class TimeEvent(MatchManagerRequiredMixin,
                 formviewMixins,
                 MatchLockMixin,
                 FormView):
@@ -466,7 +472,7 @@ urlpatterns += [path('finaltimeonspot/<int:pk>/',
                      name='finaltimeonspot'), ]
 
 
-class PlayerSelect(LoginRequiredMixin,
+class PlayerSelect(MatchManagerRequiredMixin,
                    formviewMixins,
                    MatchLockMixin,
                    FormView):
@@ -590,7 +596,7 @@ urlpatterns += [path('redplayerselonspot/<int:pk>/<int:club>/',
                      name='redplayerselonspot'), ]
 
 
-class PlayerSelect2(LoginRequiredMixin,
+class PlayerSelect2(MatchManagerRequiredMixin,
                     formviewMixins,
                     MatchLockMixin,
                     FormView):
@@ -664,3 +670,5 @@ urlpatterns += [path('subplayersel/<int:pk>/<int:club>/',
 urlpatterns += [path('subplayerselonspot/<int:pk>/<int:club>/',
                      PlayerSelect2.as_view(onspot=True),
                      name='subplayerselonspot'), ]
+
+

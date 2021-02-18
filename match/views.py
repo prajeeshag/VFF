@@ -22,6 +22,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
+import rules
 from guardian.shortcuts import get_objects_for_user
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
@@ -33,6 +34,14 @@ from . import models
 
 
 urlpatterns = []
+
+
+class MatchManagerRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not is_match_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
 
 class Squad(viewMixins, DeleteView):
@@ -65,3 +74,20 @@ class MatchTimeLine(viewMixins, DetailView):
 urlpatterns += [path('matchtimeline/<int:pk>/',
                      MatchTimeLine.as_view(),
                      name='matchtimeline'), ]
+
+
+class SuspensionList(MatchManagerRequiredMixin, TemplateView):
+    template_name = 'match/suspensions.html'
+
+    def get_context_data(self, **kwargs):
+        mdl = models.Suspension
+        ctx = super().get_context_data(**kwargs)
+        ctx['pending_suspensions'] = mdl.pending.all().select_related()
+        ctx['other_suspensions'] = mdl.objects.exclude(
+            status=mdl.STATUS.pending).select_related()
+        return ctx
+
+
+urlpatterns += [path('suspensions/',
+                     SuspensionList.as_view(),
+                     name='suspensions'), ]
