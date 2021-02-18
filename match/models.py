@@ -470,7 +470,10 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                 created_by=user, club=club, match=match)
             for kind in cls.KIND:
                 if kind[0] != cls.KIND.parent:
-                    cls.objects.create(kind=kind, parent=parent)
+                    cls.objects.create(kind=kind[0], parent=parent,
+                                       club=club, match=match,
+                                       created_by=user,
+                                       status=cls.STATUS.pre)
             avail = parent.get_avail_squad()
             suspen = parent.get_suspen_squad()
             for player in club.get_players():
@@ -506,7 +509,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
 
     @ classmethod
     def get_squad(cls, match, club):
-        return cls.objects.get(match=match, club=club)
+        return cls.objects.get(match=match, club=club, kind=cls.KIND.parent)
 
     @ classmethod
     def get_squad_player(cls, match, player):
@@ -628,8 +631,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def substitute(self, playerin, playerout, user,
                    reason_text=None, bypassU=False, time=None):
         with transaction.atomic():
-            self.get_playing_squad().add_player(playerin)
-            self.get_playing_squad().remove_player(playerout)
+            playing_sqd = self.get_playing_squad()
+            playing_sqd.add_player(playerin)
+            playing_sqd.remove_player(playerout)
             self.get_onbench_squad().remove_player(playerin)
             self.get_tobench_squad().add_player(playerout)
             if not bypassU:
