@@ -440,8 +440,8 @@ class TimeEvent(MatchManagerRequiredMixin,
                     "Match already in Final Time!!")
             else:
                 self.match.matchtimeline.finalize_match(time=time)
-                ClubStat.update_match(match)
-                PlayerStat.update_match(match)
+                ClubStat.update_match(self.match)
+                PlayerStat.update_match(self.match)
 
         return super().form_valid(form)
 
