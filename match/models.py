@@ -731,7 +731,7 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
             for card in cls.get_all_reds(match):
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Red card')
-                Suspension.create(card.player, reason)
+                Suspension.create(card.player, reason, match=match)
 
             # Yellow cards
             for card in cls.get_all_yellow(match):
@@ -975,8 +975,10 @@ class Suspension(StatusModel, TimeStampedModel):
     STATUS = Choices('pending', 'completed', 'canceled')
     player = models.ForeignKey(PlayerProfile, on_delete=models.PROTECT)
     reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
-    completed_in = models.ForeignKey(
-        Matches, on_delete=models.PROTECT, null=True)
+    got_in = models.ForeignKey(Matches, on_delete=models.PROTECT,
+                               null=True, related_name='suspensions')
+    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT,
+                                     null=True, related_name='suspensions_completed')
 
     class SuspensionExist(Exception):
         pass
@@ -986,18 +988,19 @@ class Suspension(StatusModel, TimeStampedModel):
         return cls.pending.filter(player=player).exists()
 
     @ classmethod
-    def create(cls, player, reason):
-        return cls.pending.create(player=player, reason=reason)
+    def create(cls, player, reason, match=None):
+        return cls.objects.create(player=player, reason=reason,
+                                  status=cls.STATUS.pending, got_in=match)
 
     @ classmethod
     def set_completed(cls, player, match):
-        if cls.completed.filter(player=player, match=match).exists():
+        if cls.completed.filter(player=player, completed_in=match).exists():
             # Only one suspension is completed in one match for a player
             return
         susp = cls.pending.filter(player=player).first()
         if susp:
             susp.status = cls.STATUS.completed
-            susp.match = match
+            susp.completed_in = match
             susp.save()
 
     @ classmethod
