@@ -1,3 +1,5 @@
+
+from django import forms
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
@@ -31,7 +33,9 @@ from guardian.shortcuts import get_objects_for_user
 from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
-from .models import ClubStat
+from .models import ClubStat, PlayerStat
+from fixture.models import Matches
+from match.views import MatchManagerRequiredMixin
 
 
 LOGIN_URL = reverse_lazy('login')
@@ -53,3 +57,32 @@ class PointTable(viewMixins, TemplateView):
 urlpatterns += [path('pointtable/',
                      PointTable.as_view(),
                      name='pointtable'), ]
+
+
+class UpdatePlayerStat(MatchManagerRequiredMixin, FormView):
+    template_name = 'dashboard/base_form.html'
+    form_class = forms.Form
+
+    def dispatch(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        self.match = get_object_or_404(Matches, pk=pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        PlayerStat.update_all(self.match)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Update player statistics?'
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+        return ctx
+
+    def get_success_url(self):
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
+
+
+urlpatterns += [path('updateplayerstat/<int:pk>/',
+                     UpdatePlayerStat.as_view(),
+                     name='updateplayerstat'), ]
