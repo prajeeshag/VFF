@@ -131,6 +131,8 @@ class EditGoal(MatchManagerRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['title'] = 'Edit Goal - {}'.format(self.object.match)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
         return ctx
 
     def get_success_url(self):
