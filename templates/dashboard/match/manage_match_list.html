@@ -6,78 +6,114 @@
 {% load i18n %}
 {% load rules %}
 
+{% block body %} 
+		class="text-white nav-fixed" style="background-color: black"
+{% endblock %}
+
 {% block content_main %}
+{% test_rule 'manage_match' user as can_manage_match %}
+{% if can_manage_match %}
 <h2 class="text-center"> Manage Matches </h2>
 <hr/>
 	<div class="container-fluid">
-		{% test_rule 'manage_match' user as can_manage_match %}
-		{% if can_manage_match %}
-			<div class="mb-4">
-				<table class="table table-borderless match-table" width="100%" cellspacing="0">
-					<thead class="d-none">
-						<th class="text-center text-light h4">Matches</th>
-						<th class="text-center text-light h4">Actions</th>
-					</thead>
-					<tbody>
-					{% for match in matches %}
-						<tr>
-							<td class="p-0 pb-1">
-								{% include 'fixture/partials/match_card.html' with match=match %}
-							</td>
-							<td class="p-0">
-								<div class="col-1 dropleft px-0">
-									<button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown">
-										<i class="mdi mdi-chevron-down"></i>
-									</button>
-									<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+		<div class="mb-4 p-2 bg-dark">
+			<table class="table table-borderless match-table" width="100%" cellspacing="0">
+				<thead class="d-none">
+					<th class="text-center text-light h4">Matches</th>
+					<th class="text-center text-light h4">Actions</th>
+				</thead>
+				<tbody>
+				{% for match in matches %}
+					<tr>
+						<td class="p-0 pb-1">
+							{% include 'fixture/partials/match_card.html' with match=match %}
+						</td>
+						<td class="p-0">
+							<div class="col-1 dropleft px-0">
+								<button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown">
+									<i class="mdi mdi-chevron-down"></i>
+								</button>
+								<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 
-										{% if match.is_fixed %}
-											<a class="dropdown-item" href="{% url 'dash:enterpastmatchdetails' match.pk %}">Enter match details</a>							
-										{% endif %}
+									{% if match.is_fixed %}
+										<a class="dropdown-item" href="{% url 'dash:enterpastmatchdetails' match.pk %}">Enter match details</a>							
+									{% endif %}
 
-										<a class="dropdown-item" href="{% url 'dash:editmatch' match.pk %}">Edit match time</a>
+									<a class="dropdown-item" href="{% url 'dash:editmatch' match.pk %}">Edit match time</a>
 
-										{% if not match.is_fixed %}
-											<form method="POST" action={% url 'dash:fixmatches' %}>
-												{% include 'snippets/form_common.html' %}
-												<input type="hidden" name="fix_pk" value="{{ match.pk }}" />
-												<button type='submit' class='dropdown-item'>Mark Fixed</button>
-											</form>
-										{% endif %}
+									{% if not match.is_fixed %}
+										<form method="POST" action={% url 'dash:fixmatches' %}>
+											{% include 'snippets/form_common.html' %}
+											<input type="hidden" name="fix_pk" value="{{ match.pk }}" />
+											<button type='submit' class='dropdown-item'>Mark Fixed</button>
+										</form>
+									{% endif %}
 
-										{% if not match.is_tentative %}
-											<form method="POST" action={% url 'dash:fixmatches' %}>
-												{% include 'snippets/form_common.html' %}
-												<input type="hidden" name="ten_pk" value="{{ match.pk }}" />
-												<button type='submit' class='dropdown-item'>Mark Tentative</button>
-											</form>
-										{% endif %}
+									{% if not match.is_tentative %}
+										<form method="POST" action={% url 'dash:fixmatches' %}>
+											{% include 'snippets/form_common.html' %}
+											<input type="hidden" name="ten_pk" value="{{ match.pk }}" />
+											<button type='submit' class='dropdown-item'>Mark Tentative</button>
+										</form>
+									{% endif %}
 
-										{% if not match.is_postponed %}
-											<form method="POST" action={% url 'dash:fixmatches' %}>
-												{% include 'snippets/form_common.html' %}
-												<input type="hidden" name="post_pk" value="{{ match.pk }}" />
-												<button type='submit' class='dropdown-item'>Mark Postponed</button>
-											</form>
-										{% endif %}
+									{% if not match.is_postponed %}
+										<form method="POST" action={% url 'dash:fixmatches' %}>
+											{% include 'snippets/form_common.html' %}
+											<input type="hidden" name="post_pk" value="{{ match.pk }}" />
+											<button type='submit' class='dropdown-item'>Mark Postponed</button>
+										</form>
+									{% endif %}
 
-										{% if not match.is_canceled %}
-											<form method="POST" action={% url 'dash:fixmatches' %}>
-												{% include 'snippets/form_common.html' %}
-												<input type="hidden" name="cancel_pk" value="{{ match.pk }}" />
-												<button type='submit' class='dropdown-item'>Mark Canceled</button>
-											</form>
-										{% endif %}
-									</div>
+									{% if not match.is_canceled %}
+										<form method="POST" action={% url 'dash:fixmatches' %}>
+											{% include 'snippets/form_common.html' %}
+											<input type="hidden" name="cancel_pk" value="{{ match.pk }}" />
+											<button type='submit' class='dropdown-item'>Mark Canceled</button>
+										</form>
+									{% endif %}
 								</div>
-							</td>
-						</tr>
-					{% endfor %}
-					</tbody>
-				</table>
-			</div>
-		{% endif %}
+							</div>
+						</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<div class="mb-4 p-2 bg-dark">
+			<h4 class="text-center">Done Matches</h4>
+			<hr/>
+			<table class="table table-borderless match-table" width="100%" cellspacing="0">
+				<thead class="d-none">
+					<th>Matches</th>
+					<th>Actions</th>
+				</thead>
+				<tbody>
+				{% for match in donematches %}
+					<tr>
+						<td class="p-0 pb-1">
+							{% include 'fixture/partials/match_card.html' with match=match %}
+						</td>
+						<td class="p-0">
+							<div class="col-1 dropleft px-0">
+								<button class="btn" type="button" id="dropdownMenuButton" data-toggle="dropdown">
+									<i class="mdi mdi-chevron-down"></i>
+								</button>
+								<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+										<a class="dropdown-item" href="{% url 'dash:enterpastmatchdetails' match.pk %}">Enter match details</a>							
+
+								</div>
+							</div>
+						</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
 	</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts_extra %}

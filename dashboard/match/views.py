@@ -68,7 +68,9 @@ class ManageMatchList(viewMixins,
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.objects.exclude(
-            status=Matches.STATUS.done).order_by('date')
+            status=Matches.STATUS.done).select_related().order_by('date')
+        ctx['donematches'] = Matches.objects.filter(
+            status=Matches.STATUS.done).select_related().order_by('-date')
         return ctx
 
 
@@ -161,7 +163,7 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
         ctx = super().get_context_data(**kwargs)
         ctx['onspot'] = self.request.session.get('onspot_'+str(self.match.pk))
         timeline = MatchTimeLine.objects.prefetch_related(
-                'events_set__content_object').get(match=self.match)
+            'events_set__content_object').get(match=self.match)
         ctx['timeline'] = timeline
         return ctx
 
