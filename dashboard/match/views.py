@@ -145,18 +145,24 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
     def get(self, request, *args, **kwargs):
         match = self.get_object()
         self.match = match
+
         if request.session.get('onspot_'+str(match.pk), None) is None:
             request.session['onspot_'+str(match.pk)] = True
+
         if match.is_tentative():
             messages.add_message(
                 request, messages.WARNING,
                 "Cannot Enter match details. This match is tentative!")
             return redirect(self.backurl)
+
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['onspot'] = self.request.session.get('onspot_'+str(self.match.pk))
+        timeline = MatchTimeLine.objects.prefetch_related(
+                'events_set__content_object').get(match=self.match)
+        ctx['timeline'] = timeline
         return ctx
 
 
@@ -670,5 +676,3 @@ urlpatterns += [path('subplayersel/<int:pk>/<int:club>/',
 urlpatterns += [path('subplayerselonspot/<int:pk>/<int:club>/',
                      PlayerSelect2.as_view(onspot=True),
                      name='subplayerselonspot'), ]
-
-

@@ -1,7 +1,7 @@
 
+from django.db.models import Count, Q, F
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
-
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
@@ -30,7 +30,8 @@ from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSe
 from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
-from . import models
+from . import models, forms
+from users.models import PlayerProfile
 
 
 urlpatterns = []
@@ -91,3 +92,52 @@ class SuspensionList(MatchManagerRequiredMixin, TemplateView):
 urlpatterns += [path('suspensions/',
                      SuspensionList.as_view(),
                      name='suspensions'), ]
+
+
+class CardList(MatchManagerRequiredMixin, TemplateView):
+    template_name = 'match/cards.html'
+
+    def get_context_data(self, **kwargs):
+        mdl = models.Cards
+        ctx = super().get_context_data(**kwargs)
+        ctx['cards'] = mdl.objects.filter(
+            is_removed=False).select_related().order_by('-created')
+        reds = mdl.objects.filter(
+            color=mdl.COLOR.red, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        yellows = mdl.objects.filter(
+            color=mdl.COLOR.yellow, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        num_red = {obj['player']: obj['num'] for obj in reds}
+        num_yellow = {obj['player']: obj['num'] for obj in yellows}
+        keys = list(set(list(num_red)) | set(list(num_yellow)))
+        players = PlayerProfile.objects.filter(pk__in=keys)
+        ctx['players'] = [{'player': player, 'num_red': num_red.get(player.pk, 0),
+                           'num_yellow': num_yellow.get(player.pk, 0)} for player in players]
+
+        return ctx
+
+
+urlpatterns += [path('cards/',
+                     CardList.as_view(),
+                     name='cards'), ]
+
+
+class EditGoal(MatchManagerRequiredMixin, UpdateView):
+    model = models.Goal
+    form_class = forms.EditGoalForm
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Edit Goal - {}'.format(self.object.match)
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('editgoal/<int:pk>/',
+                     EditGoal.as_view(),
+                     name='editgoal'), ]

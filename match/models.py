@@ -851,13 +851,16 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
         Matches, on_delete=models.PROTECT, related_name='goals')
     attr = models.ForeignKey(
         GoalAttr, on_delete=models.PROTECT,
-        null=True, related_name='goals')
+        null=True, related_name='goals', blank=True)
     time = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         if self.own:
             return "Goal(own): {}".format(self.player)
         return "Goal: {}".format(self.player)
+
+    def get_edit_url(self):
+        return reverse('match:editgoal', args=[self.pk])
 
     @ classmethod
     def create(cls, match, player, created_by=None,
@@ -869,13 +872,19 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
         if not time:
             time = timezone.now()
 
+        if own:
+            club = match.get_opponent_club_of_player(player)
+        else:
+            club = player.get_club()
+
         obj = cls.objects.create(
             match=match,
             player=player,
             created_by=created_by,
             own=own,
             attr=goalattr,
-            time=time)
+            time=time,
+            club=club)
 
         obj.create_timeline_event()
         return obj
@@ -896,11 +905,6 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
         return self.attr
 
     def save(self, *args, **kwargs):
-        if self.own:
-            self.club = self.match.get_opponent_club_of_player(self.player)
-        else:
-            self.club = self.player.get_club()
-
         self.against = self.match.get_opponent_club(self.club)
         super().save(*args, **kwargs)
 
@@ -1018,13 +1022,14 @@ class AccumulatedCards(TimeStampedModel):
     yellow = models.PositiveIntegerField(default=0)
 
     def add_yellow(self):
-        self.yellow += 1
-        if self.yellow > 2:
-            reason, created = SuspensionReason.objects.get_or_create(
-                text='Yellow card ban')
-            Suspension.create(player, reason)
-            self.yellow = 0
-        self.save()
+        with transaction.atomic():
+            self.yellow += 1
+            if self.yellow > 2:
+                reason, created = SuspensionReason.objects.get_or_create(
+                    text='Yellow card ban')
+                Suspension.create(player, reason)
+                self.yellow = 0
+            self.save()
 
 
 # Adding methods
@@ -1131,17 +1136,20 @@ for evname, evclass in EVENTS.items():
     add_num_player_event(evname, evclass)
 
 
-def get_played_players(self):
+def get_played_players(self, club=None):
     """
     get all players who played a match
     """
-    players = []
-    for club in (self.home, self.away):
-        sqd = Squad.get_squad(match=self, club=club)
+    players = PlayerProfile.objects.none()
+    for clb in (self.home, self.away):
+        if club:
+            if clb != club:
+                continue
+        sqd = Squad.get_squad(match=self, club=clb)
         p1 = sqd.get_playing_players()
         p2 = sqd.get_tobench_players()
-        players += list(chain(p1, p2))
-    return players
+        players = (players | p1 | p2)
+    return players.distinct()
 
 
 setattr(Matches, 'get_played_players', get_played_players)
