@@ -114,7 +114,7 @@ class PlayerStat(models.Model):
 
     @classmethod
     def update_match(cls, match):
-        cls.update_all(match)
+        cls.update_all()
 
     @classmethod
     def create_all(cls):
@@ -123,27 +123,15 @@ class PlayerStat(models.Model):
             cls.create(player)
 
     @classmethod
-    def update_all(cls, match=None):
-
-        if match:
-            reds = Cards.objects.filter(
-                color=Cards.COLOR.red, is_removed=False, match=match).values(
-                'player').annotate(num=Count('player'))
-            yellows = Cards.objects.filter(
-                color=Cards.COLOR.yellow, is_removed=False, match=match).values(
-                'player').annotate(num=Count('player'))
-            goals = Goal.objects.filter(own=False, match=match).values(
-                'player').annotate(num=Count('player'))
-
-        else:
-            reds = Cards.objects.filter(
-                color=Cards.COLOR.red, is_removed=False).values(
-                'player').annotate(num=Count('player'))
-            yellows = Cards.objects.filter(
-                color=Cards.COLOR.yellow, is_removed=False).values(
-                'player').annotate(num=Count('player'))
-            goals = Goal.objects.filter(own=False).values(
-                'player').annotate(num=Count('player'))
+    def update_all(cls):
+        reds = Cards.objects.filter(
+            color=Cards.COLOR.red, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        yellows = Cards.objects.filter(
+            color=Cards.COLOR.yellow, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        goals = Goal.objects.filter(own=False).values(
+            'player').annotate(num=Count('player'))
 
         num_red = {obj['player']: obj['num'] for obj in reds}
         num_yellow = {obj['player']: obj['num'] for obj in yellows}
