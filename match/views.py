@@ -1,4 +1,5 @@
 
+from django import forms
 from django.db.models import Count, Q, F
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
@@ -30,9 +31,10 @@ from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSe
 from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
-from . import models, forms
-from users.models import PlayerProfile
+from .forms import EditGoalForm
 
+from . import models
+from users.models import PlayerProfile
 
 urlpatterns = []
 
@@ -123,9 +125,40 @@ urlpatterns += [path('cards/',
                      name='cards'), ]
 
 
+class FinalizeMatch(MatchManagerRequiredMixin, FormView):
+    form_class = forms.Form
+    template_name = 'dashboard/base_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        match = get_object_or_404(Matches, pk=pk)
+        self.timeline = get_object_or_404(MatchTimeLine, match=match)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Finalize {} match?'.format(self.object.match)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+    def form_valid(self, form):
+        self.timeline.finalize_match()
+        return super().form_valid(form)
+
+
+urlpatterns += [path('finalizematch/<int:pk>/',
+                     FinalizeMatch.as_view(),
+                     name='finalizematch'), ]
+
+
 class EditGoal(MatchManagerRequiredMixin, UpdateView):
     model = models.Goal
-    form_class = forms.EditGoalForm
+    form_class = EditGoalForm
     template_name = 'dashboard/base_form.html'
 
     def get_context_data(self, **kwargs):

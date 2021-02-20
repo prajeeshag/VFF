@@ -447,9 +447,7 @@ class TimeEvent(MatchManagerRequiredMixin,
                     self.request, messages.WARNING,
                     "Match already in Final Time!!")
             else:
-                self.match.matchtimeline.finalize_match(time=time)
-                ClubStat.update_match(self.match)
-                PlayerStat.update_match(self.match)
+                self.match.matchtimeline.full_time(time=time)
 
         return super().form_valid(form)
 

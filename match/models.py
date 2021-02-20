@@ -116,10 +116,11 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 matchtimeline=self,
                 content_object=obj,)
 
-    def finalize_match(self, time=None):
+    def full_time(self, time=None):
         with transaction.atomic():
             if not time:
                 time = timezone.now()
+
             score = Goal.score_as_string(self.match)
             obj = TimeEvents.objects.create(
                 match=self.match,
@@ -127,19 +128,17 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 time=time, sublabel=score)
             self.final_time = True
             self.save()
-
-            # set suspension completed (if any) for players who was not in squad
-            Suspension.set_completed_for_match(self.match)
-
-            # Finalize Cards
-            Cards.finalize_match(self.match)
-
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
 
+    def finalize_match(self):
+        with transaction.atomic():
+            # set suspension completed (if any) for players who was not in squad
+            Suspension.set_completed_for_match(self.match)
+            # Finalize Cards
+            Cards.finalize_match(self.match)
             self.match.set_done()
-
             # Result
             Result.create(match=self.match)
 
