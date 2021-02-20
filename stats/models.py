@@ -124,6 +124,7 @@ class PlayerStat(models.Model):
 
     @classmethod
     def update_all(cls):
+        cls.objects.all().update(goals=0, yellow=0, red=0)
         reds = Cards.objects.filter(
             color=Cards.COLOR.red, is_removed=False).values(
             'player').annotate(num=Count('player'))
