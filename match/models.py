@@ -116,7 +116,7 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 matchtimeline=self,
                 content_object=obj,)
 
-    def finalize_match(self, time=None):
+    def full_time(self, time=None):
         with transaction.atomic():
             if not time:
                 time = timezone.now()
@@ -128,20 +128,9 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
             self.final_time = True
             self.save()
 
-            # set suspension completed (if any) for players who was not in squad
-            Suspension.set_completed_for_match(self.match)
-
-            # Finalize Cards
-            Cards.finalize_match(self.match)
-
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
-
-            self.match.set_done()
-
-            # Result
-            Result.create(match=self.match)
 
 
 class Events(TimeStampedModel):
@@ -1153,3 +1142,17 @@ def get_played_players(self, club=None):
 
 
 setattr(Matches, 'get_played_players', get_played_players)
+
+
+def finalize_match(self):
+    with transaction.atomic():
+        # set suspension completed (if any) for players who was not in squad
+        Suspension.set_completed_for_match(self)
+        # Finalize Cards
+        Cards.finalize_match(self)
+        self.match.set_done()
+        # Result
+        Result.create(match=self)
+
+
+setattr(Matches, 'finalize_match', finalize_match)
