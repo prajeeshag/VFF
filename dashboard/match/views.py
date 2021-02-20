@@ -151,6 +151,9 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
         if request.session.get('onspot_'+str(match.pk), None) is None:
             request.session['onspot_'+str(match.pk)] = True
 
+        if self.match.is_done():
+            request.session['onspot_'+str(self.match.pk)] = False
+
         if match.is_tentative():
             messages.add_message(
                 request, messages.WARNING,
