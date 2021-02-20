@@ -162,9 +162,12 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['onspot'] = self.request.session.get('onspot_'+str(self.match.pk))
-        timeline = MatchTimeLine.objects.prefetch_related(
-            'events_set__content_object').get(match=self.match)
-        ctx['timeline'] = timeline
+        try:
+            timeline = MatchTimeLine.objects.prefetch_related(
+                'events_set__content_object').get(match=self.match)
+            ctx['timeline'] = timeline
+        except MatchTimeLine.DoesNotExist:
+            pass
         return ctx
 
 
