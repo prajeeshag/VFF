@@ -123,7 +123,7 @@ class PlayerStat(models.Model):
             cls.create(player)
 
     @classmethod
-    def update_all(cls):
+    def update_all(cls, match=None):
         cls.objects.all().update(goals=0, yellow=0, red=0)
         reds = Cards.objects.filter(
             color=Cards.COLOR.red, is_removed=False).values(
