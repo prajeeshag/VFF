@@ -28,7 +28,7 @@ class EditGoalForm(forms.ModelForm):
 class EditCardForm(forms.ModelForm):
     class Meta:
         model = models.Cards
-        fields = ['player', 'attr', 'color']
+        fields = ['player', 'reason', 'color']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

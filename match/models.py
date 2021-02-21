@@ -711,6 +711,10 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
     class GotRedAlready(Exception):
         pass
 
+
+    def get_edit_url(self):
+        return reverse('match:editcard', args=[self.pk])
+
     def get_event_label(self):
         return self.player.__str__().capitalize()
 
@@ -1152,8 +1156,8 @@ def get_played_players(self, club=None):
             if clb != club:
                 continue
         sqd = Squad.get_squad(match=self, club=clb)
-        p1 = sqd.get_playing_players()
-        p2 = sqd.get_tobench_players()
+        p1 = sqd.get_first_players()
+        p2 = sqd.get_bench_players()
         players = (players | p1 | p2)
     return players.distinct()
 

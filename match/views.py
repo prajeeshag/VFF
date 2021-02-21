@@ -31,7 +31,7 @@ from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSe
 from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
-from .forms import EditGoalForm
+from .forms import EditGoalForm, EditCardForm
 
 from . import models
 from users.models import PlayerProfile
