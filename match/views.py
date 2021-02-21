@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
-from django.views.generic.detail import DetailView
+from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.list import ListView
 
 from django.urls import reverse_lazy, reverse, path, include
@@ -45,6 +45,24 @@ class MatchManagerRequiredMixin:
         if not is_match_manager:
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
+
+
+class EnterMatchDetailMixin:
+
+    def get_match(self):
+        return self.object
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.get_match().pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails',
+                       kwargs={'pk': self.get_match().pk})
 
 
 class Squad(viewMixins, DeleteView):
@@ -125,29 +143,20 @@ urlpatterns += [path('cards/',
                      name='cards'), ]
 
 
-class FinalizeMatch(MatchManagerRequiredMixin, FormView):
-    form_class = forms.Form
+class FinalizeMatch(MatchManagerRequiredMixin,
+                    SingleObjectMixin,
+                    EnterMatchDetailMixin,
+                    FormView):
+    form_class = forms.forms.Form
     template_name = 'dashboard/base_form.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        pk = kwargs.get('pk', None)
-        match = get_object_or_404(Matches, pk=pk)
-        self.timeline = get_object_or_404(MatchTimeLine, match=match)
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Finalize {} match?'.format(self.object.match)
-        ctx['back_url'] = reverse(
-            'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        ctx['title'] = 'Confirm finalize this Match?'
         return ctx
 
-    def get_success_url(self):
-        match = self.object.match
-        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
-
     def form_valid(self, form):
-        self.timeline.finalize_match()
+        self.object.finalize_match()
         return super().form_valid(form)
 
 

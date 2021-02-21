@@ -158,22 +158,28 @@ class Events(TimeStampedModel):
         return self.label()
 
     def kind(self):
-        return self.content_object.get_event_kind()
+        if self.content_object:
+            return self.content_object.get_event_kind()
 
     def side(self):
-        return self.content_object.get_event_side()
+        if self.content_object:
+            return self.content_object.get_event_side()
 
     def label(self):
-        return self.content_object.get_event_label()
+        if self.content_object:
+            return self.content_object.get_event_label()
 
     def sublabel(self):
-        return self.content_object.get_event_sublabel()
+        if self.content_object:
+            return self.content_object.get_event_sublabel()
 
     def url(self):
-        return self.content_object.get_event_url()
+        if self.content_object:
+            return self.content_object.get_event_url()
 
     def time_label(self):
-        return self.content_object.get_event_time_label()
+        if self.content_object:
+            return self.content_object.get_event_time_label()
 
     def save(self, *args, **kwargs):
         self.ftime = self.content_object.ftime
@@ -680,7 +686,7 @@ class CardReason(NoteModel):
     pass
 
 
-class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
+class Cards(TimeStampedModel, StatusModel, EventModel):
     STATUS = Choices('active', 'inactive', 'approved')
     COLOR = Choices('red', 'yellow')
     event_sublabel_field = 'reason'
@@ -700,6 +706,7 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
         CardReason,
         on_delete=models.PROTECT,
         null=True)
+    is_removed = models.BooleanField(default=False)
 
     class GotRedAlready(Exception):
         pass
