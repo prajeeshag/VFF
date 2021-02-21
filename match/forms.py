@@ -19,5 +19,20 @@ class EditGoalForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         match = self.instance.match
         club = self.instance.club
+        if self.instance.own:
+            club = self.instance.against
+        self.fields['player'].queryset = match.get_played_players(
+            club).distinct()
+
+
+class EditCardForm(forms.ModelForm):
+    class Meta:
+        model = models.Cards
+        fields = ['player', 'attr', 'color']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        match = self.instance.match
+        club = self.instance.club
         self.fields['player'].queryset = match.get_played_players(
             club).distinct()

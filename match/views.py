@@ -185,3 +185,25 @@ class EditGoal(MatchManagerRequiredMixin, UpdateView):
 urlpatterns += [path('editgoal/<int:pk>/',
                      EditGoal.as_view(),
                      name='editgoal'), ]
+
+
+class EditCard(MatchManagerRequiredMixin, UpdateView):
+    model = models.Cards
+    form_class = EditCardForm
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Edit Card - {}'.format(self.object.match)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('editcard/<int:pk>/',
+                     EditCard.as_view(),
+                     name='editcard'), ]
