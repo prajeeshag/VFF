@@ -20,7 +20,6 @@
 			<a href="{% url 'dash:halftime' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: red;">
 				Half Time
 			</a>
-			{% include 'dashboard/match/partials/match_entry_panel.html' %}
 	{% elif match.matchtimeline.half_time and not match.matchtimeline.second_half_start %}
 	
 			<a href="{% url 'dash:secondhalf' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: green;">
@@ -30,6 +29,6 @@
 			<a href="{% url 'dash:finaltime' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: red;">
 				Full Time
 			</a>
-			{% include 'dashboard/match/partials/match_entry_panel.html' %}
 	{% endif %}
+	{% include 'dashboard/match/partials/match_entry_panel.html' %}
 {% endif %}

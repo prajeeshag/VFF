@@ -12,7 +12,7 @@ from stats.models import ClubStat, PlayerStat
 urlpatterns = []
 
 
-@method_decorator(cache_page(60*15), name='dispatch')
+##@method_decorator(cache_page(60*15), name='dispatch')
 class LandingPageView(TemplateView):
     template_name = 'public/landing_page.html'
 

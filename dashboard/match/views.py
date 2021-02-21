@@ -139,6 +139,10 @@ urlpatterns += [path('upstats/<int:pk>/',
                      name='upstats'), ]
 
 
+def onspotkey(pk):
+    return 'onspot_'+str(pk)
+
+
 class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
     template_name = 'dashboard/match/enter_match_details.html'
     model = Matches
@@ -148,8 +152,11 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
         match = self.get_object()
         self.match = match
 
-        if request.session.get('onspot_'+str(match.pk), None) is None:
-            request.session['onspot_'+str(match.pk)] = True
+        if request.session.get(onspotkey(match.pk), None) is None:
+            request.session[onspotkey(match.pk)] = True
+
+        if self.match.is_done():
+            request.session[onspotkey(self.match.pk)] = False
 
         if match.is_tentative():
             messages.add_message(
@@ -161,10 +168,13 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['onspot'] = self.request.session.get('onspot_'+str(self.match.pk))
-        timeline = MatchTimeLine.objects.prefetch_related(
-            'events_set__content_object').get(match=self.match)
-        ctx['timeline'] = timeline
+        ctx['onspot'] = self.request.session.get(onspotkey(self.match.pk))
+        try:
+            timeline = MatchTimeLine.objects.prefetch_related(
+                'events_set__content_object').get(match=self.match)
+            ctx['timeline'] = timeline
+        except MatchTimeLine.DoesNotExist:
+            pass
         return ctx
 
 
@@ -368,9 +378,9 @@ class ActivatePast(MatchManagerRequiredMixin,
     def post(self, request, *args, **kwargs):
         val = request.POST.get('action')
         if val == 'onspot':
-            request.session['onspot_'+str(self.match.pk)] = True
+            request.session[onspotkey(self.match.pk)] = True
         elif val == 'past':
-            request.session['onspot_'+str(self.match.pk)] = False
+            request.session[onspotkey(self.match.pk)] = False
         return redirect(reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk}))
 
 
