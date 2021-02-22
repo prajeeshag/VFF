@@ -65,7 +65,7 @@ class EnterMatchDetailMixin:
                        kwargs={'pk': self.get_match().pk})
 
 
-class Squad(viewMixins, DeleteView):
+class Squad(viewMixins, DetailView):
     template_name = 'match/squad.html'
     model = models.Squad
 
@@ -73,7 +73,7 @@ class Squad(viewMixins, DeleteView):
 urlpatterns += [path('squad/<int:pk>/', Squad.as_view(), name='squad'), ]
 
 
-class Substitution(viewMixins, DeleteView):
+class Substitution(viewMixins, DetailView):
     template_name = 'match/Substitution.html'
     model = models.Substitution
 
@@ -156,7 +156,8 @@ class FinalizeMatch(MatchManagerRequiredMixin,
         return ctx
 
     def form_valid(self, form):
-        self.object.finalize_match()
+
+        self.get_object().finalize_match()
         return super().form_valid(form)
 
 
