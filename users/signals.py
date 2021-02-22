@@ -14,6 +14,7 @@ def create_player_count(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=models.PlayerProfile)
+@disable_for_loaddata
 def set_player_permission(sender, instance, created, **kwargs):
     user = instance.user
     club = instance.club

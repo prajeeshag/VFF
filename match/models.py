@@ -116,10 +116,11 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 matchtimeline=self,
                 content_object=obj,)
 
-    def finalize_match(self, time=None):
+    def full_time(self, time=None):
         with transaction.atomic():
             if not time:
                 time = timezone.now()
+
             score = Goal.score_as_string(self.match)
             obj = TimeEvents.objects.create(
                 match=self.match,
@@ -127,19 +128,17 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 time=time, sublabel=score)
             self.final_time = True
             self.save()
-
-            # set suspension completed (if any) for players who was not in squad
-            Suspension.set_completed_for_match(self.match)
-
-            # Finalize Cards
-            Cards.finalize_match(self.match)
-
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
 
+    def finalize_match(self):
+        with transaction.atomic():
+            # set suspension completed (if any) for players who was not in squad
+            Suspension.set_completed_for_match(self.match)
+            # Finalize Cards
+            Cards.finalize_match(self.match)
             self.match.set_done()
-
             # Result
             Result.create(match=self.match)
 
@@ -159,22 +158,28 @@ class Events(TimeStampedModel):
         return self.label()
 
     def kind(self):
-        return self.content_object.get_event_kind()
+        if self.content_object:
+            return self.content_object.get_event_kind()
 
     def side(self):
-        return self.content_object.get_event_side()
+        if self.content_object:
+            return self.content_object.get_event_side()
 
     def label(self):
-        return self.content_object.get_event_label()
+        if self.content_object:
+            return self.content_object.get_event_label()
 
     def sublabel(self):
-        return self.content_object.get_event_sublabel()
+        if self.content_object:
+            return self.content_object.get_event_sublabel()
 
     def url(self):
-        return self.content_object.get_event_url()
+        if self.content_object:
+            return self.content_object.get_event_url()
 
     def time_label(self):
-        return self.content_object.get_event_time_label()
+        if self.content_object:
+            return self.content_object.get_event_time_label()
 
     def save(self, *args, **kwargs):
         self.ftime = self.content_object.ftime
@@ -679,7 +684,7 @@ class CardReason(NoteModel):
     pass
 
 
-class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
+class Cards(TimeStampedModel, StatusModel, EventModel):
     STATUS = Choices('active', 'inactive', 'approved')
     COLOR = Choices('red', 'yellow')
     event_sublabel_field = 'reason'
@@ -699,9 +704,14 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
         CardReason,
         on_delete=models.PROTECT,
         null=True)
+    is_removed = models.BooleanField(default=False)
 
     class GotRedAlready(Exception):
         pass
+
+
+    def get_edit_url(self):
+        return reverse('match:editcard', args=[self.pk])
 
     def get_event_label(self):
         return self.player.__str__().capitalize()
@@ -729,7 +739,7 @@ class Cards(TimeStampedModel, StatusModel, SoftDeletableModel, EventModel):
             for card in cls.get_all_reds(match):
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Red card')
-                Suspension.create(card.player, reason)
+                Suspension.create(card.player, reason, match=match)
 
             # Yellow cards
             for card in cls.get_all_yellow(match):
@@ -849,13 +859,16 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
         Matches, on_delete=models.PROTECT, related_name='goals')
     attr = models.ForeignKey(
         GoalAttr, on_delete=models.PROTECT,
-        null=True, related_name='goals')
+        null=True, related_name='goals', blank=True)
     time = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         if self.own:
             return "Goal(own): {}".format(self.player)
         return "Goal: {}".format(self.player)
+
+    def get_edit_url(self):
+        return reverse('match:editgoal', args=[self.pk])
 
     @ classmethod
     def create(cls, match, player, created_by=None,
@@ -867,13 +880,19 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
         if not time:
             time = timezone.now()
 
+        if own:
+            club = match.get_opponent_club_of_player(player)
+        else:
+            club = player.get_club()
+
         obj = cls.objects.create(
             match=match,
             player=player,
             created_by=created_by,
             own=own,
             attr=goalattr,
-            time=time)
+            time=time,
+            club=club)
 
         obj.create_timeline_event()
         return obj
@@ -894,11 +913,6 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
         return self.attr
 
     def save(self, *args, **kwargs):
-        if self.own:
-            self.club = self.match.get_opponent_club_of_player(self.player)
-        else:
-            self.club = self.player.get_club()
-
         self.against = self.match.get_opponent_club(self.club)
         super().save(*args, **kwargs)
 
@@ -973,8 +987,10 @@ class Suspension(StatusModel, TimeStampedModel):
     STATUS = Choices('pending', 'completed', 'canceled')
     player = models.ForeignKey(PlayerProfile, on_delete=models.PROTECT)
     reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
-    completed_in = models.ForeignKey(
-        Matches, on_delete=models.PROTECT, null=True)
+    got_in = models.ForeignKey(Matches, on_delete=models.PROTECT,
+                               null=True, related_name='suspensions')
+    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT,
+                                     null=True, related_name='suspensions_completed')
 
     class SuspensionExist(Exception):
         pass
@@ -984,18 +1000,19 @@ class Suspension(StatusModel, TimeStampedModel):
         return cls.pending.filter(player=player).exists()
 
     @ classmethod
-    def create(cls, player, reason):
-        return cls.pending.create(player=player, reason=reason)
+    def create(cls, player, reason, match=None):
+        return cls.objects.create(player=player, reason=reason,
+                                  status=cls.STATUS.pending, got_in=match)
 
     @ classmethod
     def set_completed(cls, player, match):
-        if cls.completed.filter(player=player, match=match).exists():
+        if cls.completed.filter(player=player, completed_in=match).exists():
             # Only one suspension is completed in one match for a player
             return
         susp = cls.pending.filter(player=player).first()
         if susp:
             susp.status = cls.STATUS.completed
-            susp.match = match
+            susp.completed_in = match
             susp.save()
 
     @ classmethod
@@ -1013,13 +1030,14 @@ class AccumulatedCards(TimeStampedModel):
     yellow = models.PositiveIntegerField(default=0)
 
     def add_yellow(self):
-        self.yellow += 1
-        if self.yellow > 2:
-            reason, created = SuspensionReason.objects.get_or_create(
-                text='Yellow card ban')
-            Suspension.create(player, reason)
-            self.yellow = 0
-        self.save()
+        with transaction.atomic():
+            self.yellow += 1
+            if self.yellow > 2:
+                reason, created = SuspensionReason.objects.get_or_create(
+                    text='Yellow card ban')
+                Suspension.create(player, reason)
+                self.yellow = 0
+            self.save()
 
 
 # Adding methods
@@ -1126,17 +1144,20 @@ for evname, evclass in EVENTS.items():
     add_num_player_event(evname, evclass)
 
 
-def get_played_players(self):
+def get_played_players(self, club=None):
     """
     get all players who played a match
     """
-    players = []
-    for club in (self.home, self.away):
-        sqd = Squad.get_squad(match=self, club=club)
-        p1 = sqd.get_playing_players()
-        p2 = sqd.get_tobench_players()
-        players += list(chain(p1, p2))
-    return players
+    players = PlayerProfile.objects.none()
+    for clb in (self.home, self.away):
+        if club:
+            if clb != club:
+                continue
+        sqd = Squad.get_squad(match=self, club=clb)
+        p1 = sqd.get_first_players()
+        p2 = sqd.get_bench_players()
+        players = (players | p1 | p2)
+    return players.distinct()
 
 
 setattr(Matches, 'get_played_players', get_played_players)

@@ -1,0 +1,76 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+{% load i18n %}
+{% load rules %}
+{% load tz %}
+
+
+{% block body %} 
+		class="text-white nav-fixed" style="background-color: black" 
+{% endblock %}
+
+{% block content_main %}
+
+<h2 class="text-center"> Cards </h2>
+<hr/>
+
+<div class="mt-2">
+	<div class="bg-dark py-2 mb-2">
+		<table class="table table-dark table-striped table-responsive-md table-borderless match-table" width="100%" cellspacing="0">
+			<thead>
+				<th>Player</th> <th>Club</th> <th>Reason</th> <th>Match</th> <th class="d-none">color</th>
+			</thead>
+			<tbody>
+				{% for card in cards %}
+				<tr style="color: {{card.color}};">
+						<td> {{ card.player|capfirst }} </td>
+						<td> {{ card.player.get_club.abbr|upper }} </td>
+						<td> {{ card.reason }} </td>
+						<td> {{ card.match|default:"" }} </td>
+						<td class="d-none"> {{ card.color }} </td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="mt-2">
+	<div class="bg-dark py-2 mb-2">
+		<table class="table table-dark table-striped table-responsive-md table-borderless match-table" width="100%" cellspacing="0">
+			<thead>
+				<th>Player</th> <th>Club</th> <th class="text-warning">yellow</th> 
+				<th class="text-danger">Red</th>
+			</thead>
+			<tbody>
+				{% for obj in players %}
+					<tr>
+						<td> {{ obj.player|capfirst }} </td>
+						<td> {{ obj.player.get_club.abbr|upper }} </td>
+						<td class="text-warning"> {{ obj.num_yellow }} </td>
+						<td class="text-danger"> {{ obj.num_red }} </td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+	<script>
+	$(document).ready(function() {
+		$('.match-table').each(function(){
+			$(this).DataTable({
+				{% comment %}"ordering": false,{% endcomment %}
+				"pageLength": 10,
+				"order":[],
+			})
+		})
+	});
+	</script>
+{% endblock %}

@@ -12,7 +12,10 @@
 	{% else %}
 	<div class="col-12 text-center px-2 pt-1 d-flex flex-column justify-content-center">
 	{% endif %}
-		{% if event.url %}
+
+		{% if url %}
+		<p class="p-0 m-0"> <a class="text-white" style="font-size: large;" href="{{ url }}">{{ event.label | safe }}</a> </p>
+		{% elif event.url %}
 		<p class="p-0 m-0"> <a class="text-white" style="font-size: large;" href="{{ event.url }}">{{ event.label | safe }}</a> </p>
 		{% else %}
 		<p class="p-0 m-0 text-white" style="font-size: large;"> {{ event.label | safe }} </p>

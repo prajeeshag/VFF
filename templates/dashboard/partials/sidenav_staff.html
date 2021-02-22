@@ -32,5 +32,13 @@
 		<div class="nav-link-icon"><i class="mdi mdi-soccer-field"></i></div>
 		Manage Matches
 	</a>
+	<a class="nav-link" href="{% url 'match:suspensions' %}">
+		<div class="nav-link-icon"><i class="mdi mdi-account-cancel"></i></div>
+		Suspensions
+	</a>
+	<a class="nav-link" href="{% url 'match:cards' %}">
+		<div class="nav-link-icon"><i class="flaticon-red"></i></div>
+	  Cards
+	</a>
 {% endif %}
 

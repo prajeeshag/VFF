@@ -1,11 +1,12 @@
 
+from django import forms
+from django.db.models import Count, Q, F
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
-
 from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
-from django.views.generic.detail import DetailView
+from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.views.generic.list import ListView
 
 from django.urls import reverse_lazy, reverse, path, include
@@ -22,6 +23,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
+import rules
 from guardian.shortcuts import get_objects_for_user
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
@@ -29,10 +31,38 @@ from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSe
 from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
-from . import models
+from .forms import EditGoalForm, EditCardForm
 
+from . import models
+from users.models import PlayerProfile
 
 urlpatterns = []
+
+
+class MatchManagerRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not is_match_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class EnterMatchDetailMixin:
+
+    def get_match(self):
+        return self.object
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.get_match().pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails',
+                       kwargs={'pk': self.get_match().pk})
 
 
 class Squad(viewMixins, DeleteView):
@@ -65,3 +95,115 @@ class MatchTimeLine(viewMixins, DetailView):
 urlpatterns += [path('matchtimeline/<int:pk>/',
                      MatchTimeLine.as_view(),
                      name='matchtimeline'), ]
+
+
+class SuspensionList(MatchManagerRequiredMixin, TemplateView):
+    template_name = 'match/suspensions.html'
+
+    def get_context_data(self, **kwargs):
+        mdl = models.Suspension
+        ctx = super().get_context_data(**kwargs)
+        ctx['pending_suspensions'] = mdl.pending.all().select_related()
+        ctx['other_suspensions'] = mdl.objects.exclude(
+            status=mdl.STATUS.pending).select_related()
+        return ctx
+
+
+urlpatterns += [path('suspensions/',
+                     SuspensionList.as_view(),
+                     name='suspensions'), ]
+
+
+class CardList(MatchManagerRequiredMixin, TemplateView):
+    template_name = 'match/cards.html'
+
+    def get_context_data(self, **kwargs):
+        mdl = models.Cards
+        ctx = super().get_context_data(**kwargs)
+        ctx['cards'] = mdl.objects.filter(
+            is_removed=False).select_related().order_by('-created')
+        reds = mdl.objects.filter(
+            color=mdl.COLOR.red, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        yellows = mdl.objects.filter(
+            color=mdl.COLOR.yellow, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        num_red = {obj['player']: obj['num'] for obj in reds}
+        num_yellow = {obj['player']: obj['num'] for obj in yellows}
+        keys = list(set(list(num_red)) | set(list(num_yellow)))
+        players = PlayerProfile.objects.filter(pk__in=keys)
+        ctx['players'] = [{'player': player, 'num_red': num_red.get(player.pk, 0),
+                           'num_yellow': num_yellow.get(player.pk, 0)} for player in players]
+
+        return ctx
+
+
+urlpatterns += [path('cards/',
+                     CardList.as_view(),
+                     name='cards'), ]
+
+
+class FinalizeMatch(MatchManagerRequiredMixin,
+                    SingleObjectMixin,
+                    EnterMatchDetailMixin,
+                    FormView):
+    form_class = forms.forms.Form
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Confirm finalize this Match?'
+        return ctx
+
+    def form_valid(self, form):
+        self.object.finalize_match()
+        return super().form_valid(form)
+
+
+urlpatterns += [path('finalizematch/<int:pk>/',
+                     FinalizeMatch.as_view(),
+                     name='finalizematch'), ]
+
+
+class EditGoal(MatchManagerRequiredMixin, UpdateView):
+    model = models.Goal
+    form_class = EditGoalForm
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Edit Goal - {}'.format(self.object.match)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('editgoal/<int:pk>/',
+                     EditGoal.as_view(),
+                     name='editgoal'), ]
+
+
+class EditCard(MatchManagerRequiredMixin, UpdateView):
+    model = models.Cards
+    form_class = EditCardForm
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Edit Card - {}'.format(self.object.match)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('editcard/<int:pk>/',
+                     EditCard.as_view(),
+                     name='editcard'), ]

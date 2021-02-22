@@ -53,6 +53,9 @@ class Matches(TimeStampedModel, StatusModel):
             return self.squad.filter(club=self.home).first()
         return None
 
+    def get_clubs(self):
+        return ClubProfile.objects.filter(Q(home_matches=self) | Q(away_matches=self)).distinct()
+
     def get_away_squad(self):
         if hasattr(self, 'squad'):
             return self.squad.filter(club=self.away).first()

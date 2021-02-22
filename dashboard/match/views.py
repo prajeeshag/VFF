@@ -37,7 +37,7 @@ from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
 from league.models import Season
-from match.models import (Squad, MatchTimeLine, Goal, Cards,
+from match.models import (Squad, MatchTimeLine, Goal, Cards, Suspension,
                           GoalAttr, CardReason, SubstitutionReason)
 from users.models import PlayerProfile, ClubProfile
 from stats.models import ClubStat, PlayerStat
@@ -52,13 +52,25 @@ LOGIN_URL = reverse_lazy('login')
 urlpatterns = []
 
 
-class ManageMatchList(LoginRequiredMixin, viewMixins, TemplateView):
+class MatchManagerRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not is_match_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ManageMatchList(viewMixins,
+                      MatchManagerRequiredMixin,
+                      TemplateView):
     template_name = 'dashboard/match/manage_match_list.html'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.objects.exclude(
-            status=Matches.STATUS.done).order_by('date')
+            status=Matches.STATUS.done).select_related().order_by('date')
+        ctx['donematches'] = Matches.objects.filter(
+            status=Matches.STATUS.done).select_related().order_by('-date')
         return ctx
 
 
@@ -67,16 +79,11 @@ urlpatterns += [path('managematches/',
                      name='managematches'), ]
 
 
-class EditMatch(LoginRequiredMixin, UpdateView):
+class EditMatch(MatchManagerRequiredMixin,
+                UpdateView):
     template_name = 'dashboard/base_form.html'
     model = Matches
     fields = ['date', ]
-
-    def dispatch(self, request, *args, **kwargs):
-        is_match_manager = rules.test_rule('manage_match', request.user)
-        if not is_match_manager:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -92,7 +99,7 @@ urlpatterns += [path('editmatch/<int:pk>/',
                      name='editmatch'), ]
 
 
-class SomeFunctions(LoginRequiredMixin, FormView):
+class SomeFunctions(MatchManagerRequiredMixin, FormView):
     template_name = 'dashboard/base_form.html'
     form_class = forms.Form
     kind = 'upstats'
@@ -132,7 +139,11 @@ urlpatterns += [path('upstats/<int:pk>/',
                      name='upstats'), ]
 
 
-class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
+def onspotkey(pk):
+    return 'onspot_'+str(pk)
+
+
+class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
     template_name = 'dashboard/match/enter_match_details.html'
     model = Matches
     context_object_name = 'match'
@@ -140,18 +151,30 @@ class EnterPastMatchDetails(LoginRequiredMixin, viewMixins, DetailView):
     def get(self, request, *args, **kwargs):
         match = self.get_object()
         self.match = match
-        if request.session.get('onspot_'+str(match.pk), None) is None:
-            request.session['onspot_'+str(match.pk)] = True
+
+        if request.session.get(onspotkey(match.pk), None) is None:
+            request.session[onspotkey(match.pk)] = True
+
+        if self.match.is_done():
+            request.session[onspotkey(self.match.pk)] = False
+
         if match.is_tentative():
             messages.add_message(
                 request, messages.WARNING,
                 "Cannot Enter match details. This match is tentative!")
             return redirect(self.backurl)
+
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['onspot'] = self.request.session.get('onspot_'+str(self.match.pk))
+        ctx['onspot'] = self.request.session.get(onspotkey(self.match.pk))
+        try:
+            timeline = MatchTimeLine.objects.prefetch_related(
+                'events_set__content_object').get(match=self.match)
+            ctx['timeline'] = timeline
+        except MatchTimeLine.DoesNotExist:
+            pass
         return ctx
 
 
@@ -325,7 +348,7 @@ class MatchLockMixin:
         return super().dispatch(request, *args, **kwargs)
 
 
-class StartMatchTimeLine(LoginRequiredMixin,
+class StartMatchTimeLine(MatchManagerRequiredMixin,
                          MatchLockMixin,
                          View):
     model = Matches
@@ -349,14 +372,15 @@ urlpatterns += [path('startmatchtimeline/<int:pk>/',
                      name='startmatchtimeline'), ]
 
 
-class ActivatePast(LoginRequiredMixin, MatchLockMixin, View):
+class ActivatePast(MatchManagerRequiredMixin,
+                   MatchLockMixin, View):
 
     def post(self, request, *args, **kwargs):
         val = request.POST.get('action')
         if val == 'onspot':
-            request.session['onspot_'+str(self.match.pk)] = True
+            request.session[onspotkey(self.match.pk)] = True
         elif val == 'past':
-            request.session['onspot_'+str(self.match.pk)] = False
+            request.session[onspotkey(self.match.pk)] = False
         return redirect(reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk}))
 
 
@@ -365,7 +389,7 @@ urlpatterns += [path('activatepast/<int:pk>/',
                      name='activatepast'), ]
 
 
-class TimeEvent(LoginRequiredMixin,
+class TimeEvent(MatchManagerRequiredMixin,
                 formviewMixins,
                 MatchLockMixin,
                 FormView):
@@ -433,9 +457,7 @@ class TimeEvent(LoginRequiredMixin,
                     self.request, messages.WARNING,
                     "Match already in Final Time!!")
             else:
-                self.match.matchtimeline.finalize_match(time=time)
-                ClubStat.update_match(self.match)
-                PlayerStat.update_match(self.match)
+                self.match.matchtimeline.full_time(time=time)
 
         return super().form_valid(form)
 
@@ -466,7 +488,7 @@ urlpatterns += [path('finaltimeonspot/<int:pk>/',
                      name='finaltimeonspot'), ]
 
 
-class PlayerSelect(LoginRequiredMixin,
+class PlayerSelect(MatchManagerRequiredMixin,
                    formviewMixins,
                    MatchLockMixin,
                    FormView):
@@ -590,7 +612,7 @@ urlpatterns += [path('redplayerselonspot/<int:pk>/<int:club>/',
                      name='redplayerselonspot'), ]
 
 
-class PlayerSelect2(LoginRequiredMixin,
+class PlayerSelect2(MatchManagerRequiredMixin,
                     formviewMixins,
                     MatchLockMixin,
                     FormView):

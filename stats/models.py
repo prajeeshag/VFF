@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Count
 
 from users.models import ClubProfile, PlayerProfile
 from fixture.models import Matches
@@ -113,10 +114,7 @@ class PlayerStat(models.Model):
 
     @classmethod
     def update_match(cls, match):
-        for club in [match.home, match.away]:
-            for player in club.get_players():
-                obj = cls.create(player)
-                obj.update()
+        cls.update_all()
 
     @classmethod
     def create_all(cls):
@@ -125,26 +123,29 @@ class PlayerStat(models.Model):
             cls.create(player)
 
     @classmethod
-    def update_all(cls):
-        for player in PlayerProfile.objects.all():
-            obj, created = cls.objects.get_or_create(player=player)
-            obj.update()
-        #PlayerStat.objects.all().update(goals=0, yellow=0, red=0)
-        # for player in PlayerProfile.objects.all():
-        #goals = Goal.objects.filter(own=False).select_related('player__stats')
-        # reds = Cards.objects.filter(
-        #    is_removed=False, color=Cards.COLOR.red).select_related('player__stats')
-        # yellows = Cards.objects.filter(
-        #    is_removed=False, color=Cards.COLOR.yellow).select_related('player__stats')
-        #stats = set()
-        # for goal in goals:
-        #    goal.player.stats.goals += 1
-        #    stats.add(goal.player.stats)
-        # for red in reds:
-        #    red.player.stats.red += 1
-        #    stats.add(red.player.stats)
-        # for yellow in yellows:
-        #    yellow.player.stats.yellow += 1
-        #    stats.add(yellow.player.stats)
-        # for stat in stats:
-        #    stat.save()
+    def update_all(cls, match=None):
+        cls.objects.all().update(goals=0, yellow=0, red=0)
+        reds = Cards.objects.filter(
+            color=Cards.COLOR.red, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        yellows = Cards.objects.filter(
+            color=Cards.COLOR.yellow, is_removed=False).values(
+            'player').annotate(num=Count('player'))
+        goals = Goal.objects.filter(own=False).values(
+            'player').annotate(num=Count('player'))
+
+        num_red = {obj['player']: obj['num'] for obj in reds}
+        num_yellow = {obj['player']: obj['num'] for obj in yellows}
+        num_goals = {obj['player']: obj['num'] for obj in goals}
+
+        keys = list(set(list(num_red)) | set(
+            list(num_yellow)) | set(list(num_goals)))
+
+        stats = cls.objects.filter(
+            player__pk__in=keys).select_related()
+
+        for stat in stats:
+            stat.goals = num_goals.get(stat.player.pk, 0)
+            stat.red = num_red.get(stat.player.pk, 0)
+            stat.yellow = num_yellow.get(stat.player.pk, 0)
+            stat.save()
