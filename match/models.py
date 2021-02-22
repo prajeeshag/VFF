@@ -620,8 +620,6 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         with transaction.atomic():
             if not bypassU:
                 self.check_nU()
-            if self.get_playing_squad().num_players < NPLAYERS:
-                raise self.NotEnoughPlayers('Not enough players')
 
             if not self.is_finalized():
                 self.create_timeline_event()

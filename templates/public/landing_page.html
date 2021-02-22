@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load thumbnail %}
+{% load cache %}
 
 
 {% block body %} 
@@ -9,9 +10,9 @@
 {% endblock %}
 
 {% block content_main %}
+{% cache 900 landingpage %}
 <div class="mt-2">
 	{% include 'public/partials/carosel.html' %}
-
 	{% if stats %}
 		<div class="mb-2 py-2 bg-dark">
 			<h4 class="text-center">Standings</h4>
@@ -52,4 +53,5 @@
 		</div>
 	{% endif %}
 </div>
+{% endcache %}
 {% endblock %}
