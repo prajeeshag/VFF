@@ -1,6 +1,7 @@
 import datetime as dt
 
 from django import forms
+from django.db.models import Case, When, Value, IntegerField
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
@@ -68,7 +69,14 @@ class ManageMatchList(viewMixins,
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['matches'] = Matches.objects.exclude(
-            status=Matches.STATUS.done).select_related().order_by('date')
+            status=Matches.STATUS.done).annotate(
+            order=Case(
+                When(status=Matches.STATUS.fixed, then=Value(1)),
+                When(status=Matches.STATUS.tentative, then=Value(1)),
+                default=Value(0),
+                output_field=IntegerField(),
+            )
+        ).select_related().order_by('-order', 'date')
         ctx['donematches'] = Matches.objects.filter(
             status=Matches.STATUS.done).select_related().order_by('-date')
         return ctx

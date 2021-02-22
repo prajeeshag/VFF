@@ -15,7 +15,7 @@
 				{% if match.is_done or match.matchtimeline %}
 					<a href="{{ match.matchtimeline.get_absolute_url }}" class="text-success" style="font-size: 14px;">{{ match.score_string }}</a>
 				{% else %}
-					<span class="text-warning">{{ match.status|upper }}</span>
+					<span class="text-warning">{{ match.status }}</span>
 				{% endif %}
 			</div>
 		</div>
