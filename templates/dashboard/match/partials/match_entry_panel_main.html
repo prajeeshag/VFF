@@ -55,12 +55,7 @@
 			</div>
 		{% endif %}
 
-		{% if match.matchtimeline.final_time %}
-			<div class="d-flex p-1">
-				<a href="{% url 'match:finalizematch' match.pk %}" class="btn btn-lg btn-block text-light btn-primary" >
-					Finalize Match
-				</a>
-			</div>
+		{% if match.is_done %}
 
 			<div class="d-flex p-1">
 				<a href="{% url 'stats:updateplayerstat' match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkgreen;">

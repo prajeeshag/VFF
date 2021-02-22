@@ -35,6 +35,7 @@ from .forms import EditGoalForm, EditCardForm
 
 from . import models
 from users.models import PlayerProfile
+from fixture.models import Matches
 
 urlpatterns = []
 
@@ -60,7 +61,6 @@ class EnterMatchDetailMixin:
         return ctx
 
     def get_success_url(self):
-        match = self.object.match
         return reverse('dash:enterpastmatchdetails',
                        kwargs={'pk': self.get_match().pk})
 
@@ -149,15 +149,19 @@ class FinalizeMatch(MatchManagerRequiredMixin,
                     FormView):
     form_class = forms.forms.Form
     template_name = 'dashboard/base_form.html'
+    model = Matches
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Confirm finalize this Match?'
+        ctx['title'] = 'Confirm finalize {} Match?'.format(self.object)
         return ctx
 
     def form_valid(self, form):
-
-        self.get_object().finalize_match()
+        self.object.finalize_match()
         return super().form_valid(form)
 
 
