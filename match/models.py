@@ -673,7 +673,7 @@ def add_is_kind(kind):
     fn_name = 'is_' + kind
 
     def fn(self):
-        return self.kind == getattr(self.STATUS, kind)
+        return self.kind == getattr(self.KIND, kind)
     setattr(Squad, fn_name, fn)
     fn.__name__ = fn_name
     fn.__doc__ = "Returns True if kind is {}".format(kind)
