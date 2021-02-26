@@ -669,6 +669,18 @@ for child in Squad.KIND:
     add_get_child_squad(child[0])
     add_get_child_players(child[0])
 
+def add_is_kind(kind):
+    fn_name = 'is_' + kind
+
+    def fn(self):
+        return self.kind == getattr(self.STATUS, kind)
+    setattr(Squad, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Returns True if kind is {}".format(kind)
+
+for kind in Squad.KIND:
+    add_is_kind(kind[0])
+
 
 class CardReason(NoteModel):
     pass
