@@ -31,7 +31,7 @@
 			</div>
 		{% endif %}
 
-		{% if match.get_home_squad %}
+		{% if match.get_home_squad and not match.is_done %}
 			<div class="d-flex p-1">
 				<a href="{% url 'dash:addfirstteam' match=match.pk club=match.home.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkred;">
 					Edit {{ match.home.abbr|upper }} squad
@@ -39,7 +39,7 @@
 			</div>
 		{% endif %}
 		
-		{% if match.get_away_squad %}
+		{% if match.get_away_squad and not match.is_done %}
 			<div class="d-flex p-1">
 				<a href="{% url 'dash:addfirstteam' match=match.pk club=match.away.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkblue;">
 					Edit {{ match.away.abbr|upper }} squad
@@ -56,10 +56,9 @@
 		{% endif %}
 
 		{% if match.is_done %}
-
 			<div class="d-flex p-1">
-				<a href="{% url 'stats:updateplayerstat' match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkgreen;">
-					Update Player Stats
+				<a href="{% url 'stats:updatestat' match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkgreen;">
+					Update Stats
 				</a>
 			</div>
 		{% endif %}

@@ -59,7 +59,7 @@ urlpatterns += [path('pointtable/',
                      name='pointtable'), ]
 
 
-class UpdatePlayerStat(MatchManagerRequiredMixin, FormView):
+class UpdateStat(MatchManagerRequiredMixin, FormView):
     template_name = 'dashboard/base_form.html'
     form_class = forms.Form
 
@@ -69,12 +69,13 @@ class UpdatePlayerStat(MatchManagerRequiredMixin, FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
+        ClubStat.update_all()
         PlayerStat.update_all(self.match)
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Update player statistics?'
+        ctx['title'] = 'Update statistics?'
         ctx['back_url'] = reverse(
             'dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
         return ctx
@@ -83,6 +84,6 @@ class UpdatePlayerStat(MatchManagerRequiredMixin, FormView):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
 
 
-urlpatterns += [path('updateplayerstat/<int:pk>/',
-                     UpdatePlayerStat.as_view(),
-                     name='updateplayerstat'), ]
+urlpatterns += [path('updatestat/<int:pk>/',
+                     UpdateStat.as_view(),
+                     name='updatestat'), ]
