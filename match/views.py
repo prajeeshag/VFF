@@ -216,7 +216,7 @@ urlpatterns += [path('editcard/<int:pk>/',
 
 class CreateSuspension(MatchManagerRequiredMixin, CreateView):
     model = models.Suspension
-    fields = ['status', 'player', 'reason', 'got_in', 'completed_in']
+    fields = ['status', 'player', 'reason', 'got_in']
     template_name = 'dashboard/base_form.html'
 
     def get_context_data(self, **kwargs):

@@ -989,9 +989,9 @@ class Suspension(StatusModel, TimeStampedModel):
     STATUS = Choices('pending', 'completed', 'canceled')
     player = models.ForeignKey(PlayerProfile, on_delete=models.PROTECT)
     reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
-    got_in = models.ForeignKey(Matches, on_delete=models.PROTECT,
+    got_in = models.ForeignKey(Matches, on_delete=models.PROTECT, blank=True,
                                null=True, related_name='suspensions')
-    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT,
+    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT, blank=True,
                                      null=True, related_name='suspensions_completed')
 
     class SuspensionExist(Exception):
