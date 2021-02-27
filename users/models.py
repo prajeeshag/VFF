@@ -443,6 +443,7 @@ class PlayerProfile(Profile):
         permissions = (
             ('edit', 'Edit'),
         )
+        ordering = ['first_name', 'last_name']
 
     def get_height(self):
         return "{} cm".format(self.height)
