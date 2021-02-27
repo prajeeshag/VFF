@@ -728,11 +728,11 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
 
     @ classmethod
     def get_all_reds(cls, match):
-        return cls.objects.filter(match=match, color=cls.COLOR.red)
+        return cls.objects.filter(match=match, color=cls.COLOR.red, is_removed=False)
 
     @ classmethod
     def get_all_yellow(cls, match):
-        return cls.objects.filter(match=match, color=cls.COLOR.yellow)
+        return cls.objects.filter(match=match, color=cls.COLOR.yellow, is_removed=False)
 
     @ classmethod
     def finalize_match(cls, match):
