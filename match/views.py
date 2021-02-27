@@ -212,3 +212,65 @@ class EditCard(MatchManagerRequiredMixin, UpdateView):
 urlpatterns += [path('editcard/<int:pk>/',
                      EditCard.as_view(),
                      name='editcard'), ]
+
+
+class CreateSuspension(MatchManagerRequiredMixin, CreateView):
+    model = models.Suspension
+    fields = '__all__'
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Create Suspension'
+        ctx['back_url'] = reverse('match:suspensions')
+        return ctx
+
+    def get_success_url(self):
+        return reverse('match:suspensions')
+
+
+urlpatterns += [path('createsuspension/',
+                     CreateSuspension.as_view(),
+                     name='createsuspension'), ]
+
+
+class DeleteSuspension(MatchManagerRequiredMixin, DeleteView):
+    model = models.Suspension
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Delete Suspension'
+        ctx['back_url'] = reverse('match:updatesuspension', kwargs={
+                                  'pk': self.object.pk})
+        return ctx
+
+    def get_success_url(self):
+        return reverse('match:suspensions')
+
+
+urlpatterns += [path('deletesuspension/<int:pk>/',
+                     DeleteSuspension.as_view(),
+                     name='deletesuspension'), ]
+
+
+class UpdateSuspension(MatchManagerRequiredMixin, UpdateView):
+    model = models.Suspension
+    fields = '__all__'
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Update Suspension'
+        ctx['back_url'] = reverse('match:suspensions')
+        ctx['delete_url'] = reverse('match:deletesuspension',
+                                    kwargs={'pk': self.object.pk})
+        return ctx
+
+    def get_success_url(self):
+        return reverse('match:suspensions')
+
+
+urlpatterns += [path('updatesuspension/<int:pk>/',
+                     UpdateSuspension.as_view(),
+                     name='updatesuspension'), ]
