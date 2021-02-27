@@ -114,7 +114,7 @@ urlpatterns += [path('suspensions/',
                      name='suspensions'), ]
 
 
-class CardList(MatchManagerRequiredMixin, TemplateView):
+class CardList(TemplateView):
     template_name = 'match/cards.html'
 
     def get_context_data(self, **kwargs):

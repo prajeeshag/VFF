@@ -1,5 +1,10 @@
 {% load rules %}
 
+	<a class="nav-link" href="{% url 'match:cards' %}">
+		<div class="nav-link-icon"><i class="flaticon-red"></i></div>
+	  Cards
+	</a>
+
 {% if user.is_staff %}
 
 	<a class="nav-link" href="{% url 'users:list' %}">
@@ -35,10 +40,6 @@
 	<a class="nav-link" href="{% url 'match:suspensions' %}">
 		<div class="nav-link-icon"><i class="mdi mdi-account-cancel"></i></div>
 		Suspensions
-	</a>
-	<a class="nav-link" href="{% url 'match:cards' %}">
-		<div class="nav-link-icon"><i class="flaticon-red"></i></div>
-	  Cards
 	</a>
 
 	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#attr" name="Attributes" icon="notebook-edit" %}
