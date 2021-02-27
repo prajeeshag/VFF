@@ -1037,7 +1037,7 @@ class AccumulatedCards(TimeStampedModel):
             if self.yellow > 2:
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Yellow card ban')
-                Suspension.create(player, reason)
+                Suspension.create(self.player, reason)
                 self.yellow = 0
             self.save()
 
