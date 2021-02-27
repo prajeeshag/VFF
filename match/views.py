@@ -216,7 +216,7 @@ urlpatterns += [path('editcard/<int:pk>/',
 
 class CreateSuspension(MatchManagerRequiredMixin, CreateView):
     model = models.Suspension
-    fields = '__all__'
+    fields = ['status', 'player', 'reason', 'got_in', 'completed_in']
     template_name = 'dashboard/base_form.html'
 
     def get_context_data(self, **kwargs):
@@ -256,7 +256,7 @@ urlpatterns += [path('deletesuspension/<int:pk>/',
 
 class UpdateSuspension(MatchManagerRequiredMixin, UpdateView):
     model = models.Suspension
-    fields = '__all__'
+    fields = ['status', 'player', 'reason', 'got_in', 'completed_in']
     template_name = 'dashboard/base_form.html'
 
     def get_context_data(self, **kwargs):
@@ -274,3 +274,123 @@ class UpdateSuspension(MatchManagerRequiredMixin, UpdateView):
 urlpatterns += [path('updatesuspension/<int:pk>/',
                      UpdateSuspension.as_view(),
                      name='updatesuspension'), ]
+
+
+class Attr(MatchManagerRequiredMixin, ListView):
+    template_name = 'match/event_attr.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = self.kind.capitalize() + ' Attributes'
+        ctx['create_url'] = reverse('match:create{}attr'.format(self.kind))
+        ctx['edit_url'] = 'match:update{}attr'.format(self.kind)
+        return ctx
+
+
+class CreateAttr(MatchManagerRequiredMixin, CreateView):
+    fields = ['text']
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Add {} reason'.format(self.kind)
+        ctx['back_url'] = reverse('match:{}attr'.format(self.kind))
+        return ctx
+
+    def get_success_url(self):
+        return reverse('match:{}attr'.format(self.kind))
+
+
+class UpdateAttr(MatchManagerRequiredMixin, UpdateView):
+    fields = ['text']
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Update {} reason'.format(self.kind)
+        ctx['back_url'] = reverse('match:{}attr'.format(self.kind))
+        return ctx
+
+    def get_success_url(self):
+        return reverse('match:{}attr'.format(self.kind))
+
+
+def attrmakeurls(kind):
+    urls = []
+    pathstring = '{}attr/'.format(kind)
+    clsname = '{}Attr'.format(kind.capitalize())
+    pathname = '{}attr'.format(kind)
+    cls = globals()[clsname]
+    urls += [path(pathstring,
+                  cls.as_view(),
+                  name=pathname), ]
+    pathstring = 'create{}attr/'.format(kind)
+    clsname = 'Create{}Attr'.format(kind.capitalize())
+    pathname = 'create{}attr'.format(kind)
+    cls = globals()[clsname]
+    urls += [path(pathstring,
+                  cls.as_view(),
+                  name=pathname), ]
+    pathstring = 'update{}attr/<int:pk>/'.format(kind)
+    clsname = 'Update{}Attr'.format(kind.capitalize())
+    pathname = 'update{}attr'.format(kind)
+    cls = globals()[clsname]
+    urls += [path(pathstring,
+                  cls.as_view(),
+                  name=pathname), ]
+
+    return urls
+
+
+class SuspensionAttr(Attr):
+    model = models.SuspensionReason
+    kind = 'suspension'
+
+
+class CreateSuspensionAttr(CreateAttr):
+    model = models.SuspensionReason
+    kind = 'suspension'
+
+
+class UpdateSuspensionAttr(UpdateAttr):
+    model = models.SuspensionReason
+    kind = 'suspension'
+
+
+urlpatterns += attrmakeurls('suspension')
+
+
+class GoalAttr(Attr):
+    model = models.GoalAttr
+    kind = 'goal'
+
+
+class CreateGoalAttr(CreateAttr):
+    model = models.GoalAttr
+    kind = 'goal'
+
+
+class UpdateGoalAttr(UpdateAttr):
+    model = models.GoalAttr
+    kind = 'goal'
+
+
+urlpatterns += attrmakeurls('goal')
+
+
+class CardAttr(Attr):
+    model = models.CardReason
+    kind = 'card'
+
+
+class CreateCardAttr(CreateAttr):
+    model = models.CardReason
+    kind = 'card'
+
+
+class UpdateCardAttr(UpdateAttr):
+    model = models.CardReason
+    kind = 'card'
+
+
+urlpatterns += attrmakeurls('card')

@@ -22,7 +22,7 @@
 {% if perms.verification.add_verification %}
 	<a class="nav-link" href="{% url 'dash:verificationlist' %}">
 		<div class="nav-link-icon"><i class="mdi mdi-clipboard-edit"></i></div>
-		Verification
+		Profile Verification
 	</a>
 {% endif %}
 
@@ -40,5 +40,24 @@
 		<div class="nav-link-icon"><i class="flaticon-red"></i></div>
 	  Cards
 	</a>
+
+	{% include 'dashboard/partials/sideNav_dropdown_link.html' with data_target="#attr" name="Attributes" icon="notebook-edit" %}
+
+ 	<div class="collapse" id="attr" data-parent="#accordionSidenav">
+
+		<nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+			<a class="nav-link" href="{% url 'match:suspensionattr' %}">Suspension</a>
+ 	  </nav>
+
+		<nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+			<a class="nav-link" href="{% url 'match:goalattr' %}">Goal</a>
+ 	  </nav>
+
+		<nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
+			<a class="nav-link" href="{% url 'match:cardattr' %}">card</a>
+ 	  </nav>
+
+ 	</div>
+
 {% endif %}
 
