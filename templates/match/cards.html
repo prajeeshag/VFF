@@ -66,9 +66,8 @@
 	$(document).ready(function() {
 		$('.match-table').each(function(){
 			$(this).DataTable({
-				{% comment %}"ordering": false,{% endcomment %}
 				"pageLength": 10,
-				"order":[],
+				"order":[[3, "desc"]],
 			})
 		})
 	});
