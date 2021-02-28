@@ -180,6 +180,8 @@ class EditGoal(MatchManagerRequiredMixin, UpdateView):
         ctx['title'] = 'Edit Goal - {}'.format(self.object.match)
         ctx['back_url'] = reverse(
             'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        ctx['delete_url'] = reverse('match:deletegoal', kwargs={
+                                    'pk': self.object.pk})
         return ctx
 
     def get_success_url(self):
@@ -190,6 +192,27 @@ class EditGoal(MatchManagerRequiredMixin, UpdateView):
 urlpatterns += [path('editgoal/<int:pk>/',
                      EditGoal.as_view(),
                      name='editgoal'), ]
+
+
+class DeleteGoal(MatchManagerRequiredMixin, DeleteView):
+    model = models.Goal
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Delete Goal - {}'.format(self.object.match)
+        ctx['back_url'] = reverse(
+            'match:editgoal', kwargs={'pk': self.object.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('deletegoal/<int:pk>/',
+                     DeleteGoal.as_view(),
+                     name='deletegoal'), ]
 
 
 class EditCard(MatchManagerRequiredMixin, UpdateView):
