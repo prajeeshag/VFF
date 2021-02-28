@@ -97,7 +97,7 @@ urlpatterns += [path('matchtimeline/<int:pk>/',
                      name='matchtimeline'), ]
 
 
-class SuspensionList(MatchManagerRequiredMixin, TemplateView):
+class SuspensionList(TemplateView):
     template_name = 'match/suspensions.html'
 
     def get_context_data(self, **kwargs):
