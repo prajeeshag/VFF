@@ -3,6 +3,7 @@ import math
 from itertools import chain
 
 from django.db import models, transaction
+from django.db.models import Count
 from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
