@@ -13,7 +13,7 @@ from users.models import PlayerProfile, ClubProfile
 class EditGoalForm(forms.ModelForm):
     class Meta:
         model = models.Goal
-        fields = ['player', 'attr']
+        fields = ['player', 'attr', 'time']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
