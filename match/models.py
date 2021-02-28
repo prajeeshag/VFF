@@ -809,11 +809,23 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
     @ classmethod
     def update_suspension(cls):
         with transaction.atomic():
-            ycards = cls.objects.filter(
-                    color=Cards.COLOR.yellow, 
+            players = cls.objects.filter(
+                    color=Cards.COLOR.yellow,
                     is_removed=False,
                     suspension=None).values(
             'player').annotate(num=Count('player')).filter(num__gt=2)
+
+            for i in players:
+                player=PlayerProfile.objects.get(pk=i['player'])
+                reason, created = SuspensionReason.objects.get_or_create(
+                        text='Yellow card ban')
+                sus = Suspension.create(player, reason)
+                cls.objects.filter(
+                    color=Cards.COLOR.yellow,
+                    is_removed=False,
+                    suspension=None,
+                    player=player).update(suspension=sus)
+
 
     @ classmethod
     def raise_red_card(cls, match, player, reason_text, time=None):
