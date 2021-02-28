@@ -669,6 +669,7 @@ for child in Squad.KIND:
     add_get_child_squad(child[0])
     add_get_child_players(child[0])
 
+
 def add_is_kind(kind):
     fn_name = 'is_' + kind
 
@@ -678,8 +679,55 @@ def add_is_kind(kind):
     fn.__name__ = fn_name
     fn.__doc__ = "Returns True if kind is {}".format(kind)
 
+
 for kind in Squad.KIND:
     add_is_kind(kind[0])
+
+
+class SuspensionReason(NoteModel):
+    pass
+
+
+class Suspension(StatusModel, TimeStampedModel):
+    STATUS = Choices('pending', 'completed', 'canceled')
+    player = models.ForeignKey(PlayerProfile, on_delete=models.PROTECT)
+    reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
+    got_in = models.ForeignKey(Matches, on_delete=models.PROTECT, blank=True,
+                               null=True, related_name='suspensions')
+    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT, blank=True,
+                                     null=True, related_name='suspensions_completed')
+
+    class SuspensionExist(Exception):
+        pass
+
+    @ classmethod
+    def has_suspension(cls, player):
+        return cls.pending.filter(player=player).exists()
+
+    @ classmethod
+    def create(cls, player, reason, match=None):
+        return cls.objects.create(player=player, reason=reason,
+                                  status=cls.STATUS.pending, got_in=match)
+
+    @ classmethod
+    def set_completed(cls, player, match):
+        if cls.completed.filter(player=player, completed_in=match).exists():
+            # Only one suspension is completed in one match for a player
+            return
+        susp = cls.pending.filter(player=player).first()
+        if susp:
+            susp.status = cls.STATUS.completed
+            susp.completed_in = match
+            susp.save()
+
+    @ classmethod
+    def set_completed_for_match(cls, match):
+        with transaction.atomic():
+            for club in [match.home, match.away]:
+                sqd = Squad.get_squad(match, club).get_suspen_squad()
+                players = sqd.players.all()
+                for player in players:
+                    cls.set_completed(player, match)
 
 
 class CardReason(NoteModel):
@@ -707,10 +755,12 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
         on_delete=models.PROTECT,
         null=True)
     is_removed = models.BooleanField(default=False)
+    suspension = models.ForeignKey(
+        Suspension, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='cards')
 
     class GotRedAlready(Exception):
         pass
-
 
     def get_edit_url(self):
         return reverse('match:editcard', args=[self.pk])
@@ -741,14 +791,29 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
             for card in cls.get_all_reds(match):
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Red card')
-                Suspension.create(card.player, reason, match=match)
+                sus = Suspension.create(card.player, reason, match=match)
+                card.update(suspension=sus)
 
             # Yellow cards
-            for card in cls.get_all_yellow(match):
-                player = card.player
-                accu, created = AccumulatedCards.objects.get_or_create(
-                    player=player)
-                accu.add_yellow()
+            for mcard in cls.get_all_yellow(match):
+                cards = cls.objects.filter(color=Cards.COLOR.yellow,
+                                           is_removed=False,
+                                           suspension=None,
+                                           player=mcard.player)
+                if cards.count() > 2:
+                    reason, created = SuspensionReason.objects.get_or_create(
+                        text='Yellow card ban')
+                    sus = Suspension.create(mcard.player, reason, match=match)
+                    cards.update(suspension=sus)
+
+    @ classmethod
+    def update_suspension(cls):
+        with transaction.atomic():
+            ycards = cls.objects.filter(
+                    color=Cards.COLOR.yellow, 
+                    is_removed=False,
+                    suspension=None).values(
+            'player').annotate(num=Count('player')).filter(num__gt=2)
 
     @ classmethod
     def raise_red_card(cls, match, player, reason_text, time=None):
@@ -981,67 +1046,6 @@ class Result(StatusModel):
             self.draws.add(self.match.away, self.match.home)
 
 
-class SuspensionReason(NoteModel):
-    pass
-
-
-class Suspension(StatusModel, TimeStampedModel):
-    STATUS = Choices('pending', 'completed', 'canceled')
-    player = models.ForeignKey(PlayerProfile, on_delete=models.PROTECT)
-    reason = models.ForeignKey(SuspensionReason, on_delete=models.PROTECT)
-    got_in = models.ForeignKey(Matches, on_delete=models.PROTECT, blank=True,
-                               null=True, related_name='suspensions')
-    completed_in = models.ForeignKey(Matches, on_delete=models.PROTECT, blank=True,
-                                     null=True, related_name='suspensions_completed')
-
-    class SuspensionExist(Exception):
-        pass
-
-    @ classmethod
-    def has_suspension(cls, player):
-        return cls.pending.filter(player=player).exists()
-
-    @ classmethod
-    def create(cls, player, reason, match=None):
-        return cls.objects.create(player=player, reason=reason,
-                                  status=cls.STATUS.pending, got_in=match)
-
-    @ classmethod
-    def set_completed(cls, player, match):
-        if cls.completed.filter(player=player, completed_in=match).exists():
-            # Only one suspension is completed in one match for a player
-            return
-        susp = cls.pending.filter(player=player).first()
-        if susp:
-            susp.status = cls.STATUS.completed
-            susp.completed_in = match
-            susp.save()
-
-    @ classmethod
-    def set_completed_for_match(cls, match):
-        with transaction.atomic():
-            for club in [match.home, match.away]:
-                sqd = Squad.get_squad(match, club).get_suspen_squad()
-                players = sqd.players.all()
-                for player in players:
-                    cls.set_completed(player, match)
-
-
-class AccumulatedCards(TimeStampedModel):
-    player = models.OneToOneField(PlayerProfile, on_delete=models.CASCADE)
-    yellow = models.PositiveIntegerField(default=0)
-
-    def add_yellow(self):
-        with transaction.atomic():
-            self.yellow += 1
-            if self.yellow > 2:
-                reason, created = SuspensionReason.objects.get_or_create(
-                    text='Yellow card ban')
-                Suspension.create(self.player, reason)
-                self.yellow = 0
-            self.save()
-
-
 # Adding methods
 SIDES = ('home', 'away')
 EVENTS = {'goals': Goal,
@@ -1164,6 +1168,7 @@ def get_played_players(self, club=None):
 
 setattr(Matches, 'get_played_players', get_played_players)
 
+
 def finalize_match(self):
     if self.is_done():
         return
@@ -1176,5 +1181,5 @@ def finalize_match(self):
         # Result
         Result.create(match=self)
 
-setattr(Matches, 'finalize_match', finalize_match)
 
+setattr(Matches, 'finalize_match', finalize_match)
