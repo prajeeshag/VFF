@@ -59,7 +59,7 @@ class User(AbstractUser):
                                  choices=ACCOUNT_TYPE_CHOICES,
                                  default=OTHER)
 
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
 
     phone_number = models.OneToOneField(
         PhoneNumber, on_delete=models.PROTECT, null=True)
