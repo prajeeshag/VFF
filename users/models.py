@@ -351,6 +351,8 @@ class Profile(models.Model):
     """ Abstract model for all Profiles """
     first_name = models.CharField(_('First Name'), max_length=100, blank=False)
     last_name = models.CharField(_('Last Name'), max_length=100, blank=False)
+    name = models.CharField(_('Name'), max_length=100, blank=True)
+    nickname = models.CharField(_('nickname'), max_length=20, blank=True)
     dob = models.DateField(_("Birthday"), blank=False)
     address = models.TextField(_('Address'), max_length=200, blank=False)
     pincode = models.CharField(_("Pincode"), max_length=10, validators=[
