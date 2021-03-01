@@ -85,7 +85,7 @@ class EditPlayer(SuccessMessageMixin,
                  formviewMixins,
                  UpdateView):
     model = PlayerProfile
-    fields = ['first_name', 'last_name', 'dob', 'address',
+    fields = ['name', 'nickname', 'dob', 'address',
               'pincode', 'student', 'occupation', 'height',
               'weight', 'prefered_foot', 'favorite_position']
     template_name = 'dashboard/base_form.html'
