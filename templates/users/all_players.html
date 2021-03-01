@@ -7,7 +7,6 @@
 {% load rules %}
 {% load tz %}
 
-
 {% block body %} 
 		class="text-white nav-fixed" style="background-color: black" 
 {% endblock %}
@@ -42,15 +41,3 @@
 	</div>
 {% endblock %}
 
-{% block scripts_extra %}
-	<script>
-	$(document).ready(function() {
-		$('.match-table').each(function(){
-			$(this).DataTable({
-				"pageLength": 10,
-				{% comment %}"order":[[2, "desc"]],{% endcomment %}
-			})
-		})
-	});
-	</script>
-{% endblock %}

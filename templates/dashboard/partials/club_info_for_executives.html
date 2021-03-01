@@ -1,0 +1,28 @@
+
+{% load i18n %}
+
+{% if clubInfo %}
+<div>
+	<h4 class="text-center"> Club Details </h4>
+	<hr/>
+	<div class="mt-2">
+		<div class="bg-dark py-2 mb-2">
+			<table class="table table-dark table-responsive-md match-table">
+				<thead>
+					<th>Club</th> <th># players</th> <th># players(w/o acc)</th> <th># players (unverified)</th>
+				</thead>
+				<tbody>
+					{% for obj in clubInfo %}
+						<tr>
+							<td> <a href="{{ obj.get_absolute_url }}">{{ obj.abbr|upper }}</a> </td>
+							<td> {{ obj.num_players }} </td>
+							<td> {{ obj.num_noacc_players }} </td>
+							<td> {{ obj.num_unverified_players }} </td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{% endif %}

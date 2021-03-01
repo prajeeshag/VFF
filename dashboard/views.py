@@ -1,3 +1,5 @@
+from django.db.models import Count, Q
+
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
@@ -29,8 +31,9 @@ from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
 from fixture.models import Matches
-from users.models import PlayerProfile, PhoneNumber, Document
+from users.models import PlayerProfile, PhoneNumber, Document, ClubProfile
 from league.models import Season
+from verification.models import Verification
 
 from . import forms
 
@@ -61,6 +64,17 @@ class Home(LoginRequiredMixin, TemplateView):
                 ctx['player_quota'] = club.player_quota_left()
 
         is_match_manager = rules.test_rule('manage_match', self.request.user)
+        if is_match_manager:
+            num_players = Count('players')
+            num_noacc_players = Count('players', filter=Q(players__user=None))
+            num_unverified_players = Count('players', filter=~Q(
+                players__verification__status='VERIFIED'))
+            clubInfo = ClubProfile.objects.annotate(
+                num_players=num_players,
+                num_noacc_players=num_noacc_players,
+                num_unverified_players=num_unverified_players,
+            )
+            ctx['clubInfo'] = clubInfo
 
         return ctx
 
