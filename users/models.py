@@ -59,10 +59,14 @@ class User(AbstractUser):
                                  choices=ACCOUNT_TYPE_CHOICES,
                                  default=OTHER)
 
-    email = models.EmailField(default="noemail")
+    email = models.EmailField(blank=True, null=True)
 
     phone_number = models.OneToOneField(
         PhoneNumber, on_delete=models.PROTECT, null=True)
+
+    ph_number = models.CharField(_('Phone number'), max_length=10,
+                                 validators=[validate_phone_number, ],
+                                 unique=True, blank=True, null=True)
 
     class Meta:
         db_table = 'auth_user'

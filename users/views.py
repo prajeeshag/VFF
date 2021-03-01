@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView, FormView
 from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
@@ -95,6 +95,44 @@ class AllPlayers(ProfileManagerRequiredMixin, TemplateView):
 urlpatterns += [path('allplayers/',
                      AllPlayers.as_view(),
                      name='allplayers'), ]
+
+
+class MergeProfiles(ProfileManagerRequiredMixin, FormView):
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Are you sure you want to merge these profiles?'
+        return ctx
+
+
+urlpatterns += [path('mergeprofile/',
+                     MergeProfiles.as_view(),
+                     name='mergeprofile'), ]
+
+
+class DeleteProfile(ProfileManagerRequiredMixin, DeleteView):
+    template_name = 'dashboard/base_form.html'
+    model = models.PlayerProfile
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Are you sure you want to delete this profile?'
+        ctx['back_url'] = reverse('users:allplayers')
+        return ctx
+
+    def form_valid(self, form):
+        if self.object.user:
+            self.object.user.delete()
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse('users:allplayers')
+
+
+urlpatterns += [path('deleteprofile/<int:pk>/',
+                     DeleteProfile.as_view(),
+                     name='deleteprofile'), ]
 
 
 class ClubList(viewMixins, TemplateView):

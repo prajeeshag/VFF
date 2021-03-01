@@ -19,7 +19,7 @@
 		<div class="bg-dark py-2 mb-2">
 			<table class="table table-dark table-responsive-md match-table" width="100%" cellspacing="0">
 				<thead>
-					<th>DoB</th> <th>Name</th> <th>Club</th> <th>username</th> <th>status</th>
+					<th>DoB</th> <th>Name</th> <th>Club</th> <th>username</th> <th>status</th><th>action</th>
 				</thead>
 				<tbody>
 					{% for key, objs in groupbydob.items %}
@@ -32,6 +32,7 @@
 								<td> {{ obj.get_club.abbr|upper }} </td>
 								<td> {{ obj.user|default:"NO ACCOUNT" }} </td>
 								<td> {{ obj.verification.status }} </td>
+								<td><a href="{% url 'users:deleteprofile' obj.pk %}">delete</a></td>
 							</tr>
 						{% endfor %}
 					{% endfor %}
