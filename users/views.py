@@ -1,4 +1,6 @@
 
+from django.db.models import Count
+
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 
@@ -74,9 +76,20 @@ urlpatterns += [path('unsignedplayers/',
                      name='unsignedplayers'), ]
 
 
-class AllPlayers(ProfileManagerRequiredMixin, ListView):
+class AllPlayers(ProfileManagerRequiredMixin, TemplateView):
     template_name = 'users/all_players.html'
     model = models.PlayerProfile
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        value_list = models.PlayerProfile.objects.values(
+            'dob').annotate(num=Count('dob')).filter(num__gt=1)
+        group_by_value = {}
+        for value in value_list:
+            group_by_value[value['dob']] = models.PlayerProfile.objects.filter(
+                dob=value['dob'])
+        ctx['groupbydob'] = group_by_value
+        return ctx
 
 
 urlpatterns += [path('allplayers/',
