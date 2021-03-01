@@ -349,9 +349,7 @@ class Jersey(AbstractImage):
 
 class Profile(models.Model):
     """ Abstract model for all Profiles """
-    first_name = models.CharField(_('First Name'), max_length=100, blank=False)
-    last_name = models.CharField(_('Last Name'), max_length=100, blank=False)
-    name = models.CharField(_('Name'), max_length=100, blank=True)
+    name = models.CharField(_('Name'), max_length=100, blank=False)
     nickname = models.CharField(_('nickname'), max_length=20, blank=True)
     dob = models.DateField(_("Birthday"), blank=False)
     address = models.TextField(_('Address'), max_length=200, blank=False)
@@ -373,9 +371,12 @@ class Profile(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ['dob', 'name', 'nickname']
 
     def __str__(self):
-        return('{} {}'.format(self.first_name, self.last_name))
+        if self.nickname:
+            return '{} ({})'.format(self.name, self.nickname)
+        return self.name
 
     def get_age(self):
         if self.dob is not None:
@@ -454,7 +455,6 @@ class PlayerProfile(Profile):
         permissions = (
             ('edit', 'Edit'),
         )
-        ordering = ['first_name', 'last_name']
 
     def get_height(self):
         return "{} cm".format(self.height)

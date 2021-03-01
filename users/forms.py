@@ -12,7 +12,7 @@ class UpdateClubOfficialsForm(forms.ModelForm):
 
     class Meta:
         model = models.ClubOfficialsProfile
-        fields = ['first_name', 'last_name',
+        fields = ['name', 'nickname',
                   'dob', 'address', 'phone_number']
 
 
