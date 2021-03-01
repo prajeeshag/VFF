@@ -21,6 +21,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
 from guardian.shortcuts import get_objects_for_user
+import rules
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
@@ -38,7 +39,7 @@ LOGIN_URL = reverse_lazy('login')
 urlpatterns = []
 
 
-class Home(LoginRequiredMixin, viewMixins, TemplateView):
+class Home(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/home.html'
     login_url = LOGIN_URL
 
@@ -50,24 +51,17 @@ class Home(LoginRequiredMixin, viewMixins, TemplateView):
             ctx['upcoming_matches'] = \
                 Matches.get_upcoming_matches_of_club(club)
 
-        if user.is_player():
-            if not club:
-                profile = user.get_profile()
-                if profile:
-                    ctx['club_offers'] = profile.get_all_offers()
+        if user.is_player() and not club:
+            profile = user.get_profile()
+            if profile:
+                ctx['club_offers'] = profile.get_all_offers()
 
         if user.is_club():
             if Season.objects.first().is_transfer_window_open():
                 ctx['player_quota'] = club.player_quota_left()
 
-            if not user.get_club().logo:
-                messages = [
-                    {'info': 'Please upload your club logo...',
-                     'url': reverse_lazy('users:updateclubprofile'),
-                     'url_name': 'Upload club logo'
-                     }
-                ]
-                ctx['msgs'] = messages
+        is_match_manager = rules.test_rule('manage_match', self.request.user)
+
         return ctx
 
 

@@ -21,6 +21,9 @@ from core.utils import get_image_upload_path
 from guardian.models import UserObjectPermissionBase
 from guardian.models import GroupObjectPermissionBase
 
+from model_utils.models import StatusModel, TimeStampedModel, SoftDeletableModel
+from model_utils import Choices
+
 
 class PhoneNumber(models.Model):
     number = models.CharField(_('Phone number'), max_length=10,
@@ -126,6 +129,7 @@ class ClubProfile(models.Model):
         Grounds, null=True,
         related_name='club',
         on_delete=models.SET_NULL)
+
     registered = models.BooleanField(_('Registered'), default=False)
 
     def __str__(self):
@@ -460,7 +464,7 @@ class PlayerProfile(Profile):
 
     def get_all_offers(self):
         offers = self.clubsignings.filter(
-            accepted=False).order_by('-created_at')
+            accepted=False).order_by('-created')
         return offers
 
     def get_club(self):
@@ -513,7 +517,7 @@ class PlayerCount(models.Model):
             obj.save()
 
 
-class ClubSignings(models.Model):
+class ClubSignings(TimeStampedModel):
     club = models.ForeignKey(
         ClubProfile,
         on_delete=models.CASCADE,
@@ -523,7 +527,6 @@ class ClubSignings(models.Model):
         on_delete=models.CASCADE,
         related_name='clubsignings')
     accepted = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ['club', 'player']
@@ -552,23 +555,27 @@ class ClubSignings(models.Model):
         if accepted_offers:
             raise self.AcceptedOfferExist()
 
-        playercount = getattr(self.club, 'playercount', None)
-        if not playercount:
-            raise self.PlayerCountNotFound()
+        playercount, created = PlayerCount.objects.get_or_create(
+            club=self.club)
 
         try:
             playercount.increment()
         except playercount.MaximumLimitReached:
             raise self.MaximumLimitReached()
+
+        self.player.club = self.club
         self.accepted = True
+        self.player.save()
         self.save()
+        self.player.clubsignings.filter(accepted=False).delete()
 
     def release(self):
         if not self.accepted:
             return
-        playercount = getattr(self.club, 'playercount', None)
-        if not playercount:
-            raise PlayerCountNotFound()
+
+        playercount, created = PlayerCount.objects.get_or_create(
+            club=self.club)
         playercount.increment(-1)
-        self.accepted = False
-        self.save()
+        self.player.club = None
+        self.player.save()
+        self.delete()
