@@ -20,6 +20,7 @@ from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth import get_user_model
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
+from django.core.exceptions import PermissionDenied
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
 
