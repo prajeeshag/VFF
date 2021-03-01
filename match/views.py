@@ -36,16 +36,9 @@ from .forms import EditGoalForm, EditCardForm
 from . import models
 from users.models import PlayerProfile
 from fixture.models import Matches
+from league.views import MatchManagerRequiredMixin
 
 urlpatterns = []
-
-
-class MatchManagerRequiredMixin:
-    def dispatch(self, request, *args, **kwargs):
-        is_match_manager = rules.test_rule('manage_match', request.user)
-        if not is_match_manager:
-            raise PermissionDenied
-        return super().dispatch(request, *args, **kwargs)
 
 
 class EnterMatchDetailMixin:

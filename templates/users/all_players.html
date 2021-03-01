@@ -1,22 +1,51 @@
 
 {% extends 'dashboard/base.html' %}
+{% load thumbnail %}
+{% load static %}
 {% load my_tags %}
+{% load i18n %}
+{% load rules %}
+{% load tz %}
+
+
+{% block body %} 
+		class="text-white nav-fixed" style="background-color: black" 
+{% endblock %}
 
 {% block content_main %}
-<h3 class="rounded p-4 mt-1 bg-dark text-center">Players ({{ signings|length }})</h3>
-<div class="container-fluid p-1">
-	<div class="row">
-		{% for signing in signings %}
-			<div class="col-md-4 mb-3">
-				{% include 'users/partials/players_card.html' with player=signing.player club=signing.club %}	
-			</div>
-		{% endfor %}
+	<h2 class="text-center"> All players </h2>
+	<hr/>
+	<div class="mt-2">
+		<div class="bg-dark py-2 mb-2">
+			<table class="table table-dark table-striped table-responsive-md table-borderless match-table" width="100%" cellspacing="0">
+				<thead>
+					<th>#</th> <th>Name</th> <th>Club</th> <th>DoB</th> <th>username</th>
+				</thead>
+				<tbody>
+					{% for obj in object_list %}
+						<tr>
+							<td> {{ forloop.counter }} </td>
+							<td> {{ obj|capfirst }} </td>
+							<td> {{ obj.get_club.abbr|upper }} </td>
+							<td> {{ obj.dob }} </td>
+							<td> {{ obj.user|default:"NO ACCOUNT" }} </td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
 	</div>
-</div>
 {% endblock %}
 
 {% block scripts_extra %}
-	<script type="text/javascript">
-		$(window).on('load', function() { $('#id_abbr_modal').modal('show'); });
+	<script>
+	$(document).ready(function() {
+		$('.match-table').each(function(){
+			$(this).DataTable({
+				"pageLength": 10,
+				{% comment %}"order":[[2, "desc"]],{% endcomment %}
+			})
+		})
+	});
 	</script>
 {% endblock %}

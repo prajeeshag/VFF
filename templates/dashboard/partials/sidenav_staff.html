@@ -62,3 +62,11 @@
 
 {% endif %}
 
+{% test_rule 'manage_profiles' user as can_manage_profiles %}
+{% if can_manage_profiles %}
+<a class="nav-link" href=" {% url 'users:allplayers' %} ">
+	<div class="nav-link-icon"><i class="mdi mdi-soccer"></i></div>
+	All Players
+</a>
+{% endif %}
+

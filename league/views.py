@@ -25,7 +25,24 @@ from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSe
 
 from core.mixins import RedirectToPreviousMixin
 from formtools.wizard.views import SessionWizardView
+import rules
 
 from . import models
 
 urlpatterns = []
+
+
+class ProfileManagerRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        is_profile_manager = rules.test_rule('manage_profiles', request.user)
+        if not is_profile_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
+class MatchManagerRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        is_match_manager = rules.test_rule('manage_match', request.user)
+        if not is_match_manager:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)

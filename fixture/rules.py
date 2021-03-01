@@ -17,4 +17,3 @@ rules.set_rule('enter_match_details', is_match_manager |
                is_director | is_club_manager)
 rules.set_rule('manage_match_menu', is_match_manager |
                is_director | member_of_club_managers)
-rules.set_rule('manage_match', is_match_manager | is_director)

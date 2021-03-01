@@ -29,6 +29,7 @@ from formtools.wizard.views import SessionWizardView
 from . import models
 from . import forms
 from league.models import Season
+from league.views import ProfileManagerRequiredMixin
 
 urlpatterns = []
 
@@ -73,14 +74,9 @@ urlpatterns += [path('unsignedplayers/',
                      name='unsignedplayers'), ]
 
 
-class AllPlayers(viewMixins, TemplateView):
+class AllPlayers(ProfileManagerRequiredMixin, ListView):
     template_name = 'users/all_players.html'
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        ctx['show_which_club'] = True
-        ctx['signings'] = models.ClubSignings.get_all_accepted()
-        return ctx
+    model = models.PlayerProfile
 
 
 urlpatterns += [path('allplayers/',
