@@ -190,14 +190,15 @@ class ClubProfile(models.Model):
         return self.num_undern_players(21)-self.num_under19_players()
 
     def get_players(self):
-        q = self.clubsignings.filter(accepted=True).prefetch_related('player')
-        return [s.player for s in q]
+        return self.players.all()
 
     def get_invited_players(self):
         q = self.clubsignings.filter(accepted=False).prefetch_related('player')
         return [s.player for s in q]
 
     def release_player(self, player):
+        if player not in self.get_players():
+            return False
         signings = self.clubsignings.filter(player=player).first()
         if signings:
             signings.release()
@@ -468,8 +469,12 @@ class PlayerProfile(Profile):
         return offers
 
     def get_club(self):
+        if self.club:
+            return self.club
         offer = self.clubsignings.filter(accepted=True).first()
         if offer:
+            self.club = offer.club
+            self.save()
             return offer.club
         return None
 
