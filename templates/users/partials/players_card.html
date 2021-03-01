@@ -1,5 +1,6 @@
 
 {% load thumbnail %}
+{% load rules %}
 
 <div class="mb-2">
 	<div class="d-flex p-0 text-light rounded" style="background-image:linear-gradient(to right,darkgray,black); height: 150px;">
@@ -12,6 +13,7 @@
 				{% endwith %}
 			</a>
 		</div>
+
 		<div class="p-2">
 			<a href={{ player.get_absolute_url }} class="text-light" style="line-height: 2px;">
 				<h5 class="h5">{{ player }}</h5>
@@ -19,15 +21,23 @@
 					<p><i class="mdi mdi-phone"></i> {{ player.get_phone_number }}</p>
 				{% endif %}
 				<p>{{ player.favorite_position }}</p>
-				{% if user.is_authenticated %}
-					<p>Age: {{ player.get_age }}</p>
-				{% endif %}
+				<p>Age: {{ player.get_age }}</p>
 				{% if club %}
 					<p>Playing for: <a class="text-white" href="{{ club.get_absolute_url }}">{{ club.abbr|upper }}</a></p>
+				{% endif %}
+				{% test_rule 'manage_profile' user player as can_manage_profile %}
+				{% if can_manage_profile %}
+					{% if not player.user %}
+						<span class="badge badge-pill badge-warning">no account</span>
+					{% endif %}
+					{% if not player.verification.is_verified %}
+						<span class="badge badge-pill badge-danger">not verified</span>
+					{% endif %}
 				{% endif %}
 			</a>
 		</div>
 	</div>
+
 	{% if user.is_club and send_offer %}
 		<div>
 			{% if player in myoffers %}
@@ -43,11 +53,13 @@
 			{% endif %}
 		</div>
 	{% endif %}
+
 	{% if user.is_superuser and player.user %}
 		<form action="/hijack/{{ player.user.id }}/" method="post">
 			{% csrf_token %}
 			<button type="submit" class="btn btn-sm btn-block btn-danger">hijack</button>
 		</form>
 	{% endif %}
+
 </div>
 
