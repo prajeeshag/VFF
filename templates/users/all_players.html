@@ -25,7 +25,7 @@
 					{% for obj in object_list %}
 						<tr>
 							<td> {{ forloop.counter }} </td>
-							<td> {{ obj|capfirst }} </td>
+							<td> <a href="{{ obj.get_absolute_url }}">{{ obj|capfirst }}</a> </td>
 							<td> {{ obj.get_club.abbr|upper }} </td>
 							<td> {{ obj.dob }} </td>
 							<td> {{ obj.user|default:"NO ACCOUNT" }} </td>
