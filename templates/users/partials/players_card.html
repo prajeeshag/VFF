@@ -34,6 +34,13 @@
 						<span class="badge badge-pill badge-danger">not verified</span>
 					{% endif %}
 				{% endif %}
+
+					{% test_rule 'is_player_removeable' user player as is_player_removeable %}
+					{% if is_player_removeable %}
+						<a href="{% url 'users:releaseplayer' player.pk %}" class="badge badge-danger"> remove </a>
+					{% endif %}
+
+
 			</a>
 		</div>
 	</div>

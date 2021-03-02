@@ -374,8 +374,6 @@ class Profile(models.Model):
         ordering = ['dob', 'name', 'nickname']
 
     def __str__(self):
-        if self.nickname:
-            return '{} ({})'.format(self.name, self.nickname)
         return self.name
 
     def get_age(self):
@@ -502,6 +500,7 @@ class PlayerGroupObjectPermission(GroupObjectPermissionBase):
 class PlayerCount(models.Model):
 
     MAX_NUM_PLAYERS = 30
+    MIN_NUM_PLAYERS = 15
 
     club = models.OneToOneField(
         ClubProfile,

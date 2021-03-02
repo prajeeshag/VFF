@@ -498,6 +498,8 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             suspen = self.get_suspen_squad()
             avail = self.get_avail_squad()
             for player in self.club.get_players():
+                if not player.verification.is_verified():
+                    continue
                 if Suspension.has_suspension(player):
                     suspen.add_player(player)
                 else:

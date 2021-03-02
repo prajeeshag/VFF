@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from django.contrib.auth.decorators import user_passes_test
+from django.core.exceptions import PermissionDenied
 
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.contrib.auth import get_user_model
@@ -26,6 +27,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
 from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSetView
+import rules
 
 from core.mixins import viewMixins, formviewMixins
 from formtools.wizard.views import SessionWizardView
@@ -94,6 +96,50 @@ class AllPlayers(ProfileManagerRequiredMixin, TemplateView):
 urlpatterns += [path('allplayers/',
                      AllPlayers.as_view(),
                      name='allplayers'), ]
+
+
+class ReleasePlayer(FormView):
+    template_name = 'dashboard/base_form.html'
+    form_class = dj_forms.Form
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        self.club = user.get_club()
+        is_club_manager = rules.test_rule('manage_club', user, self.club)
+        if not is_club_manager:
+            raise PermissionDenied
+
+        pk = kwargs.get('pk')
+        self.player = get_object_or_404(models.PlayerProfile, pk=pk)
+        if not self.player.club or self.player.club != self.club:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.club.release_player(self.player)
+        self.player.refresh_from_db()
+        if not self.player.club and not self.player.user:
+            try:
+                self.player.delete()
+            except Exception:
+                pass
+
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Are you sure you want to remove {} from your club?'.format(
+            self.player)
+        ctx['back_url'] = self.club.get_absolute_url()
+        return ctx
+
+    def get_success_url(self):
+        return(self.club.get_absolute_url())
+
+
+urlpatterns += [path('releaseplayer/<int:pk>/',
+                     ReleasePlayer.as_view(),
+                     name='releaseplayer'), ]
 
 
 class MergeProfiles(ProfileManagerRequiredMixin, FormView):
