@@ -82,7 +82,7 @@ class AllPlayers(ProfileManagerRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         value_list = models.PlayerProfile.objects.values(
-            'dob').annotate(num=Count('dob'))
+            'dob').annotate(num=Count('dob')).order_by('-num')
         group_by_value = {}
         for value in value_list:
             group_by_value[value['dob']] = models.PlayerProfile.objects.filter(
