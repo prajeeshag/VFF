@@ -20,6 +20,8 @@ def is_playerprofile_owner(user, obj):
 
 @rules.predicate
 def is_player_removeable(user, player):
+    if not user.is_authenticated:
+        return False
     club = user.get_club()
     if not rules.test_rule('manage_club', user, club):
         return False
@@ -36,6 +38,8 @@ def is_player_removeable(user, player):
 
 @rules.predicate
 def can_end_contract(user, player):
+    if not user.is_authenticated:
+        return False
     club = user.get_club()
     if not rules.test_rule('manage_club', user, club):
         return False
