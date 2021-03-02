@@ -1,0 +1,15 @@
+
+{% load i18n %}
+
+{% with club_offers=user.get_profile.endcontract.first %}
+{% if club_offers %}
+	<div class="p-3">
+		<h4> You have a contract end request from your club({{ club_offers.club }}) </h4>
+		<hr class="mt-2 mb-4" />
+		<div class="mb-2 d-flex">
+			<a href="{% url 'users:agreeendcontract' club_offers.pk %}" class="btn btn-success">Agree</a>
+			<a href="{% url 'users:disagreeendcontract' club_offers.pk %}" class="btn btn-danger">Disagree</a>
+		</div>
+	</div>
+{% endif %}
+
