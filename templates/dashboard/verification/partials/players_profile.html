@@ -39,11 +39,11 @@
 					<h4>{{ dp.document_type }}</h4>
 				</div>
 				<div class="d-flex justify-content-center">
-					{% with dp.image as im %}
+					{% thumbnail dp.image "400x400" upscale=False as im %}
 						<div class="p-2 m-auto" style="max-width: 300px;">
 							<img class="img-thumbnail" src="{{ im.url }}" alt="Card image cap">
 						</div>
-					{% endwith %}
+					{% endthumbnail %}
 				</div>
 			{% endwith %}
 		{% endfor %}
