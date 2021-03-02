@@ -59,13 +59,9 @@ class FreePlayersList(LoginRequiredMixin, viewMixins, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # very bad, need improvement
-        allplayers = models.PlayerProfile.objects.exclude(user=None)
-        free_players = []
-        for player in allplayers:
-            if not player.get_club():
-                free_players.append(player)
-        ctx['free_players'] = free_players
+        allplayers = models.PlayerProfile.objects.exclude(
+            user=None).filter(club=None)
+        ctx['free_players'] = allplayers
         user = self.request.user
         ctx['send_offer'] = True
         if hasattr(user, 'clubprofile'):
@@ -86,7 +82,7 @@ class AllPlayers(ProfileManagerRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         value_list = models.PlayerProfile.objects.values(
-            'dob').annotate(num=Count('dob')).filter(num__gt=1)
+            'dob').annotate(num=Count('dob'))
         group_by_value = {}
         for value in value_list:
             group_by_value[value['dob']] = models.PlayerProfile.objects.filter(
