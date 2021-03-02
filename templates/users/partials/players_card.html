@@ -40,7 +40,15 @@
 						<a href="{% url 'users:releaseplayer' player.pk %}" class="badge badge-danger"> remove </a>
 					{% endif %}
 
-
+					{% test_rule 'can_end_contract' user player as can_end_contract %}
+					{% if can_end_contract %}
+						{% test_rule 'end_contract_sent' user.get_club player as end_contract_sent %}
+						{% if end_contract_sent %}
+							<a href="{% url 'users:deleteendcontract' player.pk %}" class="badge badge-primary"> cancel EC request </a>
+						{% else %}
+							<a href="{% url 'users:createendcontract' player.pk %}" class="badge badge-warning"> send EC request </a>
+						{% endif %}	
+					{% endif %}
 			</a>
 		</div>
 	</div>

@@ -142,6 +142,131 @@ urlpatterns += [path('releaseplayer/<int:pk>/',
                      name='releaseplayer'), ]
 
 
+class CreateEndContract(FormView):
+    template_name = 'dashboard/base_form.html'
+    form_class = dj_forms.Form
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        self.club = user.get_club()
+        is_club_manager = rules.test_rule('manage_club', user, self.club)
+        if not is_club_manager:
+            raise PermissionDenied
+        pk = kwargs.get('pk')
+        self.player = get_object_or_404(models.PlayerProfile, pk=pk)
+        if not self.player.club or self.player.club != self.club:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        obj, created = models.EndContract.objects.get_or_create(
+            club=self.club, player=self.player)
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Are you sure you want to sent a contract termination request to {}?'.format(
+            self.player)
+        ctx['back_url'] = self.club.get_absolute_url()
+        return ctx
+
+    def get_success_url(self):
+        return(self.club.get_absolute_url())
+
+
+urlpatterns += [path('createendcontract/<int:pk>/',
+                     CreateEndContract.as_view(),
+                     name='createendcontract'), ]
+
+
+class DeleteEndContract(FormView):
+    template_name = 'dashboard/base_form.html'
+    form_class = dj_forms.Form
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        self.club = user.get_club()
+        is_club_manager = rules.test_rule('manage_club', user, self.club)
+        if not is_club_manager:
+            raise PermissionDenied
+        pk = kwargs.get('pk')
+        self.player = get_object_or_404(models.PlayerProfile, pk=pk)
+        if not self.player.club or self.player.club != self.club:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        obj, created = models.EndContract.objects.get_or_create(
+            club=self.club, player=self.player)
+        obj.delete()
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Are you sure you want to delete the contract termination request to {}?'.format(
+            self.player)
+        ctx['back_url'] = self.club.get_absolute_url()
+        return ctx
+
+    def get_success_url(self):
+        return(self.club.get_absolute_url())
+
+
+urlpatterns += [path('deleteendcontract/<int:pk>/',
+                     DeleteEndContract.as_view(),
+                     name='deleteendcontract'), ]
+
+
+class AgreeEndContract(FormView):
+    template_name = 'dashboard/base_form.html'
+    form_class = dj_forms.Form
+    disagree = False
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        pk = kwargs.get('pk')
+        self.object = get_object_or_404(models.EndContract, pk=pk)
+        if self.object.player != user.get_profile():
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        if self.disagree:
+            self.object.disagree()
+            messages.add_message(
+                request, messages.INFO,
+                "You disagreed to end the contract with {} !!".format(self.object.club))
+        else:
+            self.object.agree()
+            messages.add_message(
+                request, messages.INFO,
+                "You ended the contract with {}, you are now an unsigned player!!".format(self.object.club))
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        if self.disagree:
+            ctx['title'] = 'Are you sure you want disagree end contract request from {}?'.format(
+                self.object.club)
+        else:
+            ctx['title'] = 'Are you sure you want to end the contract with {}?'.format(
+                self.object.club)
+        ctx['back_url'] = self.object.player.get_absolute_url()
+        return ctx
+
+    def get_success_url(self):
+        return(self.object.player.get_absolute_url())
+
+
+urlpatterns += [path('agreeendcontract/<int:pk>/',
+                     AgreeEndContract.as_view(),
+                     name='agreeendcontract'), ]
+
+urlpatterns += [path('disagreeendcontract/<int:pk>/',
+                     AgreeEndContract.as_view(disagree=True),
+                     name='disagreeendcontract'), ]
+
+
 class MergeProfiles(ProfileManagerRequiredMixin, FormView):
     template_name = 'dashboard/base_form.html'
     form_class = dj_forms.Form

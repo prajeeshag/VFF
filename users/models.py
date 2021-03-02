@@ -164,7 +164,7 @@ class ClubProfile(models.Model):
         return officials[0]
 
     def total_players(self):
-        return self.clubsignings.filter(accepted=True).count()
+        return self.players.all().count()
 
     def player_quota_left(self):
         return PlayerCount.MAX_NUM_PLAYERS-self.total_players()
@@ -203,7 +203,8 @@ class ClubProfile(models.Model):
     def release_player(self, player):
         if player not in self.get_players():
             return False
-        signings = self.clubsignings.filter(player=player).first()
+        signings = self.clubsignings.filter(
+            player=player, accepted=True, terminated=False).first()
         if signings:
             signings.release()
             return True
@@ -464,18 +465,19 @@ class PlayerProfile(Profile):
         return reverse('users:playersprofile', kwargs={'pk': self.pk})
 
     def get_offer_from_club(self, club):
-        offer = self.clubsignings.filter(club=club).first()
+        offer = self.clubsignings.filter(club=club, terminated=False).first()
         return offer
 
     def get_all_offers(self):
         offers = self.clubsignings.filter(
-            accepted=False).order_by('-created')
+            accepted=False, terminated=False).order_by('-created')
         return offers
 
     def get_club(self):
         if self.club:
             return self.club
-        offer = self.clubsignings.filter(accepted=True).first()
+        offer = self.clubsignings.filter(
+            accepted=True, terminated=False).first()
         if offer:
             self.club = offer.club
             self.save()
@@ -537,9 +539,7 @@ class ClubSignings(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name='clubsignings')
     accepted = models.BooleanField(default=False)
-
-    class Meta:
-        unique_together = ['club', 'player']
+    terminated = models.BooleanField(default=False)
 
     class MaximumLimitReached(Exception):
         pass
@@ -560,7 +560,8 @@ class ClubSignings(TimeStampedModel):
                     .prefetch_related('player', 'club'))
 
     def accept(self):
-        accepted_offers = self.player.clubsignings.filter(accepted=True)
+        accepted_offers = self.player.clubsignings.filter(
+            accepted=True, terminated=False)
 
         if accepted_offers:
             raise self.AcceptedOfferExist()
@@ -588,4 +589,30 @@ class ClubSignings(TimeStampedModel):
         playercount.increment(-1)
         self.player.club = None
         self.player.save()
+        self.terminated = True
+        self.save()
+
+
+class EndContract(TimeStampedModel):
+    club = models.ForeignKey(
+        ClubProfile,
+        on_delete=models.CASCADE,
+        related_name='endcontract')
+    player = models.ForeignKey(
+        PlayerProfile,
+        on_delete=models.CASCADE,
+        related_name='endcontract')
+
+    class Meta:
+        unique_together = ('club','player')
+
+    def agree(self):
+        with transaction.atomic():
+            signings = ClubSignings.objects.get(
+                club=self.club, player=self.player,
+                terminated=False, accepted=True)
+            signings.release()
+            self.delete()
+
+    def disagree(self):
         self.delete()
