@@ -12,13 +12,18 @@
 {% endblock %}
 
 {% block content_main %}
+
 	<h2 class="text-center"> Possible duplicate profiles </h2>
 	<hr/>
 	<div class="mt-2">
 		<div class="bg-dark py-2 mb-2">
+			<div class="d-flex justify-content-around mb-1"> 
+				<button class="btn btn-primary" id="mergebtn"> merge </button>
+				<button class="btn btn-danger" id="deletebtn"> delete </button>
+			</div>	
 			<table class="table table-dark table-responsive-md match-table" width="100%" cellspacing="0">
 				<thead>
-					<th>DoB</th> <th>Name</th> <th>Club</th> <th>username</th> <th>status</th><th>action</th>
+					<th>DoB</th> <th>Name</th> <th>Club</th> <th>username</th> <th>status</th> <th>&nbsp;</th>
 				</thead>
 				<tbody>
 					{% for key, objs in groupbydob.items %}
@@ -31,13 +36,55 @@
 								<td> {{ obj.get_club.abbr|upper }} </td>
 								<td> {{ obj.user|default:"NO ACCOUNT" }} </td>
 								<td> {{ obj.verification.status }} </td>
-								<td><a href="{% url 'users:deleteprofile' obj.pk %}">delete</a></td>
+								{% comment %}<td><a href="{% url 'users:deleteprofile' obj.pk %}">delete</a></td>{% endcomment %}
+								<td><input type="checkbox" name="profile" value="{{ obj.pk }}"/></td>
 							</tr>
 						{% endfor %}
 					{% endfor %}
 				</tbody>
 			</table>
+
 		</div>
 	</div>
+
 {% endblock %}
 
+{% block scripts_extra %}
+<script>
+	function get_pk_values(){
+			pk_values = [];
+			$("input:checkbox[name=profile]:checked").each(function(){
+					pk_values.push($(this).val());
+				});
+			return pk_values;
+	};
+
+	$(document).ready(function() { 
+			$('#mergebtn').click(function() { 
+					pk_values = get_pk_values()
+					if (pk_values.length != 2){
+							alert(pk_values.length+" profiles selected; select 2 profiles to merge");
+						} else {
+								var urlp = "{% url 'users:mergeprofiles' 111 222 %}"
+								pk1=pk_values[0].toString()
+								pk2=pk_values[1].toString()
+								urlp = urlp.replace('111',pk1)	
+								urlp = urlp.replace('222',pk2)	
+								location.href = urlp;
+						};
+				});
+
+			$('#deletebtn').click(function() { 
+					pk_values = get_pk_values()
+					if (pk_values.length != 1){
+							alert(pk_values.length+" profiles selected; select 1 profiles to delete");
+						} else {
+								var urlp = "{% url 'users:deleteprofile' 111 %}"
+								pk1=pk_values[0].toString()
+								urlp = urlp.replace('111',pk1)	
+								location.href = urlp;
+						};
+				});
+		});
+</script>
+{% endblock %}

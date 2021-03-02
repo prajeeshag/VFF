@@ -1,5 +1,7 @@
 
-from django.db.models import Count
+from django.db.models import Count, ProtectedError
+from django.db import transaction
+from django import forms as dj_forms
 
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
@@ -27,6 +29,7 @@ from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSe
 
 from core.mixins import viewMixins, formviewMixins
 from formtools.wizard.views import SessionWizardView
+from formtools.preview import FormPreview
 
 from . import models
 from . import forms
@@ -99,16 +102,54 @@ urlpatterns += [path('allplayers/',
 
 class MergeProfiles(ProfileManagerRequiredMixin, FormView):
     template_name = 'dashboard/base_form.html'
+    form_class = dj_forms.Form
+
+    def dispatch(self, request, *args, **kwargs):
+        pk1 = kwargs.get('pk1', None)
+        pk2 = kwargs.get('pk2', None)
+        self.profile1 = get_object_or_404(models.PlayerProfile, pk=pk1)
+        self.profile2 = get_object_or_404(models.PlayerProfile, pk=pk2)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Are you sure you want to merge these profiles?'
+        ctx['title'] = 'Are you sure you want to merge {} & {}?'.format(
+            self.profile1, self.profile2)
+        ctx['back_url'] = reverse('users:allplayers')
         return ctx
 
+    def form_valid(self, form):
+        if self.profile1.user and self.profile2.user:
+            messages.add_message(
+                request, messages.WARNING,
+                "Both profiles has users, cannot merge profiles!!")
+        elif self.profile1.user:
+            with transaction.atomic():
+                self.profile2.user = self.profile1.user
+                self.profile1.user = None
+                self.profile1.save()
+                self.profile2.save()
+                self.profile1.delete()
+        elif self.profile2.user:
+            with transaction.atomic():
+                self.profile1.user = self.profile2.user
+                self.profile2.user = None
+                self.profile2.save()
+                self.profile1.save()
+                self.profile2.delete()
+        else:
+            messages.add_message(
+                request, messages.WARNING,
+                "Both profiles has no users, cannot merge profiles!!")
+        return super().form_valid(form)
 
-urlpatterns += [path('mergeprofile/',
+    def get_success_url(self):
+        return reverse('users:allplayers')
+
+
+urlpatterns += [path('mergeprofile/<int:pk1>/<int:pk2>/',
                      MergeProfiles.as_view(),
-                     name='mergeprofile'), ]
+                     name='mergeprofiles'), ]
 
 
 class DeleteProfile(ProfileManagerRequiredMixin, DeleteView):
@@ -117,14 +158,19 @@ class DeleteProfile(ProfileManagerRequiredMixin, DeleteView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['title'] = 'Are you sure you want to delete this profile?'
+        ctx['title'] = "Are you sure you want to delete {}'s ?".format(
+            self.object)
         ctx['back_url'] = reverse('users:allplayers')
         return ctx
 
-    def form_valid(self, form):
-        if self.object.user:
-            self.object.user.delete()
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        try:
+            return self.delete(request, *args, **kwargs)
+        except ProtectedError:
+            messages.add_message(
+                request, messages.WARNING,
+                "Cannot delete this profile, this profile is protect from deletion by other objects!!")
+        return redirect(self.get_success_url())
 
     def get_success_url(self):
         return reverse('users:allplayers')
