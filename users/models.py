@@ -604,7 +604,7 @@ class EndContract(TimeStampedModel):
         related_name='endcontract')
 
     class Meta:
-        unique_together = ('club','player')
+        unique_together = ('club', 'player')
 
     def agree(self):
         with transaction.atomic():

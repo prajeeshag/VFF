@@ -234,12 +234,12 @@ class AgreeEndContract(FormView):
         if self.disagree:
             self.object.disagree()
             messages.add_message(
-                request, messages.INFO,
+                self.request, messages.INFO,
                 "You disagreed to end the contract with {} !!".format(self.object.club))
         else:
             self.object.agree()
             messages.add_message(
-                request, messages.INFO,
+                self.request, messages.INFO,
                 "You ended the contract with {}, you are now an unsigned player!!".format(self.object.club))
         return super().form_valid(form)
 

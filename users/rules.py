@@ -39,6 +39,8 @@ def can_end_contract(user, player):
     club = user.get_club()
     if not rules.test_rule('manage_club', user, club):
         return False
+    if not player.user:
+        return False
     if not player:
         return False
     if club != player.get_club():
@@ -48,7 +50,7 @@ def can_end_contract(user, player):
 
 @rules.predicate
 def end_contract_sent(club, player):
-    if club.endcontract.filter(player=player).exist():
+    if club.endcontract.filter(player=player).exists():
         return True
     return False
 
