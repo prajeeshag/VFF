@@ -605,6 +605,7 @@ urlpatterns += [path('dpupload/', dpUploadView.as_view(), name='dpupload'), ]
 class dpEditView(LoginRequiredMixin, formviewMixins, UpdateView):
     form_class = forms.dpEditForm
     template_name = 'users/dp_edit.html'
+    model = models.ProfilePicture
 
     def get_success_url(self):
         profile = getattr(self.object, 'playerprofile', None)
