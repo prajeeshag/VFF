@@ -593,13 +593,11 @@ class dpUploadView(LoginRequiredMixin, formviewMixins, UpdateView):
     template_name = 'users/dp_upload.html'
 
     def get_success_url(self):
-        return reverse('users:dpedit')
-
-    def get_object(self):
-        return self.request.user.get_profilepicture()
+        return reverse('users:dpedit', kwargs={'pk'=self.object.pk})
 
 
-urlpatterns += [path('dpupload/', dpUploadView.as_view(), name='dpupload'), ]
+urlpatterns += [path('dpupload/<int:pk>/',
+                     dpUploadView.as_view(), name='dpupload'), ]
 
 
 class dpEditView(LoginRequiredMixin, formviewMixins, UpdateView):

@@ -15,7 +15,7 @@
 		<button onclick="document.getElementById('id_form').submit()" data-toggle="tooltip" data-placement="top" title="" data-original-title="Upload" class="btn btn-primary"> 
 			Done
 		</button>
-		<form class="d-inline" method="post" action={% url 'users:dpupload' %} enctype="multipart/form-data">
+		<form class="d-inline" method="post" action={% url 'users:dpupload' form.instance.pk %} enctype="multipart/form-data">
 			{% csrf_token %}
 			<label class="btn btn-outline-primary mb-0">
 				{% translate 'Upload New' %}
