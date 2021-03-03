@@ -12,7 +12,7 @@ from django.contrib.auth.views import (
     PasswordResetConfirmView as PasswordResetConfirmCore,
 )
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib import messages
 
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -191,7 +191,7 @@ class SignupView(viewMixins, SessionWizardView):
 
         user = authenticate(username=username, password=password)
         if (self.request.user.is_authenticated):
-            logut(self.request)
+            logout(self.request)
         login(self.request, user)
 
         messages.add_message(

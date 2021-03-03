@@ -501,7 +501,7 @@ class PlayerGroupObjectPermission(GroupObjectPermissionBase):
 
 class PlayerCount(models.Model):
 
-    MAX_NUM_PLAYERS = 30
+    MAX_NUM_PLAYERS = 1000
     MIN_NUM_PLAYERS = 15
 
     club = models.OneToOneField(
