@@ -511,7 +511,7 @@ def CreateClubSigninOffer(request, pk):
         return HttpResponseRedirect(url)
 
     signin, created = models.ClubSignings.objects.get_or_create(
-        club=club, player=player)
+        club=club, player=player, terminated=False)
 
     if not created:
         messages.add_message(
@@ -550,7 +550,7 @@ def CancelClubSigninOffer(request, pk):
         return HttpResponseRedirect(url)
 
     signin, created = models.ClubSignings.objects.get_or_create(
-        club=club, player=player)
+            club=club, player=player, terminated=False)
 
     if signin.accepted:
         messages.add_message(
