@@ -16,10 +16,10 @@
 				</div>
 			{% endthumbnail %}
 			{% if object.user == user %}
-				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
+				<a class="btn btn-link" href="{% url 'users:dpedit' object.profilepicture.pk %}">edit photo</a>
 			{% endif %}
 			{% if not object.user and user.is_club and object.get_club == user.get_club %}
-				<a class="btn btn-link" href="{% url 'users:dpedit' %}">edit photo</a>
+				<a class="btn btn-link" href="{% url 'users:dpedit' object.profilepicture.pk %}">edit photo</a>
 			{% endif %}
 		{% endwith %}
 	</div>

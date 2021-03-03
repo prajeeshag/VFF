@@ -606,14 +606,18 @@ class dpEditView(LoginRequiredMixin, formviewMixins, UpdateView):
     form_class = forms.dpEditForm
     template_name = 'users/dp_edit.html'
 
-    def get_object(self):
-        return self.request.user.get_profilepicture()
-
     def get_success_url(self):
-        return self.request.user.get_profile().get_absolute_url()
+        profile = getattr(self.object, 'playerprofile', None)
+        if not profile:
+            profile = getattr(self.object, 'clubofficialsprofile', None)
+        if not profile:
+            return('/')
+        return profile.get_absolute_url()
 
 
-urlpatterns += [path('dpedit/', dpEditView.as_view(), name='dpedit'), ]
+urlpatterns += [path('dpedit/<int:pk>/',
+                     dpEditView.as_view(),
+                     name='dpedit'), ]
 
 
 @ require_http_methods(['POST'])
