@@ -1,0 +1,54 @@
+{% extends 'dashboard/base.html' %}
+
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+{% load i18n %}
+{% load rules %}
+{% load tz %}
+
+
+{% block body %} 
+		class="text-white nav-fixed" style="background-color: black" 
+{% endblock %}
+
+{% block content_main %}
+
+<h2 class="text-center"> End Contract requests </h2>
+<hr/>
+
+<div class="mt-2">
+	<div class="bg-dark py-2 mb-2">
+		<table class="table table-dark table-striped table-responsive-md table-borderless match-table" width="100%" cellspacing="0">
+			<thead>
+				<th>Player</th> <th>Club</th> <th>Date</th> <th>&nbsp;</th> <th>&nbsp;</th>
+			</thead>
+			<tbody>
+				{% for obj in object_list %}
+					<tr>
+						<td> <a href="{{ obj.player.get_absolute_url }}">{{ obj.player }}</a> </td>
+						<td> <a href="{{ obj.club.get_absolute_url }}">{{ obj.club.abbr|upper }}</a> </td>
+						<td> {{ obj.created|localtime }} </td>
+						<td><a href="{% url 'users:agreeendcontract' obj.pk %}?redirect_url={{ request.get_full_path }}" class="btn btn-success">Agree</a></td>
+						<td><a href="{% url 'users:disagreeendcontract' obj.pk %}?redirect_url={{ request.get_full_path }}" class="btn btn-danger">Disagree</a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+	<script>
+	$(document).ready(function() {
+		$('.match-table').each(function(){
+			$(this).DataTable({
+				"pageLength": 10,
+				"order":[[2, "desc"]],
+			})
+		})
+	});
+	</script>
+{% endblock %}

@@ -36,7 +36,7 @@ from formtools.preview import FormPreview
 from . import models
 from . import forms
 from league.models import Season
-from league.views import ProfileManagerRequiredMixin
+from league.views import ProfileManagerRequiredMixin, MatchManagerRequiredMixin
 
 urlpatterns = []
 
@@ -225,9 +225,11 @@ class AgreeEndContract(FormView):
     def dispatch(self, request, *args, **kwargs):
         user = request.user
         pk = kwargs.get('pk')
+        self.redirect_url = request.GET.get('redirect_url', None)
         self.object = get_object_or_404(models.EndContract, pk=pk)
-        if self.object.player != user.get_profile():
-            raise PermissionDenied
+        if not rules.test_rule('manage_match', user):
+            if self.object.player != user.get_profile():
+                raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -252,9 +254,13 @@ class AgreeEndContract(FormView):
             ctx['title'] = 'Are you sure you want to end the contract with {}?'.format(
                 self.object.club)
         ctx['back_url'] = self.object.player.get_absolute_url()
+        if self.redirect_url:
+            ctx['back_url'] = self.redirect_url
         return ctx
 
     def get_success_url(self):
+        if self.redirect_url:
+            return self.redirect_url
         return(self.object.player.get_absolute_url())
 
 
@@ -265,6 +271,16 @@ urlpatterns += [path('agreeendcontract/<int:pk>/',
 urlpatterns += [path('disagreeendcontract/<int:pk>/',
                      AgreeEndContract.as_view(disagree=True),
                      name='disagreeendcontract'), ]
+
+
+class EoCList(MatchManagerRequiredMixin, ListView):
+    model = models.EndContract
+    template_name = 'users/end_contract_list.html'
+
+
+urlpatterns += [path('eoclist/',
+                     EoCList.as_view(),
+                     name='eoclist'), ]
 
 
 class MergeProfiles(ProfileManagerRequiredMixin, FormView):

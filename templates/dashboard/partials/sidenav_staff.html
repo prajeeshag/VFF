@@ -60,6 +60,11 @@
 
  	</div>
 
+	<a class="nav-link" href=" {% url 'users:eoclist' %} ">
+		<div class="nav-link-icon"><i class="mdi mdi-account-multiple-minus"></i></div>
+		EoC list
+	</a>
+
 {% endif %}
 
 {% test_rule 'manage_profiles' user as can_manage_profiles %}
