@@ -795,7 +795,8 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Red card')
                 sus = Suspension.create(card.player, reason, match=match)
-                card.update(suspension=sus)
+                card.suspension=sus
+                card.save()
 
             # Yellow cards
             for mcard in cls.get_all_yellow(match):
