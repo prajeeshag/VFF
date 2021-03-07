@@ -13,16 +13,13 @@ from users.models import PlayerProfile, ClubProfile
 class EditGoalForm(forms.ModelForm):
     class Meta:
         model = models.Goal
-        fields = ['player', 'attr', 'time']
+        fields = ['own', 'club', 'player', 'attr', 'time']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         match = self.instance.match
-        club = self.instance.club
-        if self.instance.own:
-            club = self.instance.against
-        self.fields['player'].queryset = match.get_played_players(
-            club).distinct()
+        self.fields['club'].queryset = match.get_clubs()
+        self.fields['player'].queryset = match.get_played_players().distinct()
 
 
 class EditCardForm(forms.ModelForm):
