@@ -31,7 +31,7 @@ from extra_views import UpdateWithInlinesView, InlineFormSetFactory, ModelFormSe
 from core.mixins import formviewMixins, viewMixins
 from formtools.wizard.views import SessionWizardView
 
-from .forms import EditGoalForm, EditCardForm
+from .forms import EditGoalForm, EditCardForm, EditSubForm
 
 from . import models
 from users.models import PlayerProfile
@@ -161,6 +161,52 @@ class FinalizeMatch(MatchManagerRequiredMixin,
 urlpatterns += [path('finalizematch/<int:pk>/',
                      FinalizeMatch.as_view(),
                      name='finalizematch'), ]
+
+
+class EditSub(MatchManagerRequiredMixin, UpdateView):
+    model = models.Substitution
+    form_class = EditSubForm
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Edit Sub - {}'.format(self.object.match)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        ctx['delete_url'] = reverse(
+            'match:deletesub', kwargs={'pk': self.object.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reserse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('editsub/<int:pk>/',
+                     EditSub.as_view(),
+                     name='editsub'), ]
+
+
+class DeleteSub(MatchManagerRequiredMixin, DeleteView):
+    model = models.Substitution
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Delete Sub - {}'.format(self.object)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.object.match.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reserse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('deletesub/<int:pk>/',
+                     DeleteSub.as_view(),
+                     name='deletesub'), ]
 
 
 class EditGoal(MatchManagerRequiredMixin, UpdateView):

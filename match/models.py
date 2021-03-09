@@ -397,6 +397,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     class GotSuspension(Exception):
         pass
 
+    class PlayerNotInSquad(Exception):
+        pass
+
     def __str__(self):
         if self.parent:
             return '{} ({})'.format(self.parent, self.kind)
@@ -532,9 +535,12 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                     self.nU21 -= 1
                 if player.get_age() <= 19 and player.get_age() != 0:
                     self.nU19 -= 1
-                self.players.remove(player)
                 self.num_players -= 1
+                self.players.remove(player)
                 self.save()
+                return True
+            else:
+                return False
 
     def add_player_to_playing(self, player):
         if self.get_playing_players().count() >= NFIRST:
@@ -795,7 +801,7 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Red card')
                 sus = Suspension.create(card.player, reason, match=match)
-                card.suspension=sus
+                card.suspension = sus
                 card.save()
 
             # Yellow cards
@@ -814,22 +820,21 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
     def update_suspension(cls):
         with transaction.atomic():
             players = cls.objects.filter(
-                    color=Cards.COLOR.yellow,
-                    is_removed=False,
-                    suspension=None).values(
-            'player').annotate(num=Count('player')).filter(num__gt=2)
+                color=Cards.COLOR.yellow,
+                is_removed=False,
+                suspension=None).values(
+                'player').annotate(num=Count('player')).filter(num__gt=2)
 
             for i in players:
-                player=PlayerProfile.objects.get(pk=i['player'])
+                player = PlayerProfile.objects.get(pk=i['player'])
                 reason, created = SuspensionReason.objects.get_or_create(
-                        text='Yellow card ban')
+                    text='Yellow card ban')
                 sus = Suspension.create(player, reason)
                 cls.objects.filter(
                     color=Cards.COLOR.yellow,
                     is_removed=False,
                     suspension=None,
                     player=player).update(suspension=sus)
-
 
     @ classmethod
     def raise_red_card(cls, match, player, reason_text, time=None):
@@ -902,7 +907,10 @@ class Substitution(StatusModel, TimeStampedModel, EventModel):
     reason = models.ForeignKey(
         SubstitutionReason,
         on_delete=models.PROTECT,
-        null=True)
+        null=True, blank=True)
+
+    def __str__(self):
+        return 'In({})-Out({})'.format(self.sub_in,self.sub_out)
 
     def save(self, *args, **kwargs):
         self.match = self.squad.match
@@ -955,18 +963,23 @@ class Goal(StatusModel, TimeStampedModel, EventModel):
 
     @ classmethod
     def create(cls, match, player, created_by=None,
-               own=False, attr=None, time=None):
+               own=False, attr=None, time=None, club_in=None):
+
         goalattr = None
+
         if attr:
             goalattr, created = GoalAttr.objects.get_or_create(text=attr)
 
         if not time:
             time = timezone.now()
 
-        if own:
-            club = match.get_opponent_club_of_player(player)
+        if club_in:
+            club = club_in
         else:
-            club = player.get_club()
+            if own:
+                club = match.get_opponent_club_of_player(player)
+            else:
+                club = player.get_club()
 
         obj = cls.objects.create(
             match=match,
