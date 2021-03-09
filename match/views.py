@@ -179,7 +179,7 @@ class EditSub(MatchManagerRequiredMixin, UpdateView):
 
     def get_success_url(self):
         match = self.object.match
-        return reserse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
 
 
 urlpatterns += [path('editsub/<int:pk>/',
@@ -201,7 +201,7 @@ class DeleteSub(MatchManagerRequiredMixin, DeleteView):
 
     def get_success_url(self):
         match = self.object.match
-        return reserse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
 
 
 urlpatterns += [path('deletesub/<int:pk>/',

@@ -18,31 +18,21 @@ class EditSubForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         squad = self.instance.squad
-        self.fields['sub_in'].queryset = squad.get_onbench_squad().players.all()
-        self.fields['sub_out'].queryset = squad.get_playing_squad().players.all()
 
-    def save(self, commit=True):
-        initial = self.instance
-        current = super().save(commit=False)
-        playing_sqd = initial.squad.get_playing_squad()
-        onbench_sqd = initial.squad.get_onbench_squad()
-        tobench_sqd = initial.squad.get_tobench_squad()
+        sub_in_players = PlayerProfile.objects.none()
+        sub_in_player = PlayerProfile.objects.filter(
+            pk=self.instance.sub_in.pk)
+        sub_in_players = (
+            sub_in_player | squad.get_onbench_squad().players.all()).distinct()
 
-        if current.sub_in != initial.sub_in:
-            playing_sqd.remove_player(initial.sub_in)
-            onbench_sqd.add_player(initial.sub_in)
-            playing_sqd.add_player(current.sub_in)
-            onbench_sqd.remove_player(current.sub_in)
-        elif current.sub_out != initial.sub_out:
-            playing_sqd.add_player(initial.sub_out)
-            tobench_sqd.remove_player(initial.sub_out)
-            playing_sqd.remove_player(current.sub_out)
-            tobench_sqd.add_player(current.sub_out)
+        sub_out_players = PlayerProfile.objects.none()
+        sub_out_player = PlayerProfile.objects.filter(
+            pk=self.instance.sub_out.pk)
+        sub_out_players = (
+            sub_out_player | squad.get_playing_squad().players.all()).distinct()
 
-        if commit:
-            current.save()
-
-        return current
+        self.fields['sub_in'].queryset = sub_in_players
+        self.fields['sub_out'].queryset = sub_out_players
 
 
 class EditGoalForm(forms.ModelForm):

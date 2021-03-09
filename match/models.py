@@ -631,15 +631,8 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             self.save()
 
     def substitute(self, playerin, playerout, user,
-                   reason_text=None, bypassU=False, time=None):
+                   reason_text=None, time=None):
         with transaction.atomic():
-            playing_sqd = self.get_playing_squad()
-            playing_sqd.add_player(playerin)
-            playing_sqd.remove_player(playerout)
-            self.get_onbench_squad().remove_player(playerin)
-            self.get_tobench_squad().add_player(playerout)
-            if not bypassU:
-                self.check_nU()
             reason = None
             if reason_text:
                 reason, created = SubstitutionReason.objects.get_or_create(
@@ -916,6 +909,9 @@ class Substitution(StatusModel, TimeStampedModel, EventModel):
         self.match = self.squad.match
         self.club = self.squad.club
         super().save(*args, **kwargs)
+
+    def get_edit_url(self):
+        return reverse('match:editsub', args=[self.pk])
 
     def get_event_label(self):
         return "In: {}".format(self.sub_in)

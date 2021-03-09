@@ -20,24 +20,32 @@
 			{% if onspot %}
 				<li class="nav-item">
 					{% if match.matchtimeline.first_half_start %}
-						<a class="nav-link active" data-toggle="tab" href="#events" role="tab" >Events</a>
+						<a class="nav-link active" data-toggle="tab" href="#events" role="tab" >Ev</a>
 					{% else %}
-						<a class="nav-link" data-toggle="tab" href="#events" role="tab" >Events</a>
+						<a class="nav-link" data-toggle="tab" href="#events" role="tab" >Ev</a>
 					{% endif %}
 	  		</li>
 			{% else %}
 				<li class="nav-item">
 					{% if match.matchtimeline.first_half_start %}
-						<a class="nav-link active" data-toggle="tab" href="#pastevents" role="tab" >Events(past)</a>
+						<a class="nav-link active" data-toggle="tab" href="#pastevents" role="tab" >Ev(pst)</a>
 					{% else %}
-						<a class="nav-link" data-toggle="tab" href="#pastevents" role="tab" >Events(past)</a>
+						<a class="nav-link" data-toggle="tab" href="#pastevents" role="tab" >Ev(pst)</a>
 					{% endif %}
 	  		</li>
 			{% endif %}
 
 			{% if match.matchtimeline %}
 				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#profile" role="tab" >Timeline</a>
+					<a class="nav-link" data-toggle="tab" href="#timeline" role="tab" >TL</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#playershome" role="tab" >Pl(H)</a>
+				</li>
+
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#playersaway" role="tab" >Pl(A)</a>
 				</li>
 			{% endif %}
 
@@ -71,8 +79,14 @@
 			{% endif %}
 
 			{% if timeline %}
-				<div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+				<div class="tab-pane fade" id="timeline" role="tabpanel" aria-labelledby="profile-tab">
 					{% include 'dashboard/match/partials/timeline.html' with timeline=timeline %}
+				</div>
+				<div class="tab-pane fade" id="playershome" role="tabpanel" aria-labelledby="profile-tab">
+					{% include 'dashboard/match/partials/players.html' with club=match.home squad=match.get_home_squad %}
+				</div>
+				<div class="tab-pane fade" id="playersaway" role="tabpanel" aria-labelledby="profile-tab">
+					{% include 'dashboard/match/partials/players.html' with club=match.away squad=match.get_away_squad %}
 				</div>
 			{% endif %}
 

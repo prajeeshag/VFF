@@ -1,0 +1,30 @@
+{% load thumbnail %}
+{% load static %}
+{% load my_tags %}
+
+<h3 class="text-center">{{ club.abbr|upper }}</h3>
+<hr/>
+<h4 class="text-center"> Playing </h4>
+<hr class="mt-0"/>
+<div class="row overflow-auto mb-4">
+	{% for player in squad.get_playing_squad.players.all %}
+		<div class="col-md-4 mb-3">
+			<div class="d-flex align-content-center">
+				{% include 'users/partials/player_card_small.html' with player=player %}
+			</div>
+		</div>
+	{% endfor %}
+</div>
+
+<h4 class="text-center"> Sub available </h4>
+<hr class="mt-0"/>
+<div class="row  mb-2">
+	{% for player in squad.get_onbench_squad.players.all %}
+		<div class="col-md-4 mb-3">
+			<div class="d-flex align-content-center">
+				{% include 'users/partials/player_card_small.html' with player=player %}
+			</div>
+		</div>
+	{% endfor %}
+</div>
+
