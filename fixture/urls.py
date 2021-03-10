@@ -7,6 +7,7 @@ app_name = 'fixture'
 
 router = routers.DefaultRouter()
 router.register(r'fixtureinput', views.FixtureInputApi)
+router.register(r'matchinput', views.MatchInputApi)
 
 # API
 urlpatterns = [
