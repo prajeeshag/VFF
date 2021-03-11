@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -60,14 +61,20 @@ class dpEditForm(forms.ModelForm):
             self.fields['yp1'].initial = yp1
             self.fields['yp2'].initial = yp2
 
+    def clean(self):
+        data = super().clean()
+        xp1, yp1, xp2, yp2 = self.instance.get_cropbox_frac()
+        xp1, yp1 = data.get('xp1', xp1), data.get('yp1', yp1)
+        xp2, yp2 = data.get('xp2', xp2), data.get('yp2', yp2)
+        if xp1 >= xp2 or yp1 >= yp2:
+            raise ValidationError("Incorrect Cropbox")
+
     def save(self, commit=True):
         obj = super().save(commit=False)
         data = self.cleaned_data
         xp1, yp1, xp2, yp2 = self.instance.get_cropbox_frac()
         xp1, yp1 = data.get('xp1', xp1), data.get('yp1', yp1)
         xp2, yp2 = data.get('xp2', xp2), data.get('yp2', yp2)
-        if xp1 >= xp2 or yp1 >= yp2:
-            raise ValidationError("Incorrect Cropbox")
         obj.set_cropbox_frac(xp1, yp1, xp2, yp2)
         if commit:
             obj.save()
