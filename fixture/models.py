@@ -34,11 +34,14 @@ class Matches(TimeStampedModel, StatusModel):
         ClubProfile, on_delete=models.PROTECT, related_name='away_matches')
     date = models.DateTimeField(_('Date'))
     ground = models.ForeignKey(
-        Grounds, on_delete=models.PROTECT, null=True, related_name='matches')
+        Grounds, on_delete=models.PROTECT,
+        null=True, related_name='matches')
     fixture = models.ForeignKey(
-        Fixture, on_delete=models.PROTECT, null=True, related_name='matches')
+        Fixture, on_delete=models.PROTECT,
+        null=True, related_name='matches')
     status = models.CharField(
-        max_length=20, choices=STATUS, default=STATUS.tentative)
+        max_length=20, choices=STATUS,
+        default=STATUS.tentative)
     note = models.CharField(max_length=200, blank=True)
 
     class Meta:

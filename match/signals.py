@@ -7,13 +7,6 @@ from .models import Result, Substitution, Squad
 from core.utils import disable_for_loaddata
 
 
-@receiver(post_save, sender=Matches)
-@disable_for_loaddata
-def create_result(sender, instance, created, **kwargs):
-    if not Result.objects.filter(match=instance).exists():
-        Result.create(match=instance)
-
-
 @receiver(pre_delete, sender=Substitution)
 def reset_squad_sub(sender, instance, **kwargs):
     with transaction.atomic():

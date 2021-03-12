@@ -27,24 +27,25 @@ class Command(BaseCommand):
         fixture = Fixture.objects.first()
         if not fixture:
             fixture = Fixture.objects.create(season='2021')
-        print(fixture)
-        if reset:
-            fixture.matches.all().delete()
-        num = 1
-        tz = pytz.timezone("Asia/Calcutta")
-        # Delete all tentative matches
-        fdate = tz.localize(
-            datetime.datetime.strptime('08/02/2021', "%d/%m/%Y"))
-        Matches.objects.filter(date__gt=fdate).delete()
         for it in dat:
             date = it['date']
-            if date < fdate:
-                continue
             away = Club.objects.get(pk=it['away'])
             home = Club.objects.get(pk=it['home'])
             ground = home.home_ground
-            obj, created = Matches.objects.get_or_create(
-                num=num, home=home,
-                away=away, date=date,
-                ground=ground, fixture=fixture)
-            print(obj, created)
+            try:
+                obj = Matches.objects.get(home=home, away=away)
+            except Matches.DoesNotExist:
+                obj = Matches.objects.create(
+                    home=home, away=away, ground=ground,
+                    date=date, fixture=fixture
+                )
+                print(obj)
+                continue
+
+            if not obj.is_fixed() and not obj.is_done():
+                obj.delete()
+                obj = Matches.objects.create(
+                    home=home, away=away, ground=ground,
+                    date=date, fixture=fixture
+                )
+                print(obj)
