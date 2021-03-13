@@ -43,7 +43,7 @@ from match.models import (Squad, MatchTimeLine, Goal, Cards, Suspension,
 from users.models import PlayerProfile, ClubProfile
 from stats.models import ClubStat, PlayerStat
 from .forms import (
-    DateTimeForm, MatchTimeForm, EmptyForm,
+    DateTimeForm, EmptyForm,
     PlayerSelectForm, PlayerSelectForm2,
     PlayerSelectFormOnspot, PlayerSelectForm2Onspot,
 )
@@ -417,13 +417,13 @@ class TimeEvent(MatchManagerRequiredMixin,
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         if self.kind == 'start':
-            ctx['title'] = 'Start Match'
+            ctx['title'] = 'Kickoff'
         elif self.kind == 'halftime':
-            ctx['title'] = 'Half Time'
+            ctx['title'] = 'Half time'
         elif self.kind == 'secondhalf':
             ctx['title'] = 'Second Half'
         elif self.kind == 'fulltime':
-            ctx['title'] = 'Full time'
+            ctx['title'] = 'Final time'
         ctx['return_url'] = reverse(
             'dash:enterpastmatchdetails',
             kwargs={'pk': self.match.pk})
@@ -431,41 +431,41 @@ class TimeEvent(MatchManagerRequiredMixin,
 
     def get_initial(self):
         timeline = getattr(self.match, 'matchtimeline', None)
-        if timeline and timeline.first_half_start:
-            return {'time': timeline.first_half_start}
+        if self.match.kickoff():
+            return {'time': self.match.kickoff()}
         return {'time': self.match.date}
 
     def form_valid(self, form):
         time = form.cleaned_data.get('time', None)
 
         if self.kind == 'start':
-            if self.match.matchtimeline.first_half_start:
+            if self.match.kickoff():
                 messages.add_message(
                     self.request, messages.DANGER,
                     "Match already started!!")
             else:
                 self.match.matchtimeline.start_match(time=time)
         elif self.kind == 'halftime':
-            if self.match.matchtimeline.half_time:
+            if self.match.half_time():
                 messages.add_message(
                     self.request, messages.DANGER,
                     "Match already in half time!!")
             else:
                 self.match.matchtimeline.set_half_time(time=time)
         elif self.kind == 'secondhalf':
-            if self.match.matchtimeline.second_half_start:
+            if self.match.second_half():
                 messages.add_message(
                     self.request, messages.DANGER,
                     "Second half already started!!")
             else:
                 self.match.matchtimeline.start_second_half(time=time)
         elif self.kind == 'fulltime':
-            if self.match.matchtimeline.final_time:
+            if self.match.final_time():
                 messages.add_message(
                     self.request, messages.WARNING,
                     "Match already in Final Time!!")
             else:
-                self.match.matchtimeline.full_time(time=time)
+                self.match.matchtimeline.set_final_time(time=time)
 
         return super().form_valid(form)
 
@@ -513,8 +513,8 @@ class PlayerSelect(MatchManagerRequiredMixin,
 
     def get_initial(self):
         timeline = getattr(self.match, 'matchtimeline', None)
-        if timeline and timeline.first_half_start:
-            return {'time': timeline.first_half_start}
+        if self.match.kickoff():
+            return {'time': self.match.kickoff()}
         return {'time': self.match.date}
 
     def get_success_url(self):
@@ -630,8 +630,8 @@ class PlayerSelect2(MatchManagerRequiredMixin,
 
     def get_initial(self):
         timeline = getattr(self.match, 'matchtimeline', None)
-        if timeline and timeline.first_half_start:
-            return {'time': timeline.first_half_start}
+        if self.match.kickoff():
+            return {'time': self.match.kickoff()}
         return {'time': self.match.date}
 
     def get_form_class(self):

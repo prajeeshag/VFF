@@ -10,49 +10,37 @@
 		<ul class="nav nav-tabs nav-justified" role="tablist">
 
 			<li class="nav-item">
-				{% if match.matchtimeline.first_half_start %}
+				{% if match.kickoff %}
 					<a class="nav-link" data-toggle="tab" href="#main" role="tab" >Main</a>
 				{% else %}
 					<a class="nav-link active" data-toggle="tab" href="#main" role="tab" >Main</a>
 				{% endif %}
 	  	</li>
 
-			{% if onspot %}
-				<li class="nav-item">
-					{% if match.matchtimeline.first_half_start %}
-						<a class="nav-link active" data-toggle="tab" href="#events" role="tab" >Ev</a>
-					{% else %}
-						<a class="nav-link" data-toggle="tab" href="#events" role="tab" >Ev</a>
-					{% endif %}
-	  		</li>
-			{% else %}
-				<li class="nav-item">
-					{% if match.matchtimeline.first_half_start %}
-						<a class="nav-link active" data-toggle="tab" href="#pastevents" role="tab" >Ev(pst)</a>
-					{% else %}
-						<a class="nav-link" data-toggle="tab" href="#pastevents" role="tab" >Ev(pst)</a>
-					{% endif %}
-	  		</li>
-			{% endif %}
+			<li class="nav-item">
+				{% if match.kickoff %}
+					<a class="nav-link active" data-toggle="tab" href="#events" role="tab" >Ev</a>
+				{% else %}
+					<a class="nav-link" data-toggle="tab" href="#events" role="tab" >Ev</a>
+				{% endif %}
+	  	</li>
 
-			{% if match.matchtimeline %}
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#timeline" role="tab" >TL</a>
-				</li>
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="#timeline" role="tab" >TL</a>
+			</li>
 
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#playershome" role="tab" >Pl(H)</a>
-				</li>
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="#playershome" role="tab" >Pl(H)</a>
+			</li>
 
-				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#playersaway" role="tab" >Pl(A)</a>
-				</li>
-			{% endif %}
+			<li class="nav-item">
+				<a class="nav-link" data-toggle="tab" href="#playersaway" role="tab" >Pl(A)</a>
+			</li>
 
 		</ul>	
 
 		<div class="tab-content" id="myTabContent">
-			{% if match.matchtimeline.first_half_start %}
+			{% if match.kickoff %}
 			<div class="tab-pane fade " id="main" role="tabpanel" aria-labelledby="home-tab">
 			{% else %}
 			<div class="tab-pane fade show active" id="main" role="tabpanel" aria-labelledby="home-tab">
@@ -60,35 +48,25 @@
 				{% include 'dashboard/match/partials/match_entry_panel_main.html' %}
 			</div>
 
-			{% if onspot %}
-				{% if match.matchtimeline.first_half_start %}
-					<div class="tab-pane fade show active" id="events" role="tabpanel" aria-labelledby="home-tab">
-				{% else %}
-					<div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="home-tab">
-				{% endif %}
-					{% include 'dashboard/match/partials/match_entry_panel_events_onspot.html' %}
-				</div>
+			{% if match.kickoff %}
+				<div class="tab-pane fade show active" id="events" role="tabpanel" aria-labelledby="home-tab">
 			{% else %}
-				{% if match.matchtimeline.first_half_start %}
-					<div class="tab-pane fade show active" id="pastevents" role="tabpanel" aria-labelledby="home-tab">
-				{% else %}
-					<div class="tab-pane fade" id="pastevents" role="tabpanel" aria-labelledby="home-tab">
-				{% endif %}
-					{% include 'dashboard/match/partials/match_entry_panel_events.html' %}
-				</div>
+				<div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="home-tab">
 			{% endif %}
+				{% include 'dashboard/match/partials/match_entry_panel_events.html' %}
+			</div>
 
-			{% if timeline %}
-				<div class="tab-pane fade" id="timeline" role="tabpanel" aria-labelledby="profile-tab">
-					{% include 'dashboard/match/partials/timeline.html' with timeline=timeline %}
-				</div>
-				<div class="tab-pane fade" id="playershome" role="tabpanel" aria-labelledby="profile-tab">
-					{% include 'dashboard/match/partials/players.html' with club=match.home squad=match.get_home_squad %}
-				</div>
-				<div class="tab-pane fade" id="playersaway" role="tabpanel" aria-labelledby="profile-tab">
-					{% include 'dashboard/match/partials/players.html' with club=match.away squad=match.get_away_squad %}
-				</div>
-			{% endif %}
+			<div class="tab-pane fade" id="timeline" role="tabpanel" aria-labelledby="profile-tab">
+				{% include 'dashboard/match/partials/timeline.html' with timeline=match.matchtimeline %}
+			</div>
+
+			<div class="tab-pane fade" id="playershome" role="tabpanel" aria-labelledby="profile-tab">
+				{% include 'dashboard/match/partials/players.html' with club=match.home squad=match.get_home_squad %}
+			</div>
+
+			<div class="tab-pane fade" id="playersaway" role="tabpanel" aria-labelledby="profile-tab">
+				{% include 'dashboard/match/partials/players.html' with club=match.away squad=match.get_away_squad %}
+			</div>
 
 		</div>
 	</div>

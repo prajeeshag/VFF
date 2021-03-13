@@ -29,7 +29,7 @@ class EditSubForm(forms.ModelForm):
         sub_out_player = PlayerProfile.objects.filter(
             pk=self.instance.sub_out.pk)
         sub_out_players = (
-            sub_out_player | squad.get_playing_squad().players.all()).distinct()
+            sub_out_player | squad.get_playing_squad().players.exclude(pk=self.instance.sub_in.pk)).distinct()
 
         self.fields['sub_in'].queryset = sub_in_players
         self.fields['sub_out'].queryset = sub_out_players
@@ -50,7 +50,7 @@ class EditGoalForm(forms.ModelForm):
 class EditCardForm(forms.ModelForm):
     class Meta:
         model = models.Cards
-        fields = ['player', 'reason', 'color']
+        fields = ['player', 'reason', 'color', 'time']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

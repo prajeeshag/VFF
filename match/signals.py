@@ -3,7 +3,7 @@ from django.db.models.signals import post_save, pre_delete, pre_save
 from django.dispatch import receiver
 
 from fixture.models import Matches
-from .models import Result, Substitution, Squad
+from .models import Result, Substitution, Squad, TimeEvents, MatchTimeLine
 from core.utils import disable_for_loaddata
 
 

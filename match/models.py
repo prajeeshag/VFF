@@ -55,10 +55,6 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
     status = models.CharField(
         max_length=20, choices=STATUS, default=STATUS.active)
     match = models.OneToOneField(Matches, on_delete=models.PROTECT)
-    first_half_start = models.DateTimeField(null=True)
-    second_half_start = models.DateTimeField(null=True)
-    half_time = models.BooleanField(default=False)
-    final_time = models.BooleanField(default=False)
 
     class AlreadyStartedError(Exception):
         pass
@@ -77,27 +73,26 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
 
     def start_match(self, time=None):
         with transaction.atomic():
-            if time:
-                self.first_half_start = time
-            else:
-                self.first_half_start = timezone.now()
+            if not time:
+                time = timezone.now()
+
             self.save()
+
             obj = TimeEvents.objects.create(match=self.match,
-                                            time=self.first_half_start,
+                                            time=time,
                                             status=TimeEvents.STATUS.kickoff)
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
 
+
     def start_second_half(self, time=None):
         with transaction.atomic():
-            if time:
-                self.second_half_start = time
-            else:
-                self.second_half_start = timezone.now()
+            if not time:
+                time = timezone.now()
             self.save()
             obj = TimeEvents.objects.create(match=self.match,
-                                            time=self.second_half_start,
+                                            time=time,
                                             status=TimeEvents.STATUS.second_half)
             Events.objects.create(
                 matchtimeline=self,
@@ -111,13 +106,11 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
             obj = TimeEvents.objects.create(
                 match=self.match, status=TimeEvents.STATUS.half_time,
                 time=time, sublabel=score)
-            self.half_time = True
-            self.save()
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
 
-    def full_time(self, time=None):
+    def set_final_time(self, time=None):
         with transaction.atomic():
             if not time:
                 time = timezone.now()
@@ -127,8 +120,6 @@ class MatchTimeLine(TimeStampedModel, StatusModel):
                 match=self.match,
                 status=TimeEvents.STATUS.final_time,
                 time=time, sublabel=score)
-            self.final_time = True
-            self.save()
             Events.objects.create(
                 matchtimeline=self,
                 content_object=obj,)
@@ -216,23 +207,25 @@ class EventModel(models.Model):
         match = self.get_match()
         if not match:
             return
-        timeline = getattr(match, 'matchtimeline', None)
-        if not timeline:
-            return
 
-        if timeline.first_half_start and self.time >= timeline.first_half_start:
-            tdelta = self.time - timeline.first_half_start
+        first_half_start = match.kickoff()
+        if first_half_start and self.time >= first_half_start:
+            tdelta = self.time - first_half_start
             time = max(tdelta.total_seconds(), 1)
             self.stime = max(time-halftime, 0)
             self.ftime = time - self.stime
 
-        if timeline.second_half_start and self.time >= timeline.second_half_start:
-            tdelta = self.time - timeline.second_half_start
+        second_half_start = match.second_half()
+        if second_half_start and self.time >= second_half_start:
+            tdelta = self.time - second_half_start
             time = max(tdelta.total_seconds(), 1) + halftime
             self.stime = max(time-fulltime, 0)
             self.ftime = time - self.stime
 
         self.save()
+
+        if self.timeline_event:
+            self.timeline_event.save()
 
     def save(self, *args, **kwargs):
         halftime = int(MATCHTIME*60/2)  # seconds
@@ -248,19 +241,17 @@ class EventModel(models.Model):
 
         # Calculate match time
         if self.ftime == -1 and self.stime == -1:
-            timeline = getattr(match, 'matchtimeline', None)
-            if not timeline:
-                super().save(*args, **kwargs)
-                return
 
-            if timeline.first_half_start and self.time >= timeline.first_half_start:
-                tdelta = self.time - timeline.first_half_start
+            first_half_start = match.kickoff()
+            if first_half_start and self.time >= first_half_start:
+                tdelta = self.time - first_half_start
                 time = max(tdelta.total_seconds(), 1)
                 self.stime = max(time-halftime, 0)
                 self.ftime = time - self.stime
 
-            if timeline.second_half_start and self.time >= timeline.second_half_start:
-                tdelta = self.time - timeline.second_half_start
+            second_half_start = match.second_half()
+            if second_half_start and self.time >= second_half_start:
+                tdelta = self.time - second_half_start
                 time = max(tdelta.total_seconds(), 1) + halftime
                 self.stime = max(time-fulltime, 0)
                 self.ftime = time - self.stime
@@ -790,7 +781,10 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
     def finalize_match(cls, match):
         with transaction.atomic():
             # Red cards
-            for card in cls.get_all_reds(match):
+            for card in cls.objects.filter(match=match, 
+                                           color=cls.COLOR.red, 
+                                           is_removed=False, 
+                                           suspension=None):
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Red card')
                 sus = Suspension.create(card.player, reason, match=match)
@@ -1208,3 +1202,27 @@ def finalize_match(self):
 
 
 setattr(Matches, 'finalize_match', finalize_match)
+
+
+def add_get_timeevents_time(status):
+    """ Add {timeevent} method
+        for class: Matches
+    """
+    fn_name = status
+
+    def fn(self):
+        stat = getattr(TimeEvents.STATUS, status)
+        try:
+            obj = TimeEvents.objects.get(match=self,status=stat)
+        except TimeEvents.DoesNotExist:
+            return None
+        return obj.time
+
+    setattr(Matches, fn_name, fn)
+    fn.__name__ = fn_name
+    fn.__doc__ = "Get {} time".format(status)
+
+
+for stat in TimeEvents.STATUS:
+    add_get_timeevents_time(stat[0])
+

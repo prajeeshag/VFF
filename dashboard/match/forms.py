@@ -17,46 +17,6 @@ class DateTimeForm(forms.Form):
     time = forms.DateTimeField(label='Date and Time')
 
 
-class MatchTimeForm(forms.Form):
-    ftime = forms.IntegerField(
-        min_value=1, max_value=200, initial=0,
-        label='Match time (in minutes)')
-    stime = forms.IntegerField(
-        min_value=0, max_value=200, initial=0,
-        label='Additional time (in minutes)')
-
-    def __init__(self, timeline, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.half = 'notstart'
-        if timeline.first_half_start:
-            self.half = 'first'
-        if timeline.second_half_start:
-            self.half = 'second'
-
-    def clean(self):
-        data = super().clean()
-        ftime = data.get('ftime')
-        stime = data.get('stime')
-        halftime = int(MATCHTIME/2)
-        fulltime = MATCHTIME
-        if self.half == 'second':
-            if ftime <= halftime or ftime > fulltime:
-                raise ValidationError(
-                    'Wrong Match timings 1!')
-            if stime > 0 and ftime < fulltime:
-                raise ValidationError(
-                    'Wrong Match timings 2!')
-        elif self.half == 'first':
-            if ftime > halftime:
-                raise ValidationError(
-                    'Wrong Match timings 3!')
-            if stime > 0 and ftime < halftime:
-                raise ValidationError(
-                    'Wrong Match timings 4!')
-        else:
-            raise ValidationError('Wrong Match timings, Match not started!')
-
-
 class PlayerSelectFormOnspot(forms.Form):
     player = forms.ModelChoiceField(queryset=None, required=True)
     attr = forms.CharField(label='Attributes', max_length=100)
