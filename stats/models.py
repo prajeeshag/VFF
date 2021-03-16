@@ -103,11 +103,10 @@ class PlayerStat(models.Model):
     def update(self):
         self.goals = self.player.num_goals()
         self.yellow = Cards.objects.filter(
-            is_removed=False,
+            red=None,
             color=Cards.COLOR.yellow,
             player=self.player).count()
         self.red = Cards.objects.filter(
-            is_removed=False,
             color=Cards.COLOR.red,
             player=self.player).count()
         self.save()
@@ -126,10 +125,10 @@ class PlayerStat(models.Model):
     def update_all(cls, match=None):
         cls.objects.all().update(goals=0, yellow=0, red=0)
         reds = Cards.objects.filter(
-            color=Cards.COLOR.red, is_removed=False).values(
+            color=Cards.COLOR.red).values(
             'player').annotate(num=Count('player'))
         yellows = Cards.objects.filter(
-            color=Cards.COLOR.yellow, is_removed=False).values(
+            color=Cards.COLOR.yellow, red=None).values(
             'player').annotate(num=Count('player'))
         goals = Goal.objects.filter(own=False).values(
             'player').annotate(num=Count('player'))

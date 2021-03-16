@@ -114,12 +114,12 @@ class CardList(TemplateView):
         mdl = models.Cards
         ctx = super().get_context_data(**kwargs)
         ctx['cards'] = mdl.objects.filter(
-            is_removed=False).select_related().order_by('-created')
+            red=None).select_related().order_by('-created')
         reds = mdl.objects.filter(
-            color=mdl.COLOR.red, is_removed=False).values(
+            color=mdl.COLOR.red).values(
             'player').annotate(num=Count('player'))
         yellows = mdl.objects.filter(
-            color=mdl.COLOR.yellow, is_removed=False).values(
+            color=mdl.COLOR.yellow, red=None).values(
             'player').annotate(num=Count('player'))
         num_red = {obj['player']: obj['num'] for obj in reds}
         num_yellow = {obj['player']: obj['num'] for obj in yellows}
@@ -254,6 +254,74 @@ urlpatterns += [path('deletegoal/<int:pk>/',
                      name='deletegoal'), ]
 
 
+class DeleteTimeEvent(MatchManagerRequiredMixin, DeleteView):
+    model = models.TimeEvents
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Delete {}'.format(self.object.status)
+        ctx['back_url'] = reverse(
+            'match:edittimeevent', kwargs={'pk': self.object.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('deletetimeevent/<int:pk>/',
+                     DeleteTimeEvent.as_view(),
+                     name='deletetimeevent'), ]
+
+
+class EditTimeEvent(MatchManagerRequiredMixin, UpdateView):
+    model = models.TimeEvents
+    fields = ['time', ]
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Edit {} time'.format(self.object.status)
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.object.match.pk})
+        ctx['delete_url'] = reverse('match:deletetimeevent', kwargs={
+                                    'pk': self.object.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('edittimeevent/<int:pk>/',
+                     EditTimeEvent.as_view(),
+                     name='edittimeevent'), ]
+
+
+class DeleteCard(MatchManagerRequiredMixin, DeleteView):
+    model = models.Cards
+    template_name = 'dashboard/base_form.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Delete {} card - {}'.format(
+            self.object.color, self.object.player)
+        ctx['back_url'] = reverse(
+            'match:editcard', kwargs={'pk': self.object.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+
+urlpatterns += [path('deletecard/<int:pk>/',
+                     DeleteCard.as_view(),
+                     name='deletecard'), ]
+
+
 class EditCard(MatchManagerRequiredMixin, UpdateView):
     model = models.Cards
     form_class = EditCardForm
@@ -264,6 +332,8 @@ class EditCard(MatchManagerRequiredMixin, UpdateView):
         ctx['title'] = 'Edit Card - {}'.format(self.object.match)
         ctx['back_url'] = reverse(
             'dash:enterpastmatchdetails', kwargs={'pk': self.object.match.pk})
+        ctx['delete_url'] = reverse('match:deletecard', kwargs={
+                                    'pk': self.object.pk})
         return ctx
 
     def get_success_url(self):
@@ -274,6 +344,39 @@ class EditCard(MatchManagerRequiredMixin, UpdateView):
 urlpatterns += [path('editcard/<int:pk>/',
                      EditCard.as_view(),
                      name='editcard'), ]
+
+
+class RecalcTiming(MatchManagerRequiredMixin, FormView):
+    form_class = forms.Form
+    template_name = 'dashboard/base_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        self.object = get_object_or_404(models.MatchTimeLine, pk=pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Recalculate timings?'
+        ctx['back_url'] = reverse(
+            'dash:enterpastmatchdetails',
+            kwargs={'pk': self.object.match.pk})
+        return ctx
+
+    def get_success_url(self):
+        match = self.object.match
+        return reverse('dash:enterpastmatchdetails', kwargs={'pk': match.pk})
+
+    def form_valid(self, form):
+        evnts = models.Events.objects.filter(matchtimeline=self.object)
+        for evnt in evnts:
+            evnt.content_object.recalc_time()
+        return super().form_valid(form)
+
+
+urlpatterns += [path('recalctiming/<int:pk>/',
+                     RecalcTiming.as_view(),
+                     name='recalctiming'), ]
 
 
 class CreateSuspension(MatchManagerRequiredMixin, CreateView):

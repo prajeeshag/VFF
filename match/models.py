@@ -223,9 +223,8 @@ class EventModel(models.Model):
             self.ftime = time - self.stime
 
         self.save()
-
-        if self.timeline_event:
-            self.timeline_event.save()
+        for ev in self.timeline_event.all():
+            ev.save()
 
     def save(self, *args, **kwargs):
         halftime = int(MATCHTIME*60/2)  # seconds
@@ -344,6 +343,9 @@ class TimeEvents(TimeStampedModel, StatusModel, EventModel):
             return timezone.localtime(self.time).strftime('%I:%M %p')
         return "{} ( {} )".format(self.sublabel, get_time_string(self.ftime, self.stime))
 
+    def get_edit_url(self):
+        return reverse('match:edittimeevent', args=[self.pk])
+
 
 class Squad(StatusModel, TimeStampedModel, EventModel):
     event_kind = 'lineup'
@@ -419,6 +421,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         return ""
 
     def raise_red_card(self, player):
+
         if player in self.get_playing_squad().players.all():
             self.get_playing_squad().remove_player(player)
             if player.get_age() <= 19:
@@ -426,10 +429,13 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             if player.get_age() <= 21:
                 self.NU21S = max(0, self.NU21S-1)
             self.save()
+            return self.get_playing_squad()
         elif player in self.get_onbench_squad().players.all():
             self.get_onbench_squad().remove_player(player)
+            return self.get_onbench_squad()
         elif player in self.get_tobench_squad().players.all():
             self.get_tobench_squad().remove_player(player)
+            return self.get_tobench_squad()
 
     def delete_red_card(self, player):
         self.get_playing_squad().add_player(player)
@@ -693,6 +699,9 @@ class Suspension(StatusModel, TimeStampedModel):
     class SuspensionExist(Exception):
         pass
 
+    def __str__(self):
+        return 'Suspension - {}'.format(self.player)
+
     @ classmethod
     def has_suspension(cls, player):
         return cls.pending.filter(player=player).exists()
@@ -751,9 +760,18 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
     suspension = models.ForeignKey(
         Suspension, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='cards')
+    red = models.ForeignKey(
+        'self', on_delete=models.SET_NULL,
+        null=True, related_name='yellows')
+    removed_from = models.ForeignKey(
+            Squad, on_delete=models.PROTECT,
+            null=True, related_name='red_card')
 
     class GotRedAlready(Exception):
         pass
+
+    def __str__(self):
+        return '{} card - {}'.format(self.color, self.player)
 
     def get_edit_url(self):
         return reverse('match:editcard', args=[self.pk])
@@ -770,20 +788,11 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
         super().save(*args, **kwargs)
 
     @ classmethod
-    def get_all_reds(cls, match):
-        return cls.objects.filter(match=match, color=cls.COLOR.red, is_removed=False)
-
-    @ classmethod
-    def get_all_yellow(cls, match):
-        return cls.objects.filter(match=match, color=cls.COLOR.yellow, is_removed=False)
-
-    @ classmethod
     def finalize_match(cls, match):
         with transaction.atomic():
             # Red cards
-            for card in cls.objects.filter(match=match, 
-                                           color=cls.COLOR.red, 
-                                           is_removed=False, 
+            for card in cls.objects.filter(match=match,
+                                           color=cls.COLOR.red,
                                            suspension=None):
                 reason, created = SuspensionReason.objects.get_or_create(
                     text='Red card')
@@ -792,9 +801,9 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
                 card.save()
 
             # Yellow cards
-            for mcard in cls.get_all_yellow(match):
+            for mcard in cls.objects.filter(match=match, color=cls.COLOR.yellow, red=None):
                 cards = cls.objects.filter(color=Cards.COLOR.yellow,
-                                           is_removed=False,
+                                           red=None,
                                            suspension=None,
                                            player=mcard.player)
                 if cards.count() > 2:
@@ -808,7 +817,7 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
         with transaction.atomic():
             players = cls.objects.filter(
                 color=Cards.COLOR.yellow,
-                is_removed=False,
+                red=None,
                 suspension=None).values(
                 'player').annotate(num=Count('player')).filter(num__gt=2)
 
@@ -819,25 +828,26 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
                 sus = Suspension.create(player, reason)
                 cls.objects.filter(
                     color=Cards.COLOR.yellow,
-                    is_removed=False,
+                    red=None,
                     suspension=None,
                     player=player).update(suspension=sus)
 
     @ classmethod
     def raise_red_card(cls, match, player, reason_text, time=None):
+
         with transaction.atomic():
-            cls.objects.filter(match=match, player=player).update(
-                is_removed=True)
+            yellows = cls.objects.filter(match=match, player=player, color=cls.COLOR.yellow)
+            squad = Squad.get_squad_player(match, player)
+            sqd = squad.raise_red_card(player)
             reason, created = CardReason.objects.get_or_create(
                 text=reason_text)
-            squad = Squad.get_squad_player(match, player)
-            squad.raise_red_card(player)
             if not time:
                 time = timezone.now()
             obj = cls.objects.create(
                 match=match, player=player,
                 color=cls.COLOR.red, reason=reason,
-                time=time)
+                time=time, removed_from=sqd)
+            yellows.update(red=obj)
             obj.create_timeline_event()
 
     @ classmethod

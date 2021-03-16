@@ -1,10 +1,35 @@
 from django.db import transaction
-from django.db.models.signals import post_save, pre_delete, pre_save
+from django.db.models.signals import post_save, pre_delete, pre_save, post_delete
 from django.dispatch import receiver
 
 from fixture.models import Matches
-from .models import Result, Substitution, Squad, TimeEvents, MatchTimeLine
+from .models import Result, Substitution, Squad, TimeEvents, MatchTimeLine, Cards
 from core.utils import disable_for_loaddata
+
+
+@receiver(pre_delete, sender=Cards)
+def delete_red(sender, instance, **kwargs):
+
+    if instance.color == Cards.COLOR.red:
+        with transaction.atomic():
+            yellows = instance.yellows.all().order_by('pk')
+            if yellows.count() > 1:
+                yellow = yellows.last()
+                yellow.red=None
+                yellow.save()
+                yellow.delete()
+
+            if instance.removed_from:
+                instance.removed_from.add_player(instance.player)
+
+
+@receiver(post_delete, sender=Cards)
+def delete_yellow(sender, instance, **kwargs):
+    if instance.color != Cards.COLOR.yellow:
+        return
+
+    if instance.red:
+        instance.red.delete()
 
 
 @receiver(pre_delete, sender=Substitution)
