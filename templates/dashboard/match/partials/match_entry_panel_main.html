@@ -10,6 +10,7 @@
 {% test_rule 'manage_match' user as can_manage_match %}
 
 {% if can_manage_match %}
+
 		{% if not match.get_home_squad %}
 			<div class="d-flex p-1 justify-content-center">
 				<form method="POST" action="{% url 'dash:startmatchtimeline' match.pk %}">
@@ -35,7 +36,7 @@
 			</div>
 		{% endif %}
 
-		{% if not match.is_done and match.matchtimeline.final_time %}
+		{% if not match.is_done and match.final_time %}
 			<div class="d-flex p-1">
 				<a href="{% url 'match:finalizematch' match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: darkcyan;">
 					Finalize Match

@@ -147,10 +147,6 @@ urlpatterns += [path('upstats/<int:pk>/',
                      name='upstats'), ]
 
 
-def onspotkey(pk):
-    return 'onspot_'+str(pk)
-
-
 class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
     template_name = 'dashboard/match/enter_match_details.html'
     model = Matches
@@ -159,12 +155,6 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
     def get(self, request, *args, **kwargs):
         match = self.get_object()
         self.match = match
-
-        if request.session.get(onspotkey(match.pk), None) is None:
-            request.session[onspotkey(match.pk)] = True
-
-        if self.match.is_done():
-            request.session[onspotkey(self.match.pk)] = False
 
         if match.is_tentative():
             messages.add_message(
@@ -176,7 +166,6 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['onspot'] = self.request.session.get(onspotkey(self.match.pk))
         try:
             timeline = MatchTimeLine.objects.prefetch_related(
                 'events_set__content_object').get(match=self.match)
@@ -378,23 +367,6 @@ class StartMatchTimeLine(MatchManagerRequiredMixin,
 urlpatterns += [path('startmatchtimeline/<int:pk>/',
                      StartMatchTimeLine.as_view(),
                      name='startmatchtimeline'), ]
-
-
-class ActivatePast(MatchManagerRequiredMixin,
-                   MatchLockMixin, View):
-
-    def post(self, request, *args, **kwargs):
-        val = request.POST.get('action')
-        if val == 'onspot':
-            request.session[onspotkey(self.match.pk)] = True
-        elif val == 'past':
-            request.session[onspotkey(self.match.pk)] = False
-        return redirect(reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk}))
-
-
-urlpatterns += [path('activatepast/<int:pk>/',
-                     ActivatePast.as_view(),
-                     name='activatepast'), ]
 
 
 class TimeEvent(MatchManagerRequiredMixin,
