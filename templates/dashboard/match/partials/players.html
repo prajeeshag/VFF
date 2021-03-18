@@ -17,8 +17,8 @@
 			<div class="col-6">
 				<form style="display: inline;" method="POST" action="{% url 'dash:subplayerselonspot' squad.match.pk squad.club.pk %}">
 					{% include 'snippets/form_common.html' %}
-					<input type="hidden" name="player_in" value="{{ sub.in.pk }}">
-					<input type="hidden" name="player_out" value="{{ sub.out.pk }}">
+					<input type="hidden" name="player_in" value="{{ sub.in.pk }}" side={{ side }} data-player-age="{{ sub.in.get_age }}">
+					<input type="hidden" name="player_out" value="{{ sub.out.pk }}" side={{ side }} data-player-age="{{ sub.out.get_age }}">
 					<button type="submit" class="btn btn-sm btn-success" name="finalize_sub">++</button>
 				</form>
 				<form style="display: inline;" method="POST" action="{% url 'dash:deletesavesub' squad.match.pk squad.club.pk %}">
