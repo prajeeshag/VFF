@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from django.core.exceptions import PermissionDenied
+from django.core.cache import cache
 
 import rules
 from django.http import (
@@ -51,6 +52,10 @@ from .forms import (
 LOGIN_URL = reverse_lazy('login')
 
 urlpatterns = []
+
+
+def sub_cache_key(pk):
+    return "{}{}".format('substitute_', pk)
 
 
 class MatchManagerRequiredMixin:
@@ -172,6 +177,30 @@ class EnterPastMatchDetails(MatchManagerRequiredMixin, viewMixins, DetailView):
             ctx['timeline'] = timeline
         except MatchTimeLine.DoesNotExist:
             pass
+
+        sub_saved_players = []
+
+        for i in range(2):
+            if i == 0:
+                sqd = self.match.get_home_squad()
+                ctxKey = 'home_sub_save'
+            else:
+                sqd = self.match.get_away_squad()
+                ctxKey = 'away_sub_save'
+
+            if sqd:
+                ckey = sub_cache_key(sqd.pk)
+                cdata = cache.get(ckey,[])
+                sub = [c['in'] for c in cdata]
+                sub += [c['out'] for c in cdata]
+                players = PlayerProfile.objects.filter(pk__in=sub)
+                playersdict = { p.pk : p for p in players }
+                subdict = [ {'in': playersdict[c['in']], 'out': playersdict[c['out']]} for c in cdata ]
+                ctx[ctxKey] = subdict
+                sub_saved_players += players
+
+        ctx['sub_saved_players'] = sub_saved_players
+
         return ctx
 
 
@@ -517,24 +546,23 @@ class PlayerSelect(MatchManagerRequiredMixin,
     def get_form_kwargs(self):
         club = self.club
         kwargs = super().get_form_kwargs()
+        if self.kind == 'own':
+            opclub = self.match.get_opponent_club(club)
+            qplayers = Squad.get_squad(
+                self.match, opclub).get_playing_players_exclude()
+        else:
+            qplayers = Squad.get_squad(
+                self.match, club).get_playing_players_exclude()
+
+        kwargs['qplayers'] = qplayers
+
         if self.kind == 'goal':
-            kwargs['qplayers'] = Squad.get_squad(
-                self.match, club).get_playing_players()
-            kwargs['qattrs'] = GoalAttr.objects.exclude(text='own goal')
+            kwargs['qattrs'] = GoalAttr. objects.all()
             kwargs['attr_required'] = False
         elif self.kind == 'own':
-            opclub = self.match.get_opponent_club(club)
-            kwargs['qplayers'] = Squad.get_squad(
-                self.match, opclub).get_playing_players()
             kwargs['qattrs'] = ['own goal']
             kwargs['attr_required'] = False
-        elif self.kind == 'yellow':
-            kwargs['qplayers'] = Squad.get_squad(
-                self.match, club).get_playing_players()
-            kwargs['qattrs'] = CardReason.objects.all()
-        elif self.kind == 'red':
-            kwargs['qplayers'] = Squad.get_squad(
-                self.match, club).get_playing_players()
+        elif self.kind in ['red', 'yellow']:
             kwargs['qattrs'] = CardReason.objects.all()
         return kwargs
 
@@ -598,7 +626,7 @@ class PlayerSelect2(MatchManagerRequiredMixin,
                     FormView):
     form_class = PlayerSelectForm2
     template_name = 'dashboard/match/player_select.html'
-    onspot = False
+    kind = 'do'
 
     def get_initial(self):
         timeline = getattr(self.match, 'matchtimeline', None)
@@ -607,9 +635,7 @@ class PlayerSelect2(MatchManagerRequiredMixin,
         return {'time': self.match.date}
 
     def get_form_class(self):
-        if self.onspot:
-            return PlayerSelectForm2Onspot
-        return PlayerSelectForm2
+        return PlayerSelectForm2Onspot
 
     def get_success_url(self):
         return reverse('dash:enterpastmatchdetails', kwargs={'pk': self.match.pk})
@@ -617,6 +643,8 @@ class PlayerSelect2(MatchManagerRequiredMixin,
     def dispatch(self, request, *args, **kwargs):
         club_pk = kwargs.get('club')
         self.club = get_object_or_404(ClubProfile, pk=club_pk)
+        if 'substitute' in request.POST:
+            self.kind = 'do'
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
@@ -632,9 +660,9 @@ class PlayerSelect2(MatchManagerRequiredMixin,
         club = self.club
         kwargs = super().get_form_kwargs()
         kwargs['qplayers_out'] = Squad.get_squad(
-            self.match, club).get_playing_players()
+            self.match, club).get_playing_players_exclude()
         kwargs['qplayers_in'] = Squad.get_squad(
-            self.match, club).get_onbench_players()
+            self.match, club).get_onbench_players_exclude()
         kwargs['qattrs'] = SubstitutionReason.objects.all()
         return kwargs
 
@@ -643,26 +671,45 @@ class PlayerSelect2(MatchManagerRequiredMixin,
         player_out = form.cleaned_data.get('player_out')
         attr = form.cleaned_data.get('attr')
         time = form.cleaned_data.get('time', None)
+
         if attr == 'None':
             attr = None
 
         squad = Squad.get_squad(match=self.match, club=self.club)
 
-        try:
-            squad.substitute(playerin=player_in,
-                             playerout=player_out, user=self.request.user,
-                             time=time,  reason_text=attr)
-        except squad.NotEnoughPlayers as e:
-            messages.add_message(self.request, messages.WARNING, e)
-            return self.form_invalid(form)
+        key = sub_cache_key(squad.pk)
+        cdata = cache.get(key, [])
+        cdict = {'in': player_in.pk, 'out': player_out.pk}
 
+        if self.kind=='save':
+            if cdict not in cdata:
+                cdata.append(cdict)
+        elif self.kind=='delete':
+            if cdict in cdata:
+                cdata.remove(cdict)
+        else:
+            try:
+                squad.substitute(playerin=player_in,
+                                 playerout=player_out, user=self.request.user,
+                                 time=time,  reason_text=attr)
+            except squad.NotEnoughPlayers as e:
+                messages.add_message(self.request, messages.WARNING, e)
+                return self.form_invalid(form)
+            if cdict in cdata:
+                cdata.remove(cdict)
+        cache.set(key, cdata, timeout=3600)
         return super().form_valid(form)
 
 
+urlpatterns += [path('deletesavesub/<int:pk>/<int:club>/',
+                     PlayerSelect2.as_view(kind='delete'),
+                     name='deletesavesub'), ]
+
 urlpatterns += [path('subplayersel/<int:pk>/<int:club>/',
-                     PlayerSelect2.as_view(),
+                     PlayerSelect2.as_view(kind='save'),
                      name='subplayersel'), ]
 
 urlpatterns += [path('subplayerselonspot/<int:pk>/<int:club>/',
-                     PlayerSelect2.as_view(onspot=True),
+                     PlayerSelect2.as_view(),
                      name='subplayerselonspot'), ]
+

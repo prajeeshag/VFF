@@ -30,11 +30,11 @@
 			</li>
 
 			<li class="nav-item">
-				<a class="nav-link" data-toggle="tab" href="#playershome" role="tab" >Pl(H)</a>
+				<a class="nav-link" data-toggle="tab" href="#playershome" role="tab" >Sub(H)</a>
 			</li>
 
 			<li class="nav-item">
-				<a class="nav-link" data-toggle="tab" href="#playersaway" role="tab" >Pl(A)</a>
+				<a class="nav-link" data-toggle="tab" href="#playersaway" role="tab" >Sub(A)</a>
 			</li>
 
 		</ul>	
@@ -61,14 +61,18 @@
 			</div>
 
 			<div class="tab-pane fade" id="playershome" role="tabpanel" aria-labelledby="profile-tab">
-				{% include 'dashboard/match/partials/players.html' with club=match.home squad=match.get_home_squad %}
+				{% include 'dashboard/match/partials/players.html' with club=match.home squad=match.get_home_squad sub_saved=home_sub_save side='home' %}
 			</div>
 
 			<div class="tab-pane fade" id="playersaway" role="tabpanel" aria-labelledby="profile-tab">
-				{% include 'dashboard/match/partials/players.html' with club=match.away squad=match.get_away_squad %}
+				{% include 'dashboard/match/partials/players.html' with club=match.away squad=match.get_away_squad sub_saved=away_sub_save side='away' %}
 			</div>
 
 		</div>
 	</div>
+{% endblock %}
+
+{% block scripts_extra %} 
+	<script src="{% static 'match/sub.js' %}"></script>
 {% endblock %}
 

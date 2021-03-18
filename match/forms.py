@@ -44,7 +44,7 @@ class EditGoalForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         match = self.instance.match
         self.fields['club'].queryset = match.get_clubs()
-        self.fields['player'].queryset = match.get_played_players().distinct()
+        self.fields['player'].queryset = match.get_match_players().distinct()
 
 
 class EditCardForm(forms.ModelForm):
@@ -56,5 +56,5 @@ class EditCardForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         match = self.instance.match
         club = self.instance.club
-        self.fields['player'].queryset = match.get_played_players(
+        self.fields['player'].queryset = match.get_match_players(
             club).distinct()

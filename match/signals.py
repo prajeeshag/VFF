@@ -15,12 +15,9 @@ def delete_red(sender, instance, **kwargs):
             yellows = instance.yellows.all().order_by('pk')
             if yellows.count() > 1:
                 yellow = yellows.last()
-                yellow.red=None
+                yellow.red = None
                 yellow.save()
                 yellow.delete()
-
-            if instance.removed_from:
-                instance.removed_from.add_player(instance.player)
 
 
 @receiver(post_delete, sender=Cards)
@@ -37,13 +34,11 @@ def reset_squad_sub(sender, instance, **kwargs):
     with transaction.atomic():
         playing_sqd = instance.squad.get_playing_squad()
         onbench_sqd = instance.squad.get_onbench_squad()
-        tobench_sqd = instance.squad.get_tobench_squad()
         sub_in = instance.sub_in
         sub_out = instance.sub_out
         playing_sqd.add_player(sub_out)
         playing_sqd.remove_player(sub_in)
         onbench_sqd.add_player(sub_in)
-        tobench_sqd.remove_player(sub_out)
 
 
 @receiver(pre_save, sender=Substitution)
@@ -51,7 +46,7 @@ def reset_squad_sub(sender, instance, **kwargs):
 def do_sub(sender, instance, **kwargs):
     playing_sqd = instance.squad.get_playing_squad()
     onbench_sqd = instance.squad.get_onbench_squad()
-    tobench_sqd = instance.squad.get_tobench_squad()
+    played_sqd = instance.squad.get_played_squad()
 
     try:
         old_instance = Substitution.objects.get(pk=instance.pk)
@@ -60,20 +55,20 @@ def do_sub(sender, instance, **kwargs):
             playing_sqd.add_player(instance.sub_in)
             playing_sqd.remove_player(instance.sub_out)
             onbench_sqd.remove_player(instance.sub_in)
-            tobench_sqd.add_player(instance.sub_out)
+            played_sqd.add_player(instance.sub_in)
             instance.squad.check_nU()
             return
 
     if old_instance.sub_in != instance.sub_in:
         with transaction.atomic():
             playing_sqd.add_player(instance.sub_in)
+            played_sqd.add_player(instance.sub_in)
             onbench_sqd.remove_player(instance.sub_in)
             playing_sqd.remove_player(old_instance.sub_in)
+            played_sqd.remove_player(old_instance.sub_in)
             onbench_sqd.add_player(old_instance.sub_in)
 
     if old_instance.sub_out != instance.sub_out:
         with transaction.atomic():
             playing_sqd.remove_player(instance.sub_out)
-            tobench_sqd.add_player(instance.sub_out)
             playing_sqd.add_player(old_instance.sub_out)
-            tobench_sqd.remove_player(old_instance.sub_out)

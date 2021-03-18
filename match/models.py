@@ -355,7 +355,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                    ('bench', 'Sub'),
                    ('playing', 'Playing'),
                    ('onbench', 'On bench'),
-                   ('tobench', 'To bench'),
+                   ('played', 'Played'),
                    ('avail', 'Available'),
                    ('suspen', 'Suspended'),
                    )
@@ -399,6 +399,9 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
         else:
             return '{} squad for {}'.format(self.club.abbr.upper(), self.match)
 
+    def get_edit_url(self):
+        return reverse('dash:addfirstteam', args=[self.match.pk,self.club.pk])
+
     def is_nU19(self):
         return self.nU19 >= self.NU19S
 
@@ -419,31 +422,6 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
 
     def get_event_time_label(self):
         return ""
-
-    def raise_red_card(self, player):
-
-        if player in self.get_playing_squad().players.all():
-            self.get_playing_squad().remove_player(player)
-            if player.get_age() <= 19:
-                self.NU19S = max(0, self.NU19S-1)
-            if player.get_age() <= 21:
-                self.NU21S = max(0, self.NU21S-1)
-            self.save()
-            return self.get_playing_squad()
-        elif player in self.get_onbench_squad().players.all():
-            self.get_onbench_squad().remove_player(player)
-            return self.get_onbench_squad()
-        elif player in self.get_tobench_squad().players.all():
-            self.get_tobench_squad().remove_player(player)
-            return self.get_tobench_squad()
-
-    def delete_red_card(self, player):
-        self.get_playing_squad().add_player(player)
-        if player.get_age() <= 19:
-            self.NU19S = max(0, self.NU19S+1)
-        if player.get_age() <= 21:
-            self.NU21S = max(0, self.NU21S+1)
-        self.save()
 
     @ classmethod
     def _create_parent(cls, created_by, club, match):
@@ -486,7 +464,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                           self.get_playing_squad(),
                           self.get_bench_squad(),
                           self.get_onbench_squad(),
-                          self.get_tobench_squad(),
+                          self.get_played_squad(),
                           self.get_suspen_squad()):
                 if squad:
                     squad.players.clear()
@@ -551,10 +529,10 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
             raise NotMyMatch
         self.get_onbench_squad().add_player(player)
 
-    def add_player_to_tobench(self, player):
+    def add_player_to_played(self, player):
         if player.get_club() != self.club:
             raise NotMyMatch
-        self.get_tobench_squad().add_player(player)
+        self.get_played_squad().add_player(player)
 
     def add_player_to_first(self, player):
         with transaction.atomic():
@@ -571,6 +549,7 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
                 self.get_avail_squad().remove_player(player)
                 self.get_first_squad().add_player(player)
                 self.get_playing_squad().add_player(player)
+                self.get_played_squad().add_player(player)
 
     def add_player_to_bench(self, player):
         with transaction.atomic():
@@ -593,13 +572,14 @@ class Squad(StatusModel, TimeStampedModel, EventModel):
     def remove_player_from_onbench(self, player):
         self.get_onbench_squad().remove_player(player)
 
-    def remove_player_from_tobench(self, player):
-        self.get_tobench_squad().remove_player(player)
+    def remove_player_from_played(self, player):
+        self.get_played_squad().remove_player(player)
 
     def remove_player_from_first(self, player):
         if player in self.get_first_players():
             self.get_first_squad().remove_player(player)
             self.get_playing_squad().remove_player(player)
+            self.get_played_squad().remove_player(player)
             self.get_avail_squad().add_player(player)
 
     def remove_player_from_bench(self, player):
@@ -663,10 +643,23 @@ def add_get_child_players(child):
         return getattr(self, attr_name)().players.all()
     setattr(Squad, fn_name, fn)
 
+def add_get_child_players_exclude(child):
+    fn_name = '_'.join(['get', child, 'players_exclude'])
+
+    def fn(self):
+        attr_name = '_'.join(['get', child, 'squad'])
+        sqd = getattr(self, attr_name)()
+        match = sqd.match
+        banned_players = Cards.objects.filter(
+            color=Cards.COLOR.red, match=match).values('player')
+        return sqd.players.exclude(pk__in=banned_players)
+    setattr(Squad, fn_name, fn)
+
 
 for child in Squad.KIND:
     add_get_child_squad(child[0])
     add_get_child_players(child[0])
+    add_get_child_players_exclude(child[0])
 
 
 def add_is_kind(kind):
@@ -763,9 +756,6 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
     red = models.ForeignKey(
         'self', on_delete=models.SET_NULL,
         null=True, related_name='yellows')
-    removed_from = models.ForeignKey(
-            Squad, on_delete=models.PROTECT,
-            null=True, related_name='red_card')
 
     class GotRedAlready(Exception):
         pass
@@ -838,7 +828,6 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
         with transaction.atomic():
             yellows = cls.objects.filter(match=match, player=player, color=cls.COLOR.yellow)
             squad = Squad.get_squad_player(match, player)
-            sqd = squad.raise_red_card(player)
             reason, created = CardReason.objects.get_or_create(
                 text=reason_text)
             if not time:
@@ -846,7 +835,7 @@ class Cards(TimeStampedModel, StatusModel, EventModel):
             obj = cls.objects.create(
                 match=match, player=player,
                 color=cls.COLOR.red, reason=reason,
-                time=time, removed_from=sqd)
+                time=time)
             yellows.update(red=obj)
             obj.create_timeline_event()
 
@@ -1179,9 +1168,9 @@ for evname, evclass in EVENTS.items():
     add_num_player_event(evname, evclass)
 
 
-def get_played_players(self, club=None):
+def get_match_players(self, club=None):
     """
-    get all players who played a match
+    get all players who played a match including sub
     """
     players = PlayerProfile.objects.none()
     for clb in (self.home, self.away):
@@ -1195,7 +1184,7 @@ def get_played_players(self, club=None):
     return players.distinct()
 
 
-setattr(Matches, 'get_played_players', get_played_players)
+setattr(Matches, 'get_match_players', get_match_players)
 
 
 def finalize_match(self):
