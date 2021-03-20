@@ -2,86 +2,88 @@
 {% load static %}
 {% load my_tags %}
 
-<h3 class="text-center">{{ club.abbr|upper }}</h3>
-<hr/>
-
-<h4 class="text-center"> Saved Substitutions </h4>
-<hr class="mt-0"/>
-<div class="row overflow-auto mb-4" style="max-height: 250px;">
-	{% for sub in sub_saved %}
-		<div class="col-md-4 mb-2 row">
-			<div class="col-6">
-				<div>In: {{ sub.in }}</div>
-				<div>Out: {{ sub.out }}</div>
-			</div>
-			<div class="col-6">
-				<form style="display: inline;" method="POST" action="{% url 'dash:subplayerselonspot' squad.match.pk squad.club.pk %}">
-					{% include 'snippets/form_common.html' %}
-					<input type="hidden" name="player_in" value="{{ sub.in.pk }}" side={{ side }} data-player-age="{{ sub.in.get_age }}">
-					<input type="hidden" name="player_out" value="{{ sub.out.pk }}" side={{ side }} data-player-age="{{ sub.out.get_age }}">
-					<button type="submit" class="btn btn-sm btn-success" name="finalize_sub">++</button>
-				</form>
-				<form style="display: inline;" method="POST" action="{% url 'dash:deletesavesub' squad.match.pk squad.club.pk %}">
-					{% include 'snippets/form_common.html' %}
-					<input type="hidden" name="player_in" value="{{ sub.in.pk }}">
-					<input type="hidden" name="player_out" value="{{ sub.out.pk }}">
-					<button type="submit" class="btn btn-sm btn-danger" name="finalize_sub">--</button>
-				</form>
-			</div>
-		</div>
-	{% endfor %}
-</div>
-
-{% with playing_sqd=squad.get_playing_squad %}
-	<input type="hidden" name="NU19S" value="{{ playing_sqd.NU19S }}">
-	<input type="hidden" name="NU21S" value="{{ playing_sqd.NU21S }}">
-
-<form method="POST" action="{% url 'dash:subplayersel' squad.match.pk squad.club.pk %}">
-	{% include 'snippets/form_common.html' %}
-	<h4 class="text-center"> Playing <small>U19({{ playing_sqd.nU19 }}/{{ playing_sqd.NU19S }}) U21({{ playing_sqd.nU21 }}/{{ playing_sqd.NU21S }}) </small> </h4>
-	{% endwith %}
+{% if club %}
+	<h3 class="text-center">{{ club.abbr|upper }}</h3>
+	<hr/>
+	
+	<h4 class="text-center"> Saved Substitutions </h4>
 	<hr class="mt-0"/>
 	<div class="row overflow-auto mb-4" style="max-height: 250px;">
-		{% for player in squad.get_playing_players %}
-			<div class="col-md-4 mb-3">
-				<div class="d-flex align-content-center">
-					{% if player in squad.get_playing_players_exclude and not player in sub_saved_players %}
-					<input type="radio" id="player_{{player.pk}}" name="player_out" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}">
-					{% else %}
-					<input class="disabled" type="radio" id="player_{{player.pk}}" name="player_out" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}">
-					{% endif %}
-					<label for="player_{{ player.pk }}">
-						{% include 'users/partials/player_card_small.html' with player=player %}
-					</label>
+		{% for sub in sub_saved %}
+			<div class="col-md-4 mb-2 row">
+				<div class="col-6">
+					<div>In: {{ sub.in }}</div>
+					<div>Out: {{ sub.out }}</div>
+				</div>
+				<div class="col-6">
+					<form style="display: inline;" method="POST" action="{% url 'dash:subplayerselonspot' squad.match.pk squad.club.pk %}">
+						{% include 'snippets/form_common.html' %}
+						<input type="hidden" name="player_in" value="{{ sub.in.pk }}" side={{ side }} data-player-age="{{ sub.in.get_age }}">
+						<input type="hidden" name="player_out" value="{{ sub.out.pk }}" side={{ side }} data-player-age="{{ sub.out.get_age }}">
+						<button type="submit" class="btn btn-sm btn-success" name="finalize_sub">++</button>
+					</form>
+					<form style="display: inline;" method="POST" action="{% url 'dash:deletesavesub' squad.match.pk squad.club.pk %}">
+						{% include 'snippets/form_common.html' %}
+						<input type="hidden" name="player_in" value="{{ sub.in.pk }}">
+						<input type="hidden" name="player_out" value="{{ sub.out.pk }}">
+						<button type="submit" class="btn btn-sm btn-danger" name="finalize_sub">--</button>
+					</form>
 				</div>
 			</div>
 		{% endfor %}
 	</div>
 	
-	<h4 class="text-center"> Sub available </h4>
-	<hr class="mt-0"/>
-	<div class="row overflow-auto" style="max-height: 250px;">
-		{% for player in squad.get_onbench_players_exclude %}
-			<div class="col-md-4 mb-3">
-				<div class="d-flex align-content-center">
-					{% if not player in sub_saved_players %}
-					<input type="radio" id="player_{{player.pk}}" name="player_in" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}">
-					{% else %}
-					<input class="disabled" type="radio" id="player_{{player.pk}}" name="player_in" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}" >
-					{% endif %}
-					<label for="player_{{ player.pk }}">
-						{% include 'users/partials/player_card_small.html' with player=player %}
-					</label>
-				</div>
-			</div>
-		{% endfor %}
-	</div>
+	{% with playing_sqd=squad.get_playing_squad %}
+		<input type="hidden" name="NU19S" value="{{ playing_sqd.NU19S }}">
+		<input type="hidden" name="NU21S" value="{{ playing_sqd.NU21S }}">
 	
-	<div class="d-flex my-3 justify-content-around">
-		<button class="btn btn-primary" type="submit" name="save" side={{ side }}>Save</button>
-		{% if match.kickoff and not match.half_time or match.second_half %}
-			<button class="btn btn-success" type="submit" name="substitute" side={{ side }}>Substitute</button>
-		{% endif %}
-	</div>
-
-</form>
+	<form method="POST" action="{% url 'dash:subplayersel' squad.match.pk squad.club.pk %}">
+		{% include 'snippets/form_common.html' %}
+		<h4 class="text-center"> Playing <small>U19({{ playing_sqd.nU19 }}/{{ playing_sqd.NU19S }}) U21({{ playing_sqd.nU21 }}/{{ playing_sqd.NU21S }}) </small> </h4>
+		{% endwith %}
+		<hr class="mt-0"/>
+		<div class="row overflow-auto mb-4" style="max-height: 250px;">
+			{% for player in squad.get_playing_players %}
+				<div class="col-md-4 mb-3">
+					<div class="d-flex align-content-center">
+						{% if player in squad.get_playing_players_exclude and not player in sub_saved_players %}
+						<input type="radio" id="player_{{player.pk}}" name="player_out" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}">
+						{% else %}
+						<input class="disabled" type="radio" id="player_{{player.pk}}" name="player_out" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}">
+						{% endif %}
+						<label for="player_{{ player.pk }}">
+							{% include 'users/partials/player_card_small.html' with player=player %}
+						</label>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+		
+		<h4 class="text-center"> Sub available </h4>
+		<hr class="mt-0"/>
+		<div class="row overflow-auto" style="max-height: 250px;">
+			{% for player in squad.get_onbench_players_exclude %}
+				<div class="col-md-4 mb-3">
+					<div class="d-flex align-content-center">
+						{% if not player in sub_saved_players %}
+						<input type="radio" id="player_{{player.pk}}" name="player_in" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}">
+						{% else %}
+						<input class="disabled" type="radio" id="player_{{player.pk}}" name="player_in" value="{{ player.pk }}" data-player-age="{{ player.get_age }}" side="{{ side }}" >
+						{% endif %}
+						<label for="player_{{ player.pk }}">
+							{% include 'users/partials/player_card_small.html' with player=player %}
+						</label>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+		
+		<div class="d-flex my-3 justify-content-around">
+			<button class="btn btn-primary" type="submit" name="save" side={{ side }}>Save</button>
+			{% if match.kickoff and not match.half_time or match.second_half %}
+				<button class="btn btn-success" type="submit" name="substitute" side={{ side }}>Substitute</button>
+			{% endif %}
+		</div>
+	
+	</form>
+{% endif %}
