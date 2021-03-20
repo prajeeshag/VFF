@@ -442,21 +442,21 @@ class TimeEvent(MatchManagerRequiredMixin,
         if self.kind == 'start':
             if self.match.kickoff():
                 messages.add_message(
-                    self.request, messages.DANGER,
+                    self.request, messages.WARNING,
                     "Match already started!!")
             else:
                 self.match.matchtimeline.start_match(time=time)
         elif self.kind == 'halftime':
             if self.match.half_time():
                 messages.add_message(
-                    self.request, messages.DANGER,
+                    self.request, messages.WARNING,
                     "Match already in half time!!")
             else:
                 self.match.matchtimeline.set_half_time(time=time)
         elif self.kind == 'secondhalf':
             if self.match.second_half():
                 messages.add_message(
-                    self.request, messages.DANGER,
+                    self.request, messages.WARNING,
                     "Second half already started!!")
             else:
                 self.match.matchtimeline.start_second_half(time=time)
