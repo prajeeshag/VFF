@@ -21,7 +21,6 @@
 				<a href="{% url 'dash:halftimeonspot' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: red;">
 					Half Time
 				</a>
-				{% include 'dashboard/match/partials/match_entry_panel_onspot.html' %}
 		{% elif match.half_time and not match.second_half %}
 		
 				<a href="{% url 'dash:secondhalfonspot' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: green;">
@@ -31,8 +30,8 @@
 				<a href="{% url 'dash:finaltimeonspot' pk=match.pk %}" class="btn btn-lg btn-block text-light" style="background-color: red;">
 					Final Time
 				</a>
-				{% include 'dashboard/match/partials/match_entry_panel_onspot.html' %}
 		{% endif %}
+		{% include 'dashboard/match/partials/match_entry_panel_onspot.html' %}
 	{% else %}
 		<div class="alert alert-warning"> Cannot start match without finalizing squads for both teams</div>
 	{% endif %}
